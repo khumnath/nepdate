@@ -22,7 +22,8 @@ Nepdate relies on the following Qt libraries:
 
 ## Screenshots
 
-![nepdate](https://github.com/khumnath/nepdate/screenshot.png)
+![nepdate](![image](https://github.com/khumnath/nepdate/assets/50103558/aef87190-2d99-44d0-9886-db46c4237399)
+)
 
 ## License
 
