@@ -12,7 +12,7 @@
 #include <QVBoxLayout>
 #include "calendarwindow.h"
 
-struct DateStruct {
+struct NepaliDateStruct { // Renamed the structure to avoid conflict
     int yy;
     int mm;
     int dd;
@@ -39,10 +39,10 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     int is_leap_year(int);
     int cnvToNepali(int, int, int);
-    DateStruct cnvToEnglish(int, int, int);
+    NepaliDateStruct cnvToEnglish(int, int, int); // Updated to use the renamed structure
     int what();
     int err(int errno, char *desc);
-static int calculateDayOfWeek(int year, int month, int day);
+    static int calculateDayOfWeek(int year, int month, int day);
     ~MainWindow();
 
 protected:
@@ -60,9 +60,11 @@ private slots:
     QString get_day_of_week(int);
     void copyButtonText();
     void on_dateButton_clicked();
+    void updateDateButton();
 
 private:
     void setupDefaultDate();
+    QTimer *updateTimer;
 
     Ui::MainWindow *ui;
     bool isDragging;

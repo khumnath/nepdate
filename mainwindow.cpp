@@ -22,6 +22,14 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), isDragging(false), calendarWindow(nullptr)
 {
     ui->setupUi(this);
+    // Initialize the timer
+    updateTimer = new QTimer(this);
+
+    // Connect the timer's timeout signal to a slot
+    connect(updateTimer, &QTimer::timeout, this, &MainWindow::updateDateButton);
+
+    // Start the timer to trigger its timeout signal every second (adjust as needed)
+    updateTimer->start(1000); // Update every second
 
     // Set the window flags to make it borderless
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
@@ -101,10 +109,7 @@ int MainWindow::is_leap_year(int year)
         }
     }
 }
-int MainWindow::calculateDayOfWeek(int year, int month, int day) {
-    QDate date(year, month, day);
-    return date.dayOfWeek();
-}
+
 
 int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     // Perform the conversion using the bikram class
@@ -115,19 +120,17 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     int nepaliYear = bsdate.getYear();
     int nepaliMonth = bsdate.getMonth();
     int nepaliDay = bsdate.getDay();
-
-    // Adjust the day of the week
-    int dayOfWeek = calculateDayOfWeek(yy, mm, dd);
+    int nepaliDayOfWeek = bsdate.getDayOfWeek(); // Get the day of the week
 
     // Adjust the day of the week
     QString nepaliMonthName = get_nepali_month(nepaliMonth);
-    QString nepaliDayName = get_day_of_week(dayOfWeek);
+    QString nepaliDayOfWeekName = get_day_of_week(nepaliDayOfWeek); // Get the name of the day of the week
 
     // Construct the Nepali date format string
     QString nepaliFormat = QString::number(nepaliYear) + " " +
                            nepaliMonthName + " " +
                            QString::number(nepaliDay) + " गते " +
-                           nepaliDayName;
+                           nepaliDayOfWeekName; // Include the day of the week
 
     QLocale nepaliLocale(QLocale::Nepali);
 
@@ -135,15 +138,16 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     nepaliFormat.replace(QString::number(nepaliDay), nepaliLocale.toString(nepaliDay));
     nepaliFormat.replace(QRegularExpression(","), QString());
 
-
-// Set the Nepali formatted date to the button text and tooltip
-ui->dateButton->setText(nepaliFormat);
-ui->dateButton->setToolTipDuration(0);
-QFont tooltipFont("Noto Sans Devanagari", 12); // Replace "Noto Sans Devnagari" with the name of your desired font
-QToolTip::setFont(tooltipFont); // Set the tooltip font globally
+    // Set the Nepali formatted date to the button text and tooltip
+    ui->dateButton->setText(nepaliFormat);
+    ui->dateButton->setToolTipDuration(0);
+    QFont tooltipFont("Noto Sans Devanagari", 12); // Replace "Noto Sans Devnagari" with the name of your desired font
+    QToolTip::setFont(tooltipFont); // Set the tooltip font globally
     ui->dateButton->setToolTip(nepaliFormat);
-return 0;
+
+    return 0;
 }
+
 
 void MainWindow::setupDefaultDate()
 {
@@ -331,4 +335,15 @@ void MainWindow::copyButtonText()
 {
     // Copy the text of the dateButton to the clipboard
     QApplication::clipboard()->setText(ui->dateButton->text());
+}
+void MainWindow::updateDateButton()
+{
+    // Get the current system date
+    QDate currentDate = QDate::currentDate();
+
+    // Convert the current system date to Nepali date format
+    int mm = currentDate.month();
+    int dd = currentDate.day();
+    int yy = currentDate.year();
+    cnvToNepali(mm, dd, yy);
 }

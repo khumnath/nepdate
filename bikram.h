@@ -22,7 +22,7 @@ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 ------------------------------------------------------------------------------
 */
 
-
+#include <ctime>
 #include <cmath> // Include this header for math functions
 
 class bikram
@@ -135,6 +135,13 @@ public:
         Month = (saura_masa_num + 12) % 12;
         Day = saura_masa_day;
 
+    }
+    int getDayOfWeek() {
+        std::tm timeinfo = { 0, 0, 0, Day, Month - 1, Year - 1900, 0, 0, 0, 0, "" };
+         // Note: Month is 0-based in std::tm, and years should be years since 1900
+        std::mktime(&timeinfo); // Update timeinfo to fill in the week day field
+
+        return timeinfo.tm_wday;
     }
 
     int getYear () { return Year; }
