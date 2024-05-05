@@ -21,8 +21,8 @@ Nepdate relies on the following Qt libraries:
 4. The floating Nepali date widget will appear on your desktop.
 
 ## Screenshots
+nepdate in action ![https://github.com/khumnath/nepdate/blob/main/screenshot.png](https://github.com/khumnath/nepdate/assets/50103558/aef87190-2d99-44d0-9886-db46c4237399)
 
-![nepdate](https://github.com/khumnath/nepdate/screenshot.png)
 
 ## License
 
