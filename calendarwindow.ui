@@ -53,12 +53,12 @@
      <rect>
       <x>40</x>
       <y>30</y>
-      <width>481</width>
+      <width>501</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>यो सञ्झ्याल नेपाली पात्रोका लागि प्रयोग गर्ने उद्देश्यले बनाइएको हो । (तर कार्यान्वयन भएको छैन ।</string>
+     <string>यो सञ्झ्याल नेपाली पात्रोका लागि प्रयोग गर्ने उद्देश्यले बनाइएको हो । (तर कार्यान्वयन भएको छैन ।)</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton">

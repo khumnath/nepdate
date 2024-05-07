@@ -24,6 +24,7 @@ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 
 #include <ctime>
 #include <cmath> // Include this header for math functions
+#include <string>
 
 class bikram
 {

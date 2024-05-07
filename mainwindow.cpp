@@ -16,7 +16,13 @@
 #include <QClipboard>
 #include "bikram.h"
 #include <QLocale>
+std::string MainWindow::getWeekdayName(int year, int month, int day) {
+    std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, "" };
+    std::mktime(&timeinfo); // Update timeinfo to fill in the week day field
 
+    const std::string nepaliWeekdays[] = { "आइतबार", "सोमबार", "मंगलबार", "बुधबार", "बिहिबार", "शुक्रबार", "शनिबार" };
+    return nepaliWeekdays[timeinfo.tm_wday];
+}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), isDragging(false), calendarWindow(nullptr)
@@ -24,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     // Initialize the timer
     updateTimer = new QTimer(this);
+
 
     // Connect the timer's timeout signal to a slot
     connect(updateTimer, &QTimer::timeout, this, &MainWindow::updateDateButton);
@@ -120,11 +127,13 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     int nepaliYear = bsdate.getYear();
     int nepaliMonth = bsdate.getMonth();
     int nepaliDay = bsdate.getDay();
-    int nepaliDayOfWeek = bsdate.getDayOfWeek(); // Get the day of the week
+
+    // Calculate the weekday name for the given Gregorian date
+    std::string weekdayName = getWeekdayName(yy, mm, dd);
 
     // Adjust the day of the week
     QString nepaliMonthName = get_nepali_month(nepaliMonth);
-    QString nepaliDayOfWeekName = get_day_of_week(nepaliDayOfWeek); // Get the name of the day of the week
+    QString nepaliDayOfWeekName = QString::fromStdString(weekdayName); // Convert std::string to QString
 
     // Construct the Nepali date format string
     QString nepaliFormat = QString::number(nepaliYear) + " " +
@@ -149,13 +158,14 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
 }
 
 
+
 void MainWindow::setupDefaultDate()
 {
 
     // Convert the default Gregorian date to Nepali and update UI
-    int mm = QDate::currentDate().month();
-    int yy = QDate::currentDate().year();
-    int dd = QDate::currentDate().day();
+    int mm = 10;
+    int yy = 1984;
+    int dd = 4;
     cnvToNepali(mm, dd, yy);
 }
 QString MainWindow::get_nepali_month(int m) {
@@ -213,39 +223,6 @@ QString MainWindow::get_nepali_month(int m) {
     return n_month;
 }
 
-QString MainWindow::get_day_of_week(int d) {
-    QString day;
-    switch (d) {
-    case 1:
-        day = "आइतबार"; // Aaitabar (Sunday)
-        break;
-
-    case 2:
-        day = "सोमबार"; // Sombar (Monday)
-        break;
-
-    case 3:
-        day = "मंगलबार"; // Mangalbar (Tuesday)
-        break;
-
-    case 4:
-        day = "बुधबार"; // Budhbar (Wednesday)
-        break;
-
-    case 5:
-        day = "बिहिबार"; // Bihibar (Thursday)
-        break;
-
-    case 6:
-        day = "शुक्रबार"; // Shukrabar (Friday)
-        break;
-
-    case 7:
-        day = "शनिबार"; // Shanibar (Saturday)
-        break;
-    }
-    return day;
-}
 
 
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)

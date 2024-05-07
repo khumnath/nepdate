@@ -57,13 +57,14 @@ public slots:
 private slots:
     QBitmap createRoundRectMask(const QSize &size, int radius);
     QString get_nepali_month(int);
-    QString get_day_of_week(int);
     void copyButtonText();
     void on_dateButton_clicked();
     void updateDateButton();
 
 private:
     void setupDefaultDate();
+    // Declaration of getWeekdayName function
+    std::string getWeekdayName(int year, int month, int day);
     QTimer *updateTimer;
 
     Ui::MainWindow *ui;
