@@ -3,7 +3,7 @@
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::WindowModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -40,7 +40,8 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: transparent;</string>
+   <string notr="true">background: transparent;
+border-radius: 10px;</string>
   </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
@@ -88,11 +89,8 @@
      <enum>Qt::NoFocus</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">border: none;
-color: white;    
-
-   
-</string>
+     <string notr="true">border: none; 
+border-radius: 5px,</string>
     </property>
     <property name="text">
      <string>PushButton</string>

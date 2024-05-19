@@ -11,6 +11,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include "calendarwindow.h"
+#include <QImage>
 
 struct NepaliDateStruct { // Renamed the structure to avoid conflict
     int yy;
@@ -55,7 +56,6 @@ public slots:
     void openCalendarWindow(const QString &link);
 
 private slots:
-    QBitmap createRoundRectMask(const QSize &size, int radius);
     QString get_nepali_month(int);
     void copyButtonText();
     void on_dateButton_clicked();
@@ -66,7 +66,8 @@ private:
     // Declaration of getWeekdayName function
     std::string getWeekdayName(int year, int month, int day);
     QTimer *updateTimer;
-
+    void adjustTextColorBasedOnBackground();
+    QColor getAverageColor(const QImage &image);
     Ui::MainWindow *ui;
     bool isDragging;
     QPoint dragStartPosition;

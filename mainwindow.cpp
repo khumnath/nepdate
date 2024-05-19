@@ -3,16 +3,11 @@
 #include "mainwindow.h"
 #include "qmenu.h"
 #include "ui_mainwindow.h"
-#include "QHash"
-#include "QDebug"
 #include <QMouseEvent>
-#include "QMessageBox"
 #include <QTimer>
-#include <QSettings>
 #include <QToolTip>
 #include "calendarwindow.h"
 #include <QPushButton>
-#include <QVBoxLayout>
 #include <QClipboard>
 #include "bikram.h"
 #include <QLocale>
@@ -39,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     updateTimer->start(1000); // Update every second
 
     // Set the window flags to make it borderless
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint |  Qt::WindowStaysOnTopHint | Qt::Tool);
 
     // Get the geometry of the primary screen
     QScreen *primaryScreen = QGuiApplication::primaryScreen();
@@ -58,37 +53,14 @@ MainWindow::MainWindow(QWidget *parent) :
     // Set the position of the window
     move(x, y);
     ;
-
-
-    setAttribute(Qt::WA_TranslucentBackground);
-
-
+  setAttribute(Qt::WA_TranslucentBackground);
 
     // Set today's date as default when setting up the UI
     setupDefaultDate();
 
-    // Make the window rounded
-    setMask(createRoundRectMask(size(), 10)); // Adjust the radius as needed
-
 
 }
 
-QBitmap MainWindow::createRoundRectMask(const QSize &size, int radius)
-{
-    // Create a bitmap with the same size as the window
-    QBitmap mask(size);
-    mask.fill(Qt::color0); // Fill the mask with transparent pixels
-
-    // Create a painter to draw the rounded rectangle on the mask
-    QPainter painter(&mask);
-    painter.setRenderHint(QPainter::Antialiasing, true); // Enable antialiasing for smooth edges
-
-    // Draw the rounded rectangle on the mask
-    painter.setBrush(Qt::color1); // Fill color (opaque)
-    painter.drawRoundedRect(mask.rect(), radius, radius);
-
-    return mask;
-}
 
 
 MainWindow::~MainWindow()
@@ -133,13 +105,13 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
 
     // Adjust the day of the week
     QString nepaliMonthName = get_nepali_month(nepaliMonth);
-    QString nepaliDayOfWeekName = QString::fromStdString(weekdayName); // Convert std::string to QString
+    QString nepaliDayOfWeekName = QString::fromStdString(weekdayName);
 
     // Construct the Nepali date format string
     QString nepaliFormat = QString::number(nepaliYear) + " " +
                            nepaliMonthName + " " +
                            QString::number(nepaliDay) + " गते " +
-                           nepaliDayOfWeekName; // Include the day of the week
+                           nepaliDayOfWeekName;
 
     QLocale nepaliLocale(QLocale::Nepali);
 
@@ -153,8 +125,48 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     QFont tooltipFont("Noto Sans Devanagari", 12); // Replace "Noto Sans Devnagari" with the name of your desired font
     QToolTip::setFont(tooltipFont); // Set the tooltip font globally
     ui->dateButton->setToolTip(nepaliFormat);
+    adjustTextColorBasedOnBackground();
+    if (calendarWindow) {
+        QPushButton *mitiButton = calendarWindow->findChild<QPushButton*>("mitiButton");
+        if (mitiButton) {
+            mitiButton->setText(nepaliFormat);
+        }
+    }
 
     return 0;
+}
+QColor MainWindow::getAverageColor(const QImage &image) {
+    qint64 red = 0, green = 0, blue = 0;
+    int pixelCount = image.width() * image.height();
+
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            QColor color(image.pixel(x, y));
+            red += color.red();
+            green += color.green();
+            blue += color.blue();
+        }
+    }
+
+    return QColor(red / pixelCount, green / pixelCount, blue / pixelCount);
+}
+
+void MainWindow::adjustTextColorBasedOnBackground() {
+    // Get the screen behind the window
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QPixmap pixmap = screen->grabWindow(0, x(), y(), width(), height());
+    QImage image = pixmap.toImage();
+
+    // Calculate the average color
+    QColor averageColor = getAverageColor(image);
+
+    // Determine whether to use black or white text based on the brightness of the average color
+    int brightness = (averageColor.red() + averageColor.green() + averageColor.blue()) / 3;
+    QColor textColor = (brightness > 127) ? Qt::black : Qt::white;
+
+    // Set the text color of the dateButton
+    QString styleSheet = QString("QPushButton { color: %1; }").arg(textColor.name());
+    ui->dateButton->setStyleSheet(styleSheet);
 }
 
 
@@ -224,10 +236,16 @@ QString MainWindow::get_nepali_month(int m) {
 }
 
 
-
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
-    QMenu menu(this);
+    QMenu menu(tr("Context menu"), this);
+    QString styleSheet = "QMenu { background-color: #C9F8FA; color: black; border: 1px solid black; border-radius: 5px; }"
+                         "QMenu::item { background-color: transparent; }"
+        "QMenu::item:selected { background-color: #1AEFF7; color: #184805;}";
+    menu.setStyleSheet(styleSheet);
+    menu.setWindowFlags(menu.windowFlags() | Qt::FramelessWindowHint);
+
+
     QAction *copyAction = menu.addAction("Copy Date");
     connect(copyAction, &QAction::triggered, this, &MainWindow::copyButtonText);
     QAction *exitAction = menu.addAction("Exit");

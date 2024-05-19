@@ -3,13 +3,12 @@
 #include <QScreen>
 #include <QUrl>
 #include <QDesktopServices>
-
+#include<QMainWindow>
 CalendarWindow::CalendarWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::CalendarWindow)
-{
+    : QMainWindow(parent), ui(new Ui::CalendarWindow) {
     ui->setupUi(this);
-
+    ui->calendarWidget->setStyleSheet("QCalendarWidget QDateEdit { color: red; } "
+                                      "QCalendarWidget QWidget#qt_calendar_navigationbar { background-color: lightgreen; }");
 
     // Center the window on the screen
     centerOnScreen();
@@ -43,6 +42,7 @@ void CalendarWindow::on_pushButton_clicked()
 {
     QDesktopServices::openUrl(QUrl("http://github.com/khumnath/nepdate", QUrl::TolerantMode));
 }
+
 
 
 
