@@ -1,13 +1,24 @@
-# Nepdate
+# Nepdate calendar
+`nepdate-calendar` provides a standalone Nepali calendar and converter for Bikram Sambat and Gregorian calendars.
 
-Nepdate is a desktop floating widget for Linux that displays the Nepali date. It provides the following features:
+# Nepdate widget
+
+`nepdate-widget` is a desktop floating widget for Linux that displays the Nepali date. It provides the following features:
 
 - Displays the Nepali date on your desktop.
 - Can be moved anywhere on the screen.
+- with automatic text color adjustment based on the background color.
+
+##To-Do List
+
+1. Create an installable DEB file for Debian-based distributions.
+2. Make the calendar responsive to window resizing.
+3. Implement tithi and other panchanga calculations in the calendar app.
+4. Create a cross-platform application.
 
 ## Dependencies
 
-Nepdate relies on the following Qt libraries:
+Nepdate and calendar relies on the following Qt libraries:
 
 - Qt Core
 - Qt Widgets
@@ -16,9 +27,13 @@ Nepdate relies on the following Qt libraries:
 ## Usage
 
 1. Clone this repository to your local machine.
-2. Build the Nepdate widget using Qt Creator or Qmake.
-3. Run the Nepdate executable.
-4. The floating Nepali date widget will appear on your desktop.
+2. Create a build folder in the project directory.
+3. Build the project using `cmake ..` and then run `make all`.
+4. You can also compile the project using Qt Creator or Qmake.
+5. Run the Nepdate executables:
+    `nepdate-widget` for the desktop widget
+    `nepdate-calendar` for the calendar
+6. The floating Nepali date widget will appear on your desktop, with automatic text color adjustment based on the background color.
 
 ## Screenshots
 nepdate in action ![https://github.com/khumnath/nepdate/blob/main/screenshot.png](https://github.com/khumnath/nepdate/assets/50103558/aef87190-2d99-44d0-9886-db46c4237399)
@@ -27,3 +42,14 @@ nepdate in action ![https://github.com/khumnath/nepdate/blob/main/screenshot.png
 ## License
 
 This project is licensed under the **GNU General Public License (GPL) version 3**. See the LICENSE file for details.
+
+## contribution
+
+first of all any suggestion and bug reports can be filed on github issue here https://github.com/khumnath/nepdate/issues
+
+# for contribution 
+1. Clone repository
+ 2. make changes
+  3. make a pull request with proper description of changes.
+
+

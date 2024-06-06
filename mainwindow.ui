@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>252</width>
+    <width>285</width>
     <height>47</height>
    </rect>
   </property>
@@ -67,7 +67,7 @@ border-radius: 10px;</string>
     </property>
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>50</x>
       <y>0</y>
       <width>231</width>
       <height>31</height>

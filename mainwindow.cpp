@@ -9,7 +9,8 @@
 #include "calendarwindow.h"
 #include <QPushButton>
 #include <QClipboard>
-#include "bikram.h"
+
+
 #include <QLocale>
 std::string MainWindow::getWeekdayName(int year, int month, int day) {
     std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, "" };
@@ -53,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Set the position of the window
     move(x, y);
     ;
-  setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_TranslucentBackground);
 
     // Set today's date as default when setting up the UI
     setupDefaultDate();
@@ -162,7 +163,7 @@ void MainWindow::adjustTextColorBasedOnBackground() {
 
     // Determine whether to use black or white text based on the brightness of the average color
     int brightness = (averageColor.red() + averageColor.green() + averageColor.blue()) / 3;
-    QColor textColor = (brightness > 127) ? Qt::black : Qt::white;
+    QColor textColor = (brightness > 80) ? Qt::black : Qt::white;
 
     // Set the text color of the dateButton
     QString styleSheet = QString("QPushButton { color: %1; }").arg(textColor.name());
@@ -241,7 +242,7 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     QMenu menu(tr("Context menu"), this);
     QString styleSheet = "QMenu { background-color: #C9F8FA; color: black; border: 1px solid black; border-radius: 5px; }"
                          "QMenu::item { background-color: transparent; }"
-        "QMenu::item:selected { background-color: #1AEFF7; color: #184805;}";
+                         "QMenu::item:selected { background-color: #1AEFF7; color: #184805;}";
     menu.setStyleSheet(styleSheet);
     menu.setWindowFlags(menu.windowFlags() | Qt::FramelessWindowHint);
 
@@ -303,7 +304,7 @@ void MainWindow::openCalendarWindow(const QString &link) {
         calendarWindow->raise();
         calendarWindow->activateWindow();
 
-}
+    }
 }
 
 void MainWindow::on_dateButton_clicked()
