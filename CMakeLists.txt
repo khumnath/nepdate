@@ -15,38 +15,38 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-### nepdate-widget executable ###
+### nepdate executable ###
 
-# Collect nepdate-widget sources
-set(NEPDATE_WIDGET_SOURCES
+# Collect nepdate sources
+set(NEPDATE_SOURCES
     main.cpp
     mainwindow.cpp
     calendarwindow.cpp
 )
 
-# Collect nepdate-widget headers
-set(NEPDATE_WIDGET_HEADERS
+# Collect nepdate headers
+set(NEPDATE_HEADERS
     mainwindow.h
     bikram.h
     calendarwindow.h
 )
 
-# Collect nepdate-widget forms
-set(NEPDATE_WIDGET_FORMS
+# Collect nepdate forms
+set(NEPDATE_FORMS
     mainwindow.ui
     calendarwindow.ui
 )
 
-# Collect nepdate-widget resources
-set(NEPDATE_WIDGET_RESOURCES
+# Collect nepdate resources
+set(NEPDATE_RESOURCES
     resources.qrc
 )
 
-# Create nepdate-widget executable
-add_executable(nepdate-widget ${NEPDATE_WIDGET_SOURCES} ${NEPDATE_WIDGET_HEADERS} ${NEPDATE_WIDGET_FORMS} ${NEPDATE_WIDGET_RESOURCES})
+# Create nepdate executable
+add_executable(nepdate ${NEPDATE_SOURCES} ${NEPDATE_HEADERS} ${NEPDATE_FORMS} ${NEPDATE_RESOURCES})
 
 # Link against Qt6 libraries
-target_link_libraries(nepdate-widget PRIVATE Qt6::Widgets Qt6::Gui)
+target_link_libraries(nepdate PRIVATE Qt6::Widgets Qt6::Gui)
 
 ### nepdate-calendar executable ###
 

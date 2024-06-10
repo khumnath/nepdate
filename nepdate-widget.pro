@@ -5,7 +5,7 @@
 #-------------------------------------------------
 QT       += core gui widgets
 
-TARGET = nepdate-widget
+TARGET = nepdate
 TEMPLATE = app
 
 SOURCES += main.cpp \
@@ -14,6 +14,7 @@ SOURCES += main.cpp \
 
 HEADERS += mainwindow.h \
            bikram.h \
+           DayTithiWidget.h \
            calendarwindow.h
 
 FORMS += mainwindow.ui \

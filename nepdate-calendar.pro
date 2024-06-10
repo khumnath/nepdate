@@ -15,8 +15,10 @@ TEMPLATE = app
            mainwindow.cpp
 
  HEADERS = calendarwindow.h \
+    DayTithiWidget.h \
            bikram.h \
-           mainwindow.h
+           mainwindow.h \
+    panchanga.h
 
  FORMS = calendarwindow.ui \
          mainwindow.ui

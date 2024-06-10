@@ -1,3 +1,5 @@
+#include "DayTithiWidget.h"
+#include "panchanga.h"
 #include "ui_calendarwindow.h"
 #include "calendarwindow.h"
 #include "bikram.h"
@@ -80,6 +82,7 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     // Populate AD combo boxes
     for (int year = 1900; year <= 2100; ++year) {
         ui->yearselectAD->addItem(QString::number(year));
+        ui->yearselectAD->setEditable(true);
     }
     for (const QString &month : gregorianMonths) {
         ui->monthselectAD->addItem(month);
@@ -91,6 +94,7 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     // Populate BS combo boxes
     for (int year = 1970; year <= 2100; ++year) {
         ui->yearselectBS->addItem(QString::number(year));
+        ui->yearselectBS->setEditable(true);
     }
     for (const QString &month : bikramMonths) {
         ui->monthselectBS->addItem(month);
@@ -408,6 +412,7 @@ void CalendarWindow::updateAdDateFromBs(int year, int month, int day) {
     populateBsDays(year, month);
 }
 
+
 void CalendarWindow::updateCalendar(int year, int month) {
     int daysInMonth = converter.daysInMonth(year, month);
 
@@ -424,7 +429,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
     ui->calendarTable->horizontalHeader()->setStyleSheet(
         "QHeaderView::section {"
         "background-color: #d3d3d3;"
-        "color: black;"
+        "color: blue;"
         "font: 11pt 'laila';"
         "border: 1px solid gray;"
         "}"
@@ -432,7 +437,19 @@ void CalendarWindow::updateCalendar(int year, int month) {
 
     // Apply styles to the table
     ui->calendarTable->setStyleSheet(
-        "border: 1px solid gray;" // Optional border styling
+        "QTableWidget::item {"
+        //"border: 1px solid gray;" // Border for cells
+        "}"
+        "QTableWidget .dayLabel {"
+        "font-size: 19px;"
+        "color: black;"
+        "font-family: 'laila';"
+        "}"
+        "QTableWidget .tithiLabel {"
+        "font-size: 8px;"
+        "color: blue;"
+        "font-family: 'laila';"
+        "}"
         );
 
     // Find the first day of the month
@@ -458,33 +475,41 @@ void CalendarWindow::updateCalendar(int year, int month) {
     int col = (startDay - saturdayIndex + 6) % 7;  // Calculate offset based on Saturday index
 
     for (int day = 1; day <= daysInMonth; ++day) {
-        QTableWidgetItem *item = new QTableWidgetItem(convertToNepaliNumerals(day));
+        // Convert BS date to Gregorian date
+        converter.toGregorian(year, month, day, gYear, gMonth, gDay);
 
-        // Apply base style class (optional, can be defined in CSS)
-        //item->setData(Qt::UserRole + 1, "background-color: white;"); // Optional base style
+        // Calculate Julian date
+        double julianDate = gregorianToJulian(gYear, gMonth, gDay);
+        Panchang panchang(julianDate);
+        QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
+
+        // Create custom widget for day and tithi
+        DayTithiWidget *customWidget = new DayTithiWidget(convertToNepaliNumerals(day), tithiName);
+
+        // Set tooltip
+        QString paksha = QString::fromStdString(panchang.paksha);
+        //customWidget->setToolTip(tithiName, paksha);
+        QString tooltipText = QString("%1 (%2)").arg(tithiName).arg(paksha);
+        customWidget->setToolTip(tooltipText);
 
         // Check if the current cell represents today's Bikram Sambat date
         if (year == todayBsYear && month == todayBsMonth && day == todayBsDay) {
-            item->setBackground(QColor(242, 244, 246)); // Optional background color for today
-            item->setForeground(QColor(0, 197, 175));
-            item->setFont(QFont("laila", 14, QFont::Bold));
+            customWidget->setTodayStyle();
         }
 
         // Check if Saturday and apply color/CSS class (optional)
         if (col == saturdayIndex) {
-            // background color and text color for Saturdays
-            QBrush brush(QColor(242, 244, 246));
-            item->setBackground(brush);
-            item->setForeground(QColor(Qt::red));
+            customWidget->setSaturdayStyle();
         }
 
-        ui->calendarTable->setItem(row, col, item);
+        ui->calendarTable->setCellWidget(row, col, customWidget);
         col++;
         if (col > 6) {
             col = 0;
             row++;
         }
     }
+
     ui->calendarTable->resizeRowsToContents();
     ui->calendarTable->resizeColumnsToContents();
 
@@ -494,6 +519,10 @@ void CalendarWindow::updateCalendar(int year, int month) {
     // Hide the numbers in the first column
     ui->calendarTable->verticalHeader()->setVisible(false);
 }
+
+
+
+
 
 void CalendarWindow::adjustCellSizes() {
     int tableWidth = ui->calendarTable->viewport()->width();

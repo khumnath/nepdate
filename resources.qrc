@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>resources/dropdown.png</file>
         <file>resources/logo.png</file>
+        <file>resources/logo.svg</file>
     </qresource>
 </RCC>

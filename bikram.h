@@ -1,27 +1,7 @@
-// file name: bikram.h
-/* bikram library  to calculate bikram sambat calendar date from a given */
-/* gregorian date.                                                             */
-/*                                                                             */
-/* This  is a port of the Perl script to c++ to calculate bikram sambat date*/
-/* implementation of the Pancanga (Hindu Almanac) by M. Fushimi and M. Yano is wide area like panchanga nakshatra moon and sun faces with longitude based calculations*/
-/* which is docuemnted at following locations                                  */
-/* http://www.cc.kyoto-su.ac.jp/~yanom/pancanga/message314.html                */
-/* http://www.cc.kyoto-su.ac.jp/~yanom/sanskrit/pancanga/pancanga3.14          */
-/* bikram sambat(vikram samvat) calculations is modified by khumnath<mail.@khumnath.com.np*/
-/* visit https://github.com/khumnath or https://khumnath.com.np for contact information.
-License: GNU LGPL v3.0
-TERMS OF USE:
-    Permission is granted to use this code, with or
-    without modification, in any website or application.
-This program is distributed in the hope that it will
-be useful, but WITHOUT ANY WARRANTY.
-PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
-------------------------------------------------------------------------------
-*/
-
 #ifndef BIKRAM_H
 #define BIKRAM_H
 
+#include <iostream>
 #include <ctime>
 #include <cmath>
 #include <string>
