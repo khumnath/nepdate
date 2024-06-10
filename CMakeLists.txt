@@ -28,6 +28,8 @@ set(NEPDATE_SOURCES
 set(NEPDATE_HEADERS
     mainwindow.h
     bikram.h
+    DayTithiWidget.h
+    panchanga.h
     calendarwindow.h
 )
 
@@ -59,6 +61,9 @@ set(NEPDATE_CALENDAR_SOURCES
 # Collect nepdate-calendar headers
 set(NEPDATE_CALENDAR_HEADERS
     calendarwindow.h
+    DayTithiWidget.h
+    bikram.h
+    panchanga.h
 )
 
 # Collect nepdate-calendar forms
