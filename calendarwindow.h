@@ -19,8 +19,9 @@ class CalendarWindow : public QMainWindow
 
 public:
 
+    int gYear, gMonth, gDay;
     explicit CalendarWindow(QWidget *parent = nullptr);
-    ~CalendarWindow();
+    ~CalendarWindow(); 
     QString getBikramMonthName(int month) {
         QStringList bikramMonths = {"बैशाख", "जेठ", "असार", "श्रावण", "भाद्र",
                                      "अश्विन", "कार्तिक", "मंसिर", "पौष", "माघ",

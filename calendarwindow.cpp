@@ -107,11 +107,17 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
 
     // Convert the current Gregorian date to Bikram Sambat
     converter.fromGregorian(currentDate.year(), currentDate.month(), currentDate.day());
-
     int bsYear = converter.getYear();
     int bsMonth = converter.getMonth();
     int bsDay = converter.getDay();
+    converter.toGregorian(bsYear, bsMonth, bsDay, gYear, gMonth, gDay);
+    double julianDate = gregorianToJulian(gYear, gMonth, gDay);
+    Panchang panchang(julianDate);
     QString bsMonthName = getBikramMonthName(bsMonth);
+    QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
+    QString paksha = QString::fromStdString(panchang.paksha);
+    QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
+
 
     // Set current date in BS combo boxes
     ui->yearselectBS->setCurrentText(QString::number(bsYear));
@@ -123,8 +129,8 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
 
     // Update the output label
     int bsDaysInMonth = converter.daysInMonth(bsYear, bsMonth);
-    ui->output->setText(QString("आज: बिक्रम सम्वत: %1 %2 %3 गते\n %4 %5 मा जम्मा दिन सङ्ख्या: %6")
-                            .arg(convertToNepaliNumerals(bsYear)).arg(bsMonthName).arg(convertToNepaliNumerals(bsDay)).arg(bsMonthName).arg(convertToNepaliNumerals(bsYear)).arg(convertToNepaliNumerals(bsDaysInMonth)));
+    ui->output->setText(QString("आज: बिक्रम सम्वत: %1 %2 %3 गते  %7\n %4 %5 मा जम्मा दिन सङ्ख्या: %6")
+                            .arg(convertToNepaliNumerals(bsYear)).arg(bsMonthName).arg(convertToNepaliNumerals(bsDay)).arg(bsMonthName).arg(convertToNepaliNumerals(bsYear)).arg(convertToNepaliNumerals(bsDaysInMonth)).arg(tithipaksha));
     // Connect signals to slots
     connect(ui->yearselectAD, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onAdYearChanged);
     connect(ui->monthselectAD, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onAdMonthChanged);
@@ -158,6 +164,12 @@ void CalendarWindow::on_todayButton_clicked() {
     int bsMonth = converter.getMonth();
     int bsDay = converter.getDay();
     QString bsMonthName = getBikramMonthName(bsMonth);
+    converter.toGregorian(bsYear, bsMonth, bsDay, gYear, gMonth, gDay);
+    double julianDate = gregorianToJulian(gYear, gMonth, gDay);
+    Panchang panchang(julianDate);
+    QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
+    QString paksha = QString::fromStdString(panchang.paksha);
+    QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
 
     // Update BS combo boxes
     ui->yearselectBS->setCurrentText(QString::number(bsYear));
@@ -166,8 +178,8 @@ void CalendarWindow::on_todayButton_clicked() {
 
     // Update the output label
     int bsDaysInMonth = converter.daysInMonth(bsYear, bsMonth);
-    ui->output->setText(QString("आज: बिक्रम सम्वत: %1 %2 %3 गते\n %4 %5 मा जम्मा दिन सङ्ख्या: %6")
-                            .arg(convertToNepaliNumerals(bsYear)).arg(bsMonthName).arg(convertToNepaliNumerals(bsDay)).arg(bsMonthName).arg(convertToNepaliNumerals(bsYear)).arg(convertToNepaliNumerals(bsDaysInMonth)));
+    ui->output->setText(QString("आज: बिक्रम सम्वत: %1 %2 %3 गते %7\n %4 %5 मा जम्मा दिन सङ्ख्या: %6")
+                            .arg(convertToNepaliNumerals(bsYear)).arg(bsMonthName).arg(convertToNepaliNumerals(bsDay)).arg(bsMonthName).arg(convertToNepaliNumerals(bsYear)).arg(convertToNepaliNumerals(bsDaysInMonth)).arg(tithipaksha));
     // Update the calendar
     updateCalendar(bsYear, bsMonth);
 
@@ -376,6 +388,13 @@ void CalendarWindow::updateBsDateFromAd(int year, int month, int day) {
     int bsDay = converter.getDay();
 
     QString bsMonthName = getBikramMonthName(bsMonth);
+    converter.toGregorian(bsYear, bsMonth, bsDay, gYear, gMonth, gDay);
+    double julianDate = gregorianToJulian(gYear, gMonth, gDay);
+    Panchang panchang(julianDate);
+    QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
+    QString paksha = QString::fromStdString(panchang.paksha);
+    QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
+
 
     ui->yearselectBS->setCurrentText(QString::number(bsYear));
     ui->monthselectBS->setCurrentIndex(bsMonth - 1);  // Adjust index to start from 0
@@ -385,8 +404,8 @@ void CalendarWindow::updateBsDateFromAd(int year, int month, int day) {
     populateBsDays(bsYear, bsMonth);
 
     int bsDaysInMonth = converter.daysInMonth(bsYear, bsMonth);
-    ui->output->setText(QString("विक्रम सम्वत मा परिवर्तन गरियो: %1 %2 %3 गते \n%2 %1 मा जम्मा दिन सङ्ख्या: %4")
-                            .arg(convertToNepaliNumerals(bsYear)).arg(bsMonthName).arg(convertToNepaliNumerals(bsDay)).arg(convertToNepaliNumerals(bsDaysInMonth)));
+    ui->output->setText(QString("विक्रम सम्वत मा परिवर्तन गरियो: %1 %2 %3 गते %5 \n%2 %1 मा जम्मा दिन सङ्ख्या: %4")
+                            .arg(convertToNepaliNumerals(bsYear)).arg(bsMonthName).arg(convertToNepaliNumerals(bsDay)).arg(convertToNepaliNumerals(bsDaysInMonth)).arg(tithipaksha));
 
 
 
@@ -395,7 +414,6 @@ void CalendarWindow::updateBsDateFromAd(int year, int month, int day) {
 }
 
 void CalendarWindow::updateAdDateFromBs(int year, int month, int day) {
-    int gYear, gMonth, gDay;
     converter.toGregorian(year, month, day, gYear, gMonth, gDay);
 
     ui->yearselectAD->setCurrentText(QString::number(gYear));
@@ -441,7 +459,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
         //"border: 1px solid gray;" // Border for cells
         "}"
         "QTableWidget .dayLabel {"
-        "font-size: 19px;"
+        "font-size: 24px;"
         "color: black;"
         "font-family: 'laila';"
         "}"
@@ -453,7 +471,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
         );
 
     // Find the first day of the month
-    int gYear, gMonth, gDay;
+
     converter.toGregorian(year, month, 1, gYear, gMonth, gDay);
     QDate firstDay(gYear, gMonth, gDay);
     int startDay = firstDay.dayOfWeek(); // 0 (Monday) to 6 (Sunday)
