@@ -1,8 +1,8 @@
 #ifndef PANCHANGA_H
 #define PANCHANGA_H
 
-#include <iostream>
 #include <cmath>
+#include <string>
 
 #define PI 3.14159265358979323846
 #define r2d 180.0 / PI
@@ -44,7 +44,8 @@ private:
 
 
         paksha = (tithi_index < 15) ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
-        std::cout << "Tithi: " << tithi[(int)tithi_index] << " (" << paksha << ")" << std::endl;
+       //debug print
+        //std::cout << "Tithi: " << tithi[(int)tithi_index] << " (" << paksha << ")" << std::endl;
     }
 
 
