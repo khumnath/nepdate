@@ -7,7 +7,7 @@
 #include <QMenu>
 #include <QDesktopServices>
 #include <QUrl>
-#include <qt6/QtWidgets/qmainwindow.h>
+
 
 namespace Ui {
 class CalendarWindow;
