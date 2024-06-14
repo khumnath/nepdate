@@ -455,6 +455,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
 
     // Apply styles to the table
     ui->calendarTable->setStyleSheet(
+        "background-color: white;"
         "QTableWidget::item {"
         //"border: 1px solid gray;" // Border for cells
         "}"
@@ -568,8 +569,9 @@ void CalendarWindow::adjustCellSizes() {
 
 
 void CalendarWindow::populateBsDays(int year, int month) {
+    blockSignals = true;
+
     int daysInMonth = converter.daysInMonth(year, month);
-    int currentDay = converter.getDay();
 
     // Clear previous items
     ui->dayselectBS->clear();
@@ -578,6 +580,5 @@ void CalendarWindow::populateBsDays(int year, int month) {
         ui->dayselectBS->addItem(QString::number(day));
     }
 
-    // Set the current day
-    ui->dayselectBS->setCurrentText(QString::number(currentDay));
+    blockSignals = false;
 }
