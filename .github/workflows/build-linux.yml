@@ -1,0 +1,36 @@
+name: Build Release on Linux
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '6.6.1'
+        host: 'ubuntu-20.04'
+        tools: 'tools_qt6'
+
+    - name: Configure Qt environment
+      run: source $HOME/Qt/6.6.1/gcc_64/bin/qt6-env.sh
+
+    - name: Set up CMake
+      uses: actions/setup-cmake@v3
+
+    - name: Create build directory
+      run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
+
+    - name: Build project
+      run: cmake --build build --config Release
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: nepdate-calendar-linux
+        path: build/nepdate-calendar
