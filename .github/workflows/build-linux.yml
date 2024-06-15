@@ -10,6 +10,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
     - name: Set up Qt
       uses: jurplel/install-qt-action@v2
       with:
@@ -21,7 +22,7 @@ jobs:
       run: source $HOME/Qt/6.6.1/gcc_64/bin/qt6-env.sh
 
     - name: Set up CMake
-      uses: actions/setup-cmake@v3
+      uses: lukka/setup-cmake@v3
 
     - name: Create build directory
       run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
