@@ -15,11 +15,13 @@ jobs:
       uses: jurplel/install-qt-action@v2
       with:
         version: '6.6.1'
-        host: 'ubuntu-20.04'
-        tools: 'tools_qt6'
+        host: 'linux'
+        target: 'desktop'
+        arch: 'gcc_64'
+        dir: ${{ github.workspace }}/Qt
 
     - name: Configure Qt environment
-      run: source $HOME/Qt/6.6.1/gcc_64/bin/qt6-env.sh
+      run: source ${{ github.workspace }}/Qt/6.6.1/gcc_64/bin/qt6-env.sh
 
     - name: Install CMake
       run: sudo apt-get install -y cmake
