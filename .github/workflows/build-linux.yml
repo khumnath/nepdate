@@ -20,12 +20,10 @@ jobs:
         arch: 'gcc_64'
         dir: ${{ github.workspace }}/Qt
 
-    - name: Find Qt installation directory
-      id: find-qt-dir
-      run: echo "QT_DIR=$(find ${{ github.workspace }}/Qt -type d -name gcc_64)" >> $GITHUB_ENV
-
     - name: Configure Qt environment
-      run: source $QT_DIR/bin/qt6-env.sh
+      run: |
+        QT_DIR=$(find ${{ github.workspace }}/Qt -type d -name gcc_64)
+        source $QT_DIR/bin/qt6-env.sh
 
     - name: Install CMake
       run: sudo apt-get install -y cmake
