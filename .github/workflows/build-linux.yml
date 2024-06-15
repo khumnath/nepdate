@@ -9,33 +9,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up Qt
-      uses: jurplel/install-qt-action@v2
-      with:
-        version: '6.6.1'
-        host: 'linux'
-        target: 'desktop'
-        arch: 'gcc_64'
-        dir: ${{ github.workspace }}/Qt
+      - uses: actions/checkout@v2
 
-    - name: Configure Qt environment
-      run: |
-        QT_DIR=$(find ${{ github.workspace }}/Qt -type d -name gcc_64)
-        source $QT_DIR/bin/qt6-env.sh
+      - name: Set up Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: '6.6.1'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'gcc_64'
+          dir: ${{ github.workspace }}/Qt
 
-    - name: Install CMake
-      run: sudo apt-get install -y cmake
+      - name: Configure Qt environment
+        run: |
+          QT_DIR=$(find ${{ github.workspace }}/Qt -type d -name gcc_64)
+          source $QT_DIR/bin/qt6-env.sh
 
-    - name: Create build directory
-      run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
+      - name: Install CMake
+        run: sudo apt-get install -y cmake
 
-    - name: Build project
-      run: cmake --build build --config Release
+      - name: Create build directory
+        run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: nepdate-calendar-linux
-        path: build/nepdate-calendar
+      - name: Build project
+        run: cmake --build build --config Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: nepdate-calendar-linux
+          path: build/nepdate-calendar
