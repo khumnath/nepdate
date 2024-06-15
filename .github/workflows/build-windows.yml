@@ -11,18 +11,30 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Qt
-        uses: jurplel/install-qt-action@v2
-        with:
-          version: '6.6.1'
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_msvc2019_64'
-          dir: ${{ github.workspace }}\Qt
+          - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.6'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        dir: '${{ github.workspace }}/nepdate/'
+        install-deps: 'true'
+        modules: 'qtcharts qtwebengine'
+        archives: 'qtbase qtsvg'
+        cache: 'false'
+        cache-key-prefix: 'install-qt-action'
+        setup-python: 'true'
+        tools: 'tools_ifw tools_qtcreator,qt.tools.qtcreator'
+        set-env: 'true'
+        tools-only: 'false'
+        aqtversion: '==3.1.*'
+        py7zrversion: '==0.20.*'
+        extra: '--external 7z'
 
       - name: Configure Qt environment
         shell: cmd
-        run: call ${{ github.workspace }}\Qt\6.6.1\msvc2019_64\bin\qt6-env.bat
+        run: call ${{ github.workspace }}\nepdate\Qt\6.6.1\msvc2019_64\bin\qt6-env.bat
 
       - name: Install CMake
         run: choco install cmake --installargs '"ADD_CMAKE_TO_PATH=System"'
