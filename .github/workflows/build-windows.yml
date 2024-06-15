@@ -18,9 +18,10 @@ jobs:
         host: 'windows'
         target: 'desktop'
         arch: 'win64_msvc2019_64'
+        dir: ${{ github.workspace }}\Qt
 
     - name: Configure Qt environment
-      run: C:\Qt\6.6.1\msvc2019_64\bin\qt6-env.bat
+      run: ${{ github.workspace }}\Qt\6.6.1\msvc2019_64\bin\qt6-env.bat
 
     - name: Install CMake
       run: choco install cmake --installargs '"ADD_CMAKE_TO_PATH=System"'
