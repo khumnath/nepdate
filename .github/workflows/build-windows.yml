@@ -22,8 +22,8 @@ jobs:
     - name: Configure Qt environment
       run: C:\Qt\6.6.1\msvc2019_64\bin\qt6-env.bat
 
-    - name: Set up CMake
-      uses: Kitware/setup-cmake@v1.6.0
+    - name: Install CMake
+      run: choco install cmake --installargs '"ADD_CMAKE_TO_PATH=System"'
 
     - name: Create build directory
       run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
