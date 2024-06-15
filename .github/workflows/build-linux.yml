@@ -21,8 +21,8 @@ jobs:
     - name: Configure Qt environment
       run: source $HOME/Qt/6.6.1/gcc_64/bin/qt6-env.sh
 
-    - name: Set up CMake
-      uses: Kitware/setup-cmake@v1.6.0
+    - name: Install CMake
+      run: sudo apt-get install -y cmake
 
     - name: Create build directory
       run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
