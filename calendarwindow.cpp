@@ -258,12 +258,14 @@ void CalendarWindow::showAbout() {
 <p><b>Author:</b> <span style="font-weight: bold;">khumnath</span></p>
 <p><b>Version:</b> 1.0.0</p>
 <p>This application is written in C++ and Qt framework. For more information, visit my <a href="https://github.com/khumnath/nepdate" style="color: blue; text-decoration: underline;">GitHub page</a>.</p>
+</center>)";
 
-   </center> )";
-
-    QMessageBox::about(this, "About", aboutText);
+    QMessageBox msgBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok);
+    msgBox.setStyleSheet("QDialog { background-color: white; color: black; }"
+                         "QLabel { color: black; }"
+                         "QPushButton { background-color: white; color: black; }");
+    msgBox.exec();
 }
-
 
 void CalendarWindow::openSourceCode() {
     QDesktopServices::openUrl(QUrl("https://github.com/khumnath/nepdate"));
