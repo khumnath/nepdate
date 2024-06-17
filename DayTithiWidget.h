@@ -26,9 +26,8 @@ public:
         layout->addWidget(dayLabel);
         layout->addWidget(tithiLabel);
     }
-
-    void setTodayStyle() {
-        //setStyleSheet("background-color: #CFEFC2;");
+        void setTodayStyle() {
+        setStyleSheet("background-color: transparent;");
         dayLabel->setStyleSheet("font-size: 20px; font-weight: bold; text-decoration: underline; color: green; font-family: 'laila';");
     }
 

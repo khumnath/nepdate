@@ -258,12 +258,14 @@ void CalendarWindow::showAbout() {
 <p><b>Author:</b> <span style="font-weight: bold;">khumnath</span></p>
 <p><b>Version:</b> 1.0.0</p>
 <p>This application is written in C++ and Qt framework. For more information, visit my <a href="https://github.com/khumnath/nepdate" style="color: blue; text-decoration: underline;">GitHub page</a>.</p>
+</center>)";
 
-   </center> )";
-
-    QMessageBox::about(this, "About", aboutText);
+    QMessageBox msgBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok);
+    msgBox.setStyleSheet("QDialog { background-color: white; color: black; }"
+                         "QLabel { color: black; }"
+                         "QPushButton { background-color: white; color: black; }");
+    msgBox.exec();
 }
-
 
 void CalendarWindow::openSourceCode() {
     QDesktopServices::openUrl(QUrl("https://github.com/khumnath/nepdate"));
@@ -457,7 +459,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
     ui->calendarTable->setStyleSheet(
         "background-color: white;"
         "QTableWidget::item {"
-        //"border: 1px solid gray;" // Border for cells
+        "border: 1px solid gray;" // Border for cells
         "}"
         "QTableWidget .dayLabel {"
         "font-size: 24px;"
@@ -511,10 +513,14 @@ void CalendarWindow::updateCalendar(int year, int month) {
         QString tooltipText = QString("%1 (%2)").arg(tithiName).arg(paksha);
         customWidget->setToolTip(tooltipText);
 
+        QTableWidgetItem *item = new QTableWidgetItem();
+        ui->calendarTable->setItem(row, col, item);
+
         // Check if the current cell represents today's Bikram Sambat date
         if (year == todayBsYear && month == todayBsMonth && day == todayBsDay) {
-            customWidget->setTodayStyle();
-        }
+            item->setBackground(QColor(230, 255, 230)); // light green
+            customWidget->setTodayStyle(); // defined in DayTithiWidget.h
+            }
 
         // Check if Saturday and apply color/CSS class (optional)
         if (col == saturdayIndex) {
