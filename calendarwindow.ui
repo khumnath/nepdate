@@ -101,7 +101,7 @@
       <x>90</x>
       <y>50</y>
       <width>111</width>
-      <height>40</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -111,6 +111,9 @@
     </property>
     <property name="styleSheet">
      <string notr="true"/>
+    </property>
+    <property name="maxVisibleItems">
+     <number>12</number>
     </property>
    </widget>
    <widget class="QComboBox" name="dayselectAD">
@@ -155,7 +158,7 @@
       <x>390</x>
       <y>50</y>
       <width>101</width>
-      <height>40</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -165,6 +168,12 @@
     </property>
     <property name="styleSheet">
      <string notr="true"/>
+    </property>
+    <property name="maxVisibleItems">
+     <number>12</number>
+    </property>
+    <property name="modelColumn">
+     <number>0</number>
     </property>
    </widget>
    <widget class="QComboBox" name="dayselectBS">

@@ -13,7 +13,7 @@
 
 #include <QLocale>
 std::string MainWindow::getWeekdayName(int year, int month, int day) {
-    std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, "" };
+    std::tm timeinfo = { 0, 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0};
     std::mktime(&timeinfo); // Update timeinfo to fill in the week day field
 
     const std::string nepaliWeekdays[] = { "आइतबार", "सोमबार", "मंगलबार", "बुधबार", "बिहिबार", "शुक्रबार", "शनिबार" };
