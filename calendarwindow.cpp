@@ -459,7 +459,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
     ui->calendarTable->setStyleSheet(
         "background-color: white;"
         "QTableWidget::item {"
-        //"border: 1px solid gray;" // Border for cells
+        "border: 1px solid gray;" // Border for cells
         "}"
         "QTableWidget .dayLabel {"
         "font-size: 24px;"
@@ -513,10 +513,14 @@ void CalendarWindow::updateCalendar(int year, int month) {
         QString tooltipText = QString("%1 (%2)").arg(tithiName).arg(paksha);
         customWidget->setToolTip(tooltipText);
 
+        QTableWidgetItem *item = new QTableWidgetItem();
+        ui->calendarTable->setItem(row, col, item);
+
         // Check if the current cell represents today's Bikram Sambat date
         if (year == todayBsYear && month == todayBsMonth && day == todayBsDay) {
-            customWidget->setTodayStyle();
-        }
+            item->setBackground(QColor(230, 255, 230)); // light green
+            customWidget->setTodayStyle(); // defined in DayTithiWidget.h
+            }
 
         // Check if Saturday and apply color/CSS class (optional)
         if (col == saturdayIndex) {
