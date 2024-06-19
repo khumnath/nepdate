@@ -357,10 +357,8 @@ void CalendarWindow::onBsMonthChanged(int /*index*/) {
     int year = ui->yearselectBS->currentText().toInt();
     int month = ui->monthselectBS->currentIndex() + 1;
     int day = ui->dayselectBS->currentText().toInt();
-
-    // Update BS day combo box based on current month and year
-    populateBsDays(year, month);
-
+     populateBsDays(year, month);
+     // Update BS day combo box based on current month and year
     updateAdDateFromBs(year, month, day);
 
     // Update the calendar
@@ -378,6 +376,7 @@ void CalendarWindow::onBsDayChanged(int /*index*/) {
     int day = ui->dayselectBS->currentText().toInt();
 
     updateAdDateFromBs(year, month, day);
+    populateBsDays(year, month);
 
     blockSignals = false;
 }
@@ -400,6 +399,8 @@ void CalendarWindow::updateBsDateFromAd(int year, int month, int day) {
 
     ui->yearselectBS->setCurrentText(QString::number(bsYear));
     ui->monthselectBS->setCurrentIndex(bsMonth - 1);  // Adjust index to start from 0
+    // Populate BS day combo box based on current month and year
+    populateBsDays(bsYear, bsMonth);
     ui->dayselectBS->setCurrentText(QString::number(bsDay));
 
     // Populate BS day combo box based on current month and year
@@ -425,7 +426,6 @@ void CalendarWindow::updateAdDateFromBs(int year, int month, int day) {
     int bsDaysInMonth = converter.daysInMonth(year, month);
     QString bsMonthName = getBikramMonthName(month);
     QString adMonthName = getEnglishMonthName(gMonth);
-
     ui->output->setText(QString("अङ्ग्रेजी मिति मा परिवर्तन गरियो: %1 %2 %3 \n %4 %5 मा जम्मा दिन सङ्ख्या: %6")
                             .arg(convertToNepaliNumerals(gYear)).arg(adMonthName).arg(convertToNepaliNumerals(gDay)).arg(bsMonthName).arg(convertToNepaliNumerals(year)).arg(convertToNepaliNumerals(bsDaysInMonth)));
 
@@ -520,7 +520,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
         if (year == todayBsYear && month == todayBsMonth && day == todayBsDay) {
             item->setBackground(QColor(230, 255, 230)); // light green
             customWidget->setTodayStyle(); // defined in DayTithiWidget.h
-            }
+        }
 
         // Check if Saturday and apply color/CSS class (optional)
         if (col == saturdayIndex) {
@@ -575,9 +575,8 @@ void CalendarWindow::adjustCellSizes() {
 
 
 void CalendarWindow::populateBsDays(int year, int month) {
-    blockSignals = true;
-
     int daysInMonth = converter.daysInMonth(year, month);
+    int currentDay = converter.getDay();
 
     // Clear previous items
     ui->dayselectBS->clear();
@@ -586,5 +585,7 @@ void CalendarWindow::populateBsDays(int year, int month) {
         ui->dayselectBS->addItem(QString::number(day));
     }
 
-    blockSignals = false;
+    // Set the current day
+    ui->dayselectBS->setCurrentText(QString::number(currentDay));
 }
+
