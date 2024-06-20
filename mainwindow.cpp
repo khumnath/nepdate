@@ -141,13 +141,14 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
 
     return 0;
 }
+
 QColor MainWindow::getAverageColor(const QImage &image) {
-    qint64 red = 0, green = 0, blue = 0;
+    int red = 0, green = 0, blue = 0;
     int pixelCount = image.width() * image.height();
 
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
-            QColor color(image.pixel(x, y));
+            QColor color = image.pixelColor(x, y);
             red += color.red();
             green += color.green();
             blue += color.blue();
@@ -157,22 +158,37 @@ QColor MainWindow::getAverageColor(const QImage &image) {
     return QColor(red / pixelCount, green / pixelCount, blue / pixelCount);
 }
 
+// Function to adjust text color based on the average color of the background
 void MainWindow::adjustTextColorBasedOnBackground() {
+    // Define threshold range
+    static const int lowerThreshold = 75;
+    static const int upperThreshold = 85;
+    static QColor currentTextColor = Qt::black; // Initial text color
+
     // Get the screen behind the window
     QScreen *screen = QGuiApplication::primaryScreen();
-    QPixmap pixmap = screen->grabWindow(0, x(), y(), width(), height());
+    QPoint globalPos = ui->dateButton->mapToGlobal(QPoint(0, 0));
+    QPixmap pixmap = screen->grabWindow(0, globalPos.x(), globalPos.y(), ui->dateButton->width(), ui->dateButton->height());
     QImage image = pixmap.toImage();
 
     // Calculate the average color
     QColor averageColor = getAverageColor(image);
 
-    // Determine whether to use black or white text based on the brightness of the average color
+    // Calculate the brightness of the average color
     int brightness = (averageColor.red() + averageColor.green() + averageColor.blue()) / 3;
-    QColor textColor = (brightness > 80) ? Qt::black : Qt::white;
+
+    // Determine the appropriate text color using threshold range
+    if (brightness > upperThreshold) {
+        currentTextColor = Qt::black;
+    } else if (brightness < lowerThreshold) {
+        currentTextColor = Qt::white;
+    }
 
     // Set the text color of the dateButton
-    QString styleSheet = QString("QPushButton { color: %1; }").arg(textColor.name());
-    ui->dateButton->setStyleSheet(styleSheet);
+    QString currentStyleSheet = QString("QPushButton { color: %1; }").arg(currentTextColor.name());
+    if (ui->dateButton->styleSheet() != currentStyleSheet) {
+        ui->dateButton->setStyleSheet(currentStyleSheet);
+    }
 }
 
 
