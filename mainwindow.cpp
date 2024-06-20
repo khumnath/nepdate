@@ -13,12 +13,17 @@
 
 #include <QLocale>
 std::string MainWindow::getWeekdayName(int year, int month, int day) {
-    std::tm timeinfo = { 0, 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0};
-    std::mktime(&timeinfo); // Update timeinfo to fill in the week day field
+    std::tm timeinfo;
+    std::memset(&timeinfo, 0, sizeof(timeinfo));
+    timeinfo.tm_year = year - 1900; // Year since 1900
+    timeinfo.tm_mon = month - 1; // Month, 0 - jan
+    timeinfo.tm_mday = day;
+    std::mktime(&timeinfo);
 
     const std::string nepaliWeekdays[] = { "आइतबार", "सोमबार", "मंगलबार", "बुधबार", "बिहिबार", "शुक्रबार", "शनिबार" };
     return nepaliWeekdays[timeinfo.tm_wday];
 }
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), isDragging(false), calendarWindow(nullptr)
@@ -174,13 +179,15 @@ void MainWindow::adjustTextColorBasedOnBackground() {
 
 void MainWindow::setupDefaultDate()
 {
+    QDate currentDate = QDate::currentDate();
 
-    // Convert the default Gregorian date to Nepali and update UI
-    int mm = 10;
-    int yy = 1984;
-    int dd = 4;
+    // Convert the current system date to Nepali and update UI
+    int mm = currentDate.month();
+    int dd = currentDate.day();
+    int yy = currentDate.year();
     cnvToNepali(mm, dd, yy);
 }
+
 QString MainWindow::get_nepali_month(int m) {
     QString n_month = "";
 
