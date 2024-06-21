@@ -257,14 +257,19 @@ void CalendarWindow::showAbout() {
 <p>nepali calendar</p>
 <p><b>Author:</b> <span style="font-weight: bold;">khumnath</span></p>
 <p><b>Version:</b> 1.0.0</p>
-<p>This application is written in C++ and Qt framework. For more information, visit my <a href="https://github.com/khumnath/nepdate" style="color: blue; text-decoration: underline;">GitHub page</a>.</p>
+<p>This application is written in C++ and Qt framework. For more information, visit my <a href="https://khumnath.com.np/posts/2024-06-20-post3" style="color: blue; text-decoration: underline;">Website</a>.</p>
 </center>)";
 
-    QMessageBox msgBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok);
-    msgBox.setStyleSheet("QDialog { background-color: white; color: black; }"
-                         "QLabel { color: black; }"
-                         "QPushButton { background-color: white; color: black; }");
-    msgBox.exec();
+    QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok, this);
+    msgBox->setStyleSheet("QDialog { background-color: white; color: black; }"
+                          "QLabel { color: black; }"
+                          "QPushButton { background-color: white; color: black; }");
+
+    msgBox->setWindowModality(Qt::WindowModal);
+    QAbstractButton *okButton = msgBox->button(QMessageBox::Ok);
+    connect(okButton, &QAbstractButton::clicked, msgBox, &QMessageBox::close);
+    msgBox->exec();
+    delete msgBox;
 }
 
 void CalendarWindow::openSourceCode() {
