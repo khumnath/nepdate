@@ -255,6 +255,9 @@ QPushButton#todayButton:pressed {
       <property name="alternatingRowColors">
        <bool>false</bool>
       </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
       <attribute name="horizontalHeaderHighlightSections">
        <bool>true</bool>
       </attribute>
