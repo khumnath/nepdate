@@ -11,12 +11,11 @@
 
 ##To-Do List
 
-1. Create an installable DEB file for Debian-based distributions.
-2. Make the calendar responsive to window resizing.
-3. Implement tithi and other panchanga calculations in the calendar app.
-4. Create a cross-platform application. now nepdate-calendar builds and runs perfectly 
-using qtcreator and mingw compiler. not tested cmake. nepdate-widget is building but 
-does  not display widget window.
+1. Create an installable DEB file for Debian-based distributions. (released appimages for wider linux distributions but gcc version is high now in release build. I will build with lower gcc version in future release.)
+2. Make the calendar responsive to window resizing.(Done)
+3. Implement tithi and other panchanga calculations in the calendar app.( Tithi implemented. in future i will check other components like nakshatra karan and yoga too.)
+4. make cross plateform application. now nepdate-calendar and widget builds and runs perfectly in windows.
+using qtcreator and mingw compiler. not tested cmake.(Done)
 
 ## Dependencies
 
