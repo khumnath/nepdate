@@ -179,7 +179,7 @@ inline int bikram::getDay() {
 
 
 inline std::string bikram::getWeekdayName(int year, int month, int day) {
-    std::tm timeinfo = { 0, 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0 };
+    std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0 };
     std::mktime(&timeinfo);
     const char* weekday[] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
     return weekday[timeinfo.tm_wday];

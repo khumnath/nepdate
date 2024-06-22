@@ -5,7 +5,7 @@
 #-------------------------------------------------
 QT       += core gui widgets
 
-TARGET = nepdate
+TARGET = nepdate-widget
 TEMPLATE = app
 
 SOURCES += main.cpp \

@@ -10,8 +10,12 @@
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QVBoxLayout>
-#include "calendarwindow.h"
 #include <QImage>
+#include <QTimer>
+#include <QScreen>
+#include <QClipboard>
+#include <QLocale>
+#include "calendarwindow.h"
 
 struct NepaliDateStruct { // Renamed the structure to avoid conflict
     int yy;
@@ -38,12 +42,7 @@ class MainWindow : public QMainWindow {
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    int is_leap_year(int);
-    int cnvToNepali(int, int, int);
-    NepaliDateStruct cnvToEnglish(int, int, int); // Updated to use the renamed structure
-    int what();
-    int err(int errno, char *desc);
-    static int calculateDayOfWeek(int year, int month, int day);
+    void setAutostart(bool enabled);
     ~MainWindow();
 
 protected:
@@ -51,28 +50,32 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
+    void exitAll();
 
 public slots:
     void openCalendarWindow(const QString &link);
 
 private slots:
-    QString get_nepali_month(int);
+
     void copyButtonText();
-    void on_dateButton_clicked();
     void updateDateButton();
+    void on_dateButton_clicked();
 
 private:
     void setupDefaultDate();
-    // Declaration of getWeekdayName function
+    int isleapyear(int year);
+    int cnvToNepali(int mm, int dd, int yy);
     std::string getWeekdayName(int year, int month, int day);
-    QTimer *updateTimer;
+    QString getnepalimonth(int m);
+    void setWindowPosition();
     void adjustTextColorBasedOnBackground();
     QColor getAverageColor(const QImage &image);
+
     Ui::MainWindow *ui;
+    QTimer *updateTimer;
     bool isDragging;
     QPoint dragStartPosition;
-    CalendarWindow *calendarWindow = nullptr;
-    QTimer *timer;
+    CalendarWindow *calendarWindow;
 };
 
 #endif // MAINWINDOW_H

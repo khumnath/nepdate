@@ -74,13 +74,14 @@ private slots:
     void onBsYearChanged(int index);
     void onBsMonthChanged(int index);
     void onBsDayChanged(int index);
-    void on_todayButton_clicked();
+    void ontodayButtonclicked();
     void showMenu();
     void showAbout();
     void openSourceCode();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
+    bool eventFilter(QObject *object, QEvent *event) override;
 
 private:
     Ui::CalendarWindow *ui;
