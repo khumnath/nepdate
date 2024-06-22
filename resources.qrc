@@ -4,5 +4,7 @@
         <file>resources/logo.png</file>
         <file>resources/logo.svg</file>
         <file>resources/info.png</file>
+        <file>resources/amawasya.png</file>
+        <file>resources/purnima.png</file>
     </qresource>
 </RCC>
