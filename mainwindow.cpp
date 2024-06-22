@@ -200,7 +200,7 @@ void MainWindow::exitAll()
 const QString kAppName = "nepdate-widget";
 const QString kAutostartKey = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 const QString kAutostartDirLinux = QDir::homePath() + "/.config/autostart/";
-const QString kDesktopFileLinux = kAutostartDirLinux + "nepalicalendar.desktop";
+const QString kDesktopFileLinux = kAutostartDirLinux + "nepdate-widget.desktop";
 
 bool isAutostartEnabled() {
 #ifdef Q_OS_WIN
@@ -224,7 +224,7 @@ void createDesktopFile(const QString& path, const QString& execPath) {
     out << "Type=Application\n";
     out << "Name=Nepali Calendar widget\n";
     out << "Exec=" << execPath << "\n"; // Correctly write the application path
-    out << "Icon=icon-name\n"; // Replace with your icon name if needed
+    out << "Icon=calendar\n"; // Replace with your icon name if needed
     desktopFile.close();
 }
 
