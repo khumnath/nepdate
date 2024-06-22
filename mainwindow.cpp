@@ -48,7 +48,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Set today's date as default when setting up the UI
     setupDefaultDate();
-    ui->dateButton->setStyleSheet("QPushButton { border: none; outline: none; }");
 }
 
 void MainWindow::setWindowPosition() {
@@ -132,7 +131,6 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     QToolTip::setFont(tooltipFont); // Set the tooltip font globally
     ui->dateButton->setToolTip(nepaliFormat);
     adjustTextColorBasedOnBackground();
-    ui->dateButton->setStyleSheet("QPushButton { border: none; outline: none; }");
     if (calendarWindow) {
         QPushButton *mitiButton = calendarWindow->findChild<QPushButton*>("mitiButton");
         if (mitiButton) {
@@ -173,7 +171,7 @@ void MainWindow::adjustTextColorBasedOnBackground() {
     QColor textColor = (brightness > 80) ? Qt::black : Qt::white;
 
     // Set the text color of the dateButton
-    QString styleSheet = QString("QPushButton { color: %1; }").arg(textColor.name());
+    QString styleSheet = QString("QPushButton { color: %1; border: none; outline: none; }").arg(textColor.name());
     ui->dateButton->setStyleSheet(styleSheet);
 }
 
