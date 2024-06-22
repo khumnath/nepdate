@@ -17,11 +17,11 @@ public:
 
         dayLabel = new QLabel(day, this);
         dayLabel->setObjectName("dayLabel");  // Set object name for styling
-        dayLabel->setStyleSheet("font-size: 19px; color: black; font-family: 'laila';");
+        dayLabel->setStyleSheet("font-size: 19px; color: black; background-color: transparent; font-family: 'laila';");
 
         tithiLabel = new QLabel(tithi, this);
         tithiLabel->setObjectName("tithiLabel");  // Set object name for styling
-        tithiLabel->setStyleSheet("font-size: 10px; color: blue; font-family: 'laila';");
+        tithiLabel->setStyleSheet("font-size: 10px; color: blue; background-color: transparent; font-family: 'laila';");
 
         layout->addWidget(dayLabel);
         layout->addWidget(tithiLabel);
@@ -32,6 +32,7 @@ public:
     }
 
     void setSaturdayStyle() {
+        setStyleSheet("background-color: transparent;");
         dayLabel->setStyleSheet("font-size: 19px; color: red; font-family: 'laila';");
     }
 

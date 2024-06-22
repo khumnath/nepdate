@@ -20,6 +20,7 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     connect(ui->aboutbutton, &QPushButton::clicked, this, &CalendarWindow::showMenu);
     // Center the window on the screen
     centerOnScreen();
+    installEventFilter(this);
     // Set the global stylesheet for all QComboBox widgets
     QString globalStyleSheet = R"(
     QComboBox {
@@ -138,7 +139,7 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     connect(ui->yearselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsYearChanged);
     connect(ui->monthselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsMonthChanged);
     connect(ui->dayselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsDayChanged); // Add this line
-    connect(ui->todayButton, &QPushButton::clicked, this, &CalendarWindow::on_todayButton_clicked);
+    connect(ui->todayButton, &QPushButton::clicked, this, &CalendarWindow::ontodayButtonclicked);
 
     // Initialize the calendar
     updateCalendar(bsYear, bsMonth);
@@ -146,9 +147,16 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     adjustCellSizes();
     adjustCalendarTableSize();
 }
+bool CalendarWindow::eventFilter(QObject *object, QEvent *event) {
+    if (object == this && event->type() == QEvent::Show) {
+        // Perform action when the window is shown
+        ui->todayButton->click(); // or any other action
+    }
 
+    return QMainWindow::eventFilter(object, event);
+}
 
-void CalendarWindow::on_todayButton_clicked() {
+void CalendarWindow::ontodayButtonclicked() {
     // Get today's date
     QDate today = QDate::currentDate();
 
@@ -257,25 +265,23 @@ void CalendarWindow::showAbout() {
 <p>nepali calendar</p>
 <p><b>Author:</b> <span style="font-weight: bold;">khumnath</span></p>
 <p><b>Version:</b> 1.0.0</p>
-<p>This application is written in C++ and Qt framework. For more information, visit my <a href="https://khumnath.com.np/posts/2024-06-20-post3" style="color: blue; text-decoration: underline;">Website</a>.</p>
+<p>This application is written in C++ and Qt framework. For more information, visit my <a href="https://github.com/khumnath/nepdate" style="color: blue; text-decoration: underline;">GitHub page</a>.</p>
 </center>)";
 
-    QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok, this);
-    msgBox->setStyleSheet("QDialog { background-color: white; color: black; }"
-                          "QLabel { color: black; }"
-                          "QPushButton { background-color: white; color: black; }");
-
-    msgBox->setWindowModality(Qt::WindowModal);
-    QAbstractButton *okButton = msgBox->button(QMessageBox::Ok);
-    connect(okButton, &QAbstractButton::clicked, msgBox, &QMessageBox::close);
-    msgBox->exec();
-    delete msgBox;
+    QMessageBox msgBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok, this); // Set parent as this (MainWindow)
+    msgBox.setStyleSheet("QDialog { background-color: white; color: black; }"
+                         "QLabel { color: black; }"
+                         "QPushButton { background-color: white; color: black; }");
+    msgBox.exec();
 }
 
 void CalendarWindow::openSourceCode() {
+    // Open the URL using QDesktopServices
     QDesktopServices::openUrl(QUrl("https://github.com/khumnath/nepdate"));
-}
 
+    // Ensure MainWindow is active if needed
+    activateWindow();
+}
 
 void CalendarWindow::centerOnScreen() {
     // Get the screen geometry
@@ -362,8 +368,8 @@ void CalendarWindow::onBsMonthChanged(int /*index*/) {
     int year = ui->yearselectBS->currentText().toInt();
     int month = ui->monthselectBS->currentIndex() + 1;
     int day = ui->dayselectBS->currentText().toInt();
-     populateBsDays(year, month);
-     // Update BS day combo box based on current month and year
+    populateBsDays(year, month);
+    // Update BS day combo box based on current month and year
     updateAdDateFromBs(year, month, day);
 
     // Update the calendar
@@ -522,15 +528,22 @@ void CalendarWindow::updateCalendar(int year, int month) {
         ui->calendarTable->setItem(row, col, item);
 
         // Check if the current cell represents today's Bikram Sambat date
-        if (year == todayBsYear && month == todayBsMonth && day == todayBsDay) {
-            item->setBackground(QColor(230, 255, 230)); // light green
-            customWidget->setTodayStyle(); // defined in DayTithiWidget.h
-        }
+        bool isToday = (year == todayBsYear && month == todayBsMonth && day == todayBsDay);
+        bool isSaturday = (col == saturdayIndex);
 
-        // Check if Saturday and apply color/CSS class (optional)
-        if (col == saturdayIndex) {
+        if (isToday && isSaturday) {
+            // If today is both Saturday and the current date, apply the "today" style
+            item->setBackground(QColor(153,255,204)); // light green
+            customWidget->setTodayStyle(); // defined in DayTithiWidget.h
+        } else if (isToday) {
+            // If it's just today, apply the "today" style
+            item->setBackground(QColor(153,255,204)); // light green
+            customWidget->setTodayStyle(); // defined in DayTithiWidget.h
+        } else if (isSaturday) {
+            // If it's just Saturday, apply the "Saturday" style
             customWidget->setSaturdayStyle();
         }
+
 
         ui->calendarTable->setCellWidget(row, col, customWidget);
         col++;
@@ -593,4 +606,3 @@ void CalendarWindow::populateBsDays(int year, int month) {
     // Set the current day
     ui->dayselectBS->setCurrentText(QString::number(currentDay));
 }
-
