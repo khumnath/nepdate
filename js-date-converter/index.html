@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Date Converter: Gregorian <-> Bikram Sambat</title>
+<link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="bikram.js"></script>
+  <style>
+    body { padding: 20px; background-color: #f8f9fa; }
+    .container { max-width: 800px; }
+    .result { font-weight: bold; }
+    .custom-dropdown { width: 100px; }
+    .form-switch .form-check-input { cursor: pointer; }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 80px;
+      height: 34px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: green;
+      transition: .4s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+    }
+    input:checked + .slider { background-color: #2196F3; }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    .slider.round { border-radius: 34px; }
+    .slider.round:before { border-radius: 50%; }
+     
+}
+  </style>
+</head>
+<body>
+  <div class="container mt-3">
+    <h1 class="text-center mb-4">Nepali Date Converter</h1>
+    <div class="d-flex justify-content-center align-items-center mb-4">
+      <label class="form-check-label mr-3" style= "background-color:green;color: white;padding: 10px;border-radius: 8px;">Convert To Bikram Sambat</label>
+      <label class="switch">
+        <input type="checkbox" id="converterSwitch" onchange="toggleConverter()">
+        <span class="slider round"></span>
+      </label>
+      <label class="form-check-label ml-3" style= "background-color:#2196F3;color: white;padding: 10px;border-radius: 8px;">Convert To English</label>
+    </div>
+    
+    <div id="gregorianToBikram" class="converter-section">
+      <div class="card mb-4">
+        <center><div class="card-header">Gregorian to Bikram Sambat</div></center>
+        <div class="card-body">
+          <form id="gregorianToBikramForm">
+            <div class="row mb-3">
+              <div class="col">
+                <label for="gYear">Year:</label>
+                <select id="gYear" class="form-control custom-dropdown" onchange="updateBikramDate()">
+                  <!-- Options filled dynamically with JavaScript -->
+                </select>
+              </div>
+              <div class="col">
+                <label for="gMonth">Month:</label>
+                <select id="gMonth" class="form-control custom-dropdown" onchange="updateBikramDate()">
+                  <!-- Options filled dynamically with JavaScript -->
+                </select>
+              </div>
+              <div class="col">
+                <label for="gDay">Day:</label>
+                <select id="gDay" class="form-control custom-dropdown" onchange="updateBikramDate()">
+                  <!-- Options filled dynamically with JavaScript -->
+                </select>
+              </div>
+            </div>
+          </form>
+          <center><p>विक्रम सम्बत् : <span id="bikramYear" class="result"></span> <span id="bikramMonth" class="result"></span> <span id="bikramDay" class="result"></span> <span>गते </span><span id="bikramWeekday" class="result"></span></p></center>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="bikramToGregorian" class="converter-section" style="display:none;">
+      <div class="card">
+        <center><div class="card-header">Bikram Sambat to Gregorian</div></center>
+        <div class="card-body">
+          <form id="bikramToGregorianForm">
+            <div class="row mb-3">
+              <div class="col">
+                <label for="bsYear">Year:</label>
+                <select id="bsYear" class="form-control custom-dropdown" onchange="updateGregorianDate()">
+                  <!-- Options filled dynamically with JavaScript -->
+                </select>
+              </div>
+              <div class="col">
+                <label for="bsMonth">Month:</label>
+                <select id="bsMonth" class="form-control custom-dropdown" onchange="updateGregorianDate()">
+                  
+                </select>
+              </div>
+              <div class="col">
+                <label for="bsDay">Day:</label>
+                <select id="bsDay" class="form-control custom-dropdown" onchange="updateGregorianDate()">
+                  <!-- Options filled dynamically with JavaScript -->
+                </select>
+              </div>
+            </div>
+          </form>
+          <center><p>Converted Date: <span id="gYearResult" class="result"></span> <span id="gMonthResult" class="result"></span> <span id="gDayResult" class="result"></span> <span id="gregorianWeekday" class="result"></span></p></center>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleConverter() {
+      var isChecked = document.getElementById('converterSwitch').checked;
+      if (isChecked) {
+        document.getElementById('gregorianToBikram').style.display = 'none';
+        document.getElementById('bikramToGregorian').style.display = 'block';
+      } else {
+        document.getElementById('gregorianToBikram').style.display = 'block';
+        document.getElementById('bikramToGregorian').style.display = 'none';
+      }
+    }
+// number convertor
+function convertToNepaliDigits(number) {
+  const engDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  const nepaliDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+  
+  let result = '';
+  String(number).split('').forEach(char => {
+    let index = engDigits.indexOf(char);
+    if (index !== -1) {
+      result += nepaliDigits[index];
+    } else {
+      result += char; // If character is not a digit, retain it as it is
+    }
+  });
+  
+  return result;
+}
+</script>
+</body>
+</html>

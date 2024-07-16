@@ -10,6 +10,7 @@
 #include <QScreen>
 #include <QDate>
 #include <QDebug>
+#include <QIcon>
 
 CalendarWindow::CalendarWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -443,7 +444,6 @@ void CalendarWindow::updateAdDateFromBs(int year, int month, int day) {
     populateBsDays(year, month);
 }
 
-
 void CalendarWindow::updateCalendar(int year, int month) {
     int daysInMonth = converter.daysInMonth(year, month);
 
@@ -485,7 +485,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
         );
 
     // Find the first day of the month
-
+    int gYear, gMonth, gDay;
     converter.toGregorian(year, month, 1, gYear, gMonth, gDay);
     QDate firstDay(gYear, gMonth, gDay);
     int startDay = firstDay.dayOfWeek(); // 0 (Monday) to 6 (Sunday)
@@ -501,6 +501,10 @@ void CalendarWindow::updateCalendar(int year, int month) {
 
     // Identify Saturday index (assuming "शनि" is at index 6)
     int saturdayIndex = 6; // Modify this if "शनि" is at a different index
+
+    // Load moon icons
+    QIcon purnimaIcon(":/resources/purnima.png");
+    QIcon amavasyaIcon(":/resources/amawasya.png");
 
     // Fill the calendar
     int row = 0;
@@ -520,7 +524,6 @@ void CalendarWindow::updateCalendar(int year, int month) {
 
         // Set tooltip
         QString paksha = QString::fromStdString(panchang.paksha);
-        //customWidget->setToolTip(tithiName, paksha);
         QString tooltipText = QString("%1 (%2)").arg(tithiName).arg(paksha);
         customWidget->setToolTip(tooltipText);
 
@@ -533,17 +536,24 @@ void CalendarWindow::updateCalendar(int year, int month) {
 
         if (isToday && isSaturday) {
             // If today is both Saturday and the current date, apply the "today" style
-            item->setBackground(QColor(153,255,204)); // light green
+            item->setBackground(QColor(153, 255, 204)); // light green
             customWidget->setTodayStyle(); // defined in DayTithiWidget.h
         } else if (isToday) {
             // If it's just today, apply the "today" style
-            item->setBackground(QColor(153,255,204)); // light green
+            item->setBackground(QColor(153, 255, 204)); // light green
             customWidget->setTodayStyle(); // defined in DayTithiWidget.h
         } else if (isSaturday) {
             // If it's just Saturday, apply the "Saturday" style
             customWidget->setSaturdayStyle();
         }
 
+        if (panchang.tithi_index == 14) {
+            customWidget->setIcon(purnimaIcon, 0.8);  // Example opacity set to 0.8
+        } else if (panchang.tithi_index == 29) {
+            customWidget->setIcon(amavasyaIcon, 0.8);  // Example opacity set to 0.8
+        } else {
+            customWidget->setIcon(QIcon(), 0.0);  // Clear icon and set transparency
+        }
 
         ui->calendarTable->setCellWidget(row, col, customWidget);
         col++;
@@ -562,6 +572,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
     // Hide the numbers in the first column
     ui->calendarTable->verticalHeader()->setVisible(false);
 }
+
 
 
 
