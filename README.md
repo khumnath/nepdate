@@ -1,6 +1,9 @@
 # Nepdate calendar
 `nepdate-calendar` provides a standalone Nepali calendar and converter for Bikram Sambat and Gregorian calendars.
 
+ bikram class converted to javascript and made date converter here https://khumnath.com.np/nepdate/
+using this javascript calendar can be made.
+
 # Nepdate widget
 
 `nepdate-widget` is a desktop floating widget for Linux that displays the Nepali date. It provides the following features:
