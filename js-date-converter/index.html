@@ -8,52 +8,145 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 <script src="bikram.js"></script>
   <style>
-    body { padding: 20px; background-color: #f8f9fa; }
-    .container { max-width: 800px; }
-    .result { font-weight: bold; }
-    .custom-dropdown { width: 100px; }
-    .form-switch .form-check-input { cursor: pointer; }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 80px;
-      height: 34px;
-    }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: green;
-      transition: .4s;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .4s;
-    }
-    input:checked + .slider { background-color: #2196F3; }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    .slider.round { border-radius: 34px; }
-    .slider.round:before { border-radius: 50%; }
-     
+    body {
+  padding: 20px;
+  background-color: #f8f9fa;
+  font-family: Arial, sans-serif;
 }
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+.converter-section {
+  width: 100%;
+  max-width: 600px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.converter-section .card {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+.calendar {
+  width: 100%;
+  max-width: 600px;
+  border: 1px solid #ccc;
+  background-color: #ffffff;
+  padding: 20px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.calendar h3 {
+  text-align: center;
+}
+
+.calendar table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.calendar th, .calendar td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+.calendar th {
+  background-color: #f2f2f2;
+}
+
+.form-check-label {
+  display: block;
+  width: fit-content;
+  margin: auto;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.form-check-label.blue {
+  margin-left: 10px;
+}
+
+.custom-dropdown {
+  width: 100px;
+}
+
+/* Switch slider styles */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: green;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
   </style>
 </head>
 <body>
   <div class="container mt-3">
-    <h1 class="text-center mb-4">Nepali Date Converter</h1>
-    <div class="d-flex justify-content-center align-items-center mb-4">
+    <h1 class="text-center">Nepali Date Converter</h1>
+    <div class="d-flex justify-content-center align-items-center">
       <label class="form-check-label mr-3" style= "background-color:green;color: white;padding: 10px;border-radius: 8px;">Convert To Bikram Sambat</label>
       <label class="switch">
         <input type="checkbox" id="converterSwitch" onchange="toggleConverter()">
@@ -63,7 +156,7 @@
     </div>
     
     <div id="gregorianToBikram" class="converter-section">
-      <div class="card mb-4">
+      <div class="card">
         <center><div class="card-header">Gregorian to Bikram Sambat</div></center>
         <div class="card-body">
           <form id="gregorianToBikramForm">
@@ -125,6 +218,85 @@
       </div>
     </div>
   </div>
+
+<div class="container">
+    <div class="calendar" id="bikramCalendar">
+      <h3>Bikram Sambat Calendar Current Month </h3>
+<div>
+    <span id="currentDate"></span>
+  </div>
+      <table>
+        <thead>
+          <tr>
+            <th>आइत</th>
+            <th>सोम</th>
+            <th>मङ्गल</th>
+            <th>बुध</th>
+            <th>बिहि</th>
+            <th>शुक्र</th>
+            <th>शनि</th>
+          </tr>
+        </thead>
+        <tbody id="bikramBody">
+          <!-- Bikram Sambat calendar days will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+<script>
+   document.addEventListener('DOMContentLoaded', function () {
+  const bikram = new Bikram();
+
+  function generateBikramCalendar(bsYear, bsMonth) {
+    const daysInMonth = bikram.daysInMonth(bsYear, bsMonth);
+    const firstDay = bikram.getDayOfWeek(); // Day of the week (0-6) for the first day of the month
+    const currentDay = new Date().getDay(); // Current day of the week (0-6)
+    const bikramBody = document.getElementById('bikramBody');
+    bikramBody.innerHTML = '';
+
+    let date = 1;
+    for (let i = 0; i < 6; i++) {
+      let row = document.createElement('tr');
+      for (let j = 0; j < 7; j++) {
+        let cell = document.createElement('td');
+        let dayNumber = i * 7 + j - firstDay;
+
+        if (dayNumber > 0 && dayNumber <= daysInMonth) {
+          cell.textContent = convertToNepaliDigits(dayNumber);
+
+          if (j === currentDay && i === 0) {
+            cell.style.color = 'red'; // Highlight today's day of the week
+          }
+        } else {
+          cell.textContent = '';
+        }
+
+        row.appendChild(cell);
+      }
+      bikramBody.appendChild(row);
+    }
+
+    // Update current date display
+    document.getElementById('currentDate').textContent = `${bikram.getBikramMonthName(bsMonth)}     ${convertToNepaliDigits(bsYear)}`;
+  }
+
+  // Initial display for current Bikram Sambat month
+  const today = new Date();
+  bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, 1);
+  generateBikramCalendar(bikram.getYear(), bikram.getMonth() + 1);
+
+  // Event listener for changing Bikram Sambat month
+  document.getElementById('bikramCalendar').addEventListener('change', function () {
+    const bsYear = parseInt(document.getElementById('bikramYear').value);
+    const bsMonth = parseInt(document.getElementById('bikramMonth').value);
+    generateBikramCalendar(bsYear, bsMonth);
+    bikram.fromNepali(bsYear, bsMonth, 1);
+  });
+
+  
+});
+
+  </script>
 
   <script>
     function toggleConverter() {
