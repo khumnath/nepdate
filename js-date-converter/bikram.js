@@ -136,8 +136,9 @@
       }
 
       getMonth() {
-        return this.Month;
-      }
+  return (this.Month + 12) % 12 || 12;
+}
+
 
       getDay() {
         return this.Day;
@@ -154,14 +155,15 @@ getNepaliWeekdayName() {
         return weekday[date.getDay()];
       }
 getBikramMonthName() {
-    const bsMonths = [
-      { value: 1, name: 'बैशाख' }, { value: 2, name: 'जेठ' }, { value: 3, name: 'असार' },
-      { value: 4, name: 'साउन' }, { value: 5, name: 'भदौ' }, { value: 6, name: 'असोज' },
-      { value: 7, name: 'कार्तिक' }, { value: 8, name: 'मंसिर' }, { value: 9, name: 'पुष' },
-      { value: 10, name: 'माघ' }, { value: 11, name: 'फाल्गुन' }, { value: 12, name: 'चैत' }
-    ];
-    return bsMonths[this.getMonth() - 1].name;
-  }
+  const bsMonths = [
+    { value: 1, name: 'बैशाख' }, { value: 2, name: 'जेठ' }, { value: 3, name: 'असार' },
+    { value: 4, name: 'साउन' }, { value: 5, name: 'भदौ' }, { value: 6, name: 'असोज' },
+    { value: 7, name: 'कार्तिक' }, { value: 8, name: 'मंसिर' }, { value: 9, name: 'पुष' },
+    { value: 10, name: 'माघ' }, { value: 11, name: 'फाल्गुन' }, { value: 12, name: 'चैत' }
+  ];
+  return bsMonths[this.getMonth() - 1].name;
+}
+
 getGregorianMonthName() {
     const gregorianMonths = [
       { value: 1, name: 'January' }, { value: 2, name: 'February' }, { value: 3, name: 'March' },
