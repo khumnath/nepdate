@@ -214,7 +214,6 @@ function updateBikramDate() {
   document.getElementById('bikramYear').textContent = convertToNepaliDigits(bikram.getYear());
   document.getElementById('bikramMonth').textContent = bikram.getBikramMonthName();
   document.getElementById('bikramDay').textContent = convertToNepaliDigits(bikram.getDay());
-  document.getElementById('bikramWeekday').textContent = bikram.getNepaliWeekdayName();
 }
 
 // Function to update Bikram Sambat date to Gregorian
@@ -228,7 +227,6 @@ function updateGregorianDate() {
   document.getElementById('gYearResult').textContent = bikram.getYear();
   document.getElementById('gMonthResult').textContent = bikram.getGregorianMonthName();
   document.getElementById('gDayResult').textContent = bikram.getDay();
-  document.getElementById('gregorianWeekday').textContent = bikram.getGregorianDayName(bikram.getYear(), bikram.getMonth(), bikram.getDay());
 }
 
 
