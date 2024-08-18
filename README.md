@@ -1,8 +1,8 @@
 # Nepdate calendar
 `nepdate-calendar` provides a standalone Nepali calendar and converter for Bikram Sambat and Gregorian calendars.
 
- bikram class converted to javascript and made date converter here https://khumnath.com.np/nepdate/
-using this javascript calendar can be made.
+ bikram class converted to javascript and made date converter here https://khumnath.com.np/nepdate .
+using this javascript calendar can be made. code is in page branch here https://github.com/khumnath/nepdate/tree/page .
 
 # Nepdate widget
 
