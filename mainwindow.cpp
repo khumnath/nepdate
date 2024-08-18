@@ -17,7 +17,14 @@
 #include <QSettings>
 
 std::string MainWindow::getWeekdayName(int year, int month, int day) {
-    std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0};
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+    // On Unix-like systems, where tm_gmtoff and tm_zone exist
+    std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, nullptr };
+#else
+    // On Windows or systems where tm_gmtoff and tm_zone don't exist
+    std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0 };
+#endif
+
     std::mktime(&timeinfo); // Update timeinfo to fill in the week day field
 
     const std::string nepaliWeekdays[] = { "आइतबार", "सोमबार", "मंगलबार", "बुधबार", "बिहिबार", "शुक्रबार", "शनिबार" };
@@ -74,6 +81,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+// This function is not used since leap year is calculated in system time.
 int MainWindow::isleapyear(int year)
 {
     int a =  year;
@@ -94,7 +102,7 @@ int MainWindow::isleapyear(int year)
         }
     }
 }
-
+// considering bikram date as nepali date.
 int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     // Perform the conversion using the bikram class
     bikram bsdate;

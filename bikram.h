@@ -27,7 +27,6 @@ private:
 
 public:
     void fromGregorian(int y, int m, int d);
-    void fromNepali(int bsYear, int bsMonth, int bsDay);
     void toGregorian(int bsYear, int bsMonth, int bsDay, int& gYear, int& gMonth, int& gDay);
     int getDayOfWeek();
     int getYear();
@@ -146,11 +145,6 @@ inline void bikram::toGregorian(int bsYear, int bsMonth, int bsDay, int& gYear, 
     fromJulianDate(julian_date, gYear, gMonth, gDay);
 }
 
-inline void bikram::fromNepali(int bsYear, int bsMonth, int bsDay) {
-    toGregorian(bsYear, bsMonth, bsDay, Year, Month, Day);
-    Month -= 1;
-}
-
 inline int bikram::getDayOfWeek() {
     std::tm timeinfo;
     std::memset(&timeinfo, 0, sizeof(timeinfo)); // Initialize all members to zero
@@ -179,7 +173,15 @@ inline int bikram::getDay() {
 
 
 inline std::string bikram::getWeekdayName(int year, int month, int day) {
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+    // On Unix-like systems, where tm_gmtoff and tm_zone exist
+    std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, nullptr };
+#else
+    // On Windows or systems where tm_gmtoff and tm_zone don't exist
     std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0 };
+#endif
+
+
     std::mktime(&timeinfo);
     const char* weekday[] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
     return weekday[timeinfo.tm_wday];
