@@ -6,15 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Platform-specific settings
 if (WIN32)
-    # Windows-specific settings can be added here if needed
     message(STATUS "Configuring for Windows")
 elseif (UNIX AND NOT APPLE)
-    # Linux-specific settings can be added here if needed
     message(STATUS "Configuring for Linux")
 endif()
 
 # Find Qt6 package
-find_package(Qt6 REQUIRED COMPONENTS Widgets Gui)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Gui Core)
 
 # Include directories (Qt6_INCLUDE_DIRS is not typically needed in modern CMake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -27,7 +25,7 @@ set(CMAKE_AUTOUIC ON)
 # Helper function to add executables
 function(add_nepdate_executable target_name sources headers forms resources)
     add_executable(${target_name} ${sources} ${headers} ${forms} ${resources})
-    target_link_libraries(${target_name} PRIVATE Qt6::Widgets Qt6::Gui)
+    target_link_libraries(${target_name} PRIVATE Qt6::Widgets Qt6::Gui Qt6::Core)
 endfunction()
 
 ### nepdate executable ###
@@ -60,7 +58,7 @@ set(NEPDATE_RESOURCES
 )
 
 # Create nepdate executable
-add_nepdate_executable(nepdate "${NEPDATE_SOURCES}" "${NEPDATE_HEADERS}" "${NEPDATE_FORMS}" "${NEPDATE_RESOURCES}")
+add_nepdate_executable(nepdate-widget "${NEPDATE_SOURCES}" "${NEPDATE_HEADERS}" "${NEPDATE_FORMS}" "${NEPDATE_RESOURCES}")
 
 ### nepdate-calendar executable ###
 
@@ -68,6 +66,7 @@ add_nepdate_executable(nepdate "${NEPDATE_SOURCES}" "${NEPDATE_HEADERS}" "${NEPD
 set(NEPDATE_CALENDAR_SOURCES
     main_calendar.cpp
     calendarwindow.cpp
+    mainwindow.cpp
 )
 
 # Collect nepdate-calendar headers
@@ -76,11 +75,13 @@ set(NEPDATE_CALENDAR_HEADERS
     DayTithiWidget.h
     bikram.h
     panchanga.h
+    mainwindow.h
 )
 
 # Collect nepdate-calendar forms
 set(NEPDATE_CALENDAR_FORMS
     calendarwindow.ui
+    mainwindow.ui
 )
 
 # Collect nepdate-calendar resources
