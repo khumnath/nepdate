@@ -18,10 +18,12 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     blockSignals(false)
 {
     ui->setupUi(this);
+    this->setWindowTitle("नेपाली पात्रो तथा मिति परिवर्तक");
     connect(ui->aboutbutton, &QPushButton::clicked, this, &CalendarWindow::showMenu);
     // Center the window on the screen
     centerOnScreen();
     installEventFilter(this);
+
     // Set the global stylesheet for all QComboBox widgets
     QString globalStyleSheet = R"(
     QComboBox {
@@ -34,35 +36,64 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
 
     QComboBox::down-arrow {
         image: url(:/resources/dropdown.png);
-        height= 7px;
-        width= 7px;
+        height: 7px;
+        width: 7px;
     }
 
     QComboBox::drop-down {
         border: none;
         padding-right: 4px;
+        color: black;
     }
 
     QComboBox QAbstractItemView {
         outline: 0px;
+        color: black;
         background: transparent;
         selection-background-color: rgb(26, 138, 219);
         border: 1px solid rgba(143, 211, 249, 127);
     }
 
-    QComboBox QAbstractItemView::item {
+    QComboBox::item {
         height: 26px;
-        font-size: 18px;
-        color: rgb(89, 189, 234);
-        background-color: rgb(240, 240, 240);
+        font-size: 16px;
+        color: black;
+        background-color: white;
     }
 
-    QComboBox QAbstractItemView::item:selected {
+    QComboBox::item:selected {
         background-color: rgb(26, 138, 219);
     }
 
-    QComboBox QAbstractItemView::item:hover {
-        /* Add hover styles if needed */
+    QComboBox::item:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    QComboBox QAbstractItemView QScrollBar:vertical {
+        border: none;
+        background: #f0f0f0;
+        width: 15px;
+        margin: 0px 0px 0px 0px;
+    }
+
+    QComboBox QAbstractItemView QScrollBar::handle:vertical {
+        background-color: #007bff;
+        min-height: 20px;
+        border-radius: 4px;
+    }
+
+    QComboBox QAbstractItemView QScrollBar::add-line:vertical,
+    QComboBox QAbstractItemView QScrollBar::sub-line:vertical {
+        border: none;
+        background: none;
+    }
+
+    QToolTip {
+        background-color: white;
+        color: black;
+        border: 1px solid gray;
+        border-radius: 5px;
     }
 )";
 
@@ -191,9 +222,6 @@ void CalendarWindow::ontodayButtonclicked() {
                             .arg(convertToNepaliNumerals(bsYear)).arg(bsMonthName).arg(convertToNepaliNumerals(bsDay)).arg(bsMonthName).arg(convertToNepaliNumerals(bsYear)).arg(convertToNepaliNumerals(bsDaysInMonth)).arg(tithipaksha));
     // Update the calendar
     updateCalendar(bsYear, bsMonth);
-
-    // Populate BS day combo box based on current month and year
-    // populateBsDays(bsYear, bsMonth);
 }
 
 
@@ -248,7 +276,7 @@ void CalendarWindow::showMenu() {
     // Apply stylesheet to the menu for hover effect
     QString styleSheet = "QMenu { background-color: white; color: black; border: 1px solid gray; border-radius: 5px; }"
                          "QMenu::item { background-color: transparent; }"
-                         "QMenu::item:selected { background-color: #1AEFF7; color: #184805;}";
+                         "QMenu::item:selected { background-color: #0892D0; color: #184805;}";
     menu.setStyleSheet(styleSheet);
 
     QAction *aboutAction = menu.addAction("About");

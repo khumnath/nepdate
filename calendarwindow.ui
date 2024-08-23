@@ -29,7 +29,7 @@
    <enum>Qt::StrongFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>नेपाली पात्रो तथा मिति परिवर्तक</string>
+   <string/>
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
@@ -53,36 +53,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="2">
-     <widget class="QComboBox" name="yearselectBS">
-      <property name="font">
-       <font>
-        <family>Noto Sans Devanagari</family>
-       </font>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
-      </property>
-      <property name="editable">
-       <bool>true</bool>
-      </property>
-      <property name="frame">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="4">
-     <widget class="QComboBox" name="dayselectAD">
-      <property name="font">
-       <font>
-        <family>Noto Sans Devanagari</family>
-       </font>
-      </property>
-      <property name="maxVisibleItems">
-       <number>31</number>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="0" colspan="5">
      <widget class="QLabel" name="output">
       <property name="font">
@@ -118,6 +88,36 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="3">
+     <widget class="QComboBox" name="monthselectAD">
+      <property name="font">
+       <font>
+        <family>Laila</family>
+       </font>
+      </property>
+      <property name="maxVisibleItems">
+       <number>12</number>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2">
+     <widget class="QComboBox" name="yearselectBS">
+      <property name="font">
+       <font>
+        <family>Noto Sans Devanagari</family>
+       </font>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
+      <property name="editable">
+       <bool>true</bool>
+      </property>
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
     <item row="3" column="2">
      <widget class="QComboBox" name="yearselectAD">
       <property name="font">
@@ -142,35 +142,6 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="3">
-     <widget class="QComboBox" name="monthselectAD">
-      <property name="font">
-       <font>
-        <family>Laila</family>
-       </font>
-      </property>
-      <property name="maxVisibleItems">
-       <number>12</number>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QLabel" name="label_2">
-      <property name="font">
-       <font>
-        <family>Laila SemiBold</family>
-        <pointsize>13</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: #00ac98;</string>
-      </property>
-      <property name="text">
-       <string>बिक्रम संवत् मिति</string>
-      </property>
-     </widget>
-    </item>
     <item row="3" column="1">
      <widget class="QLabel" name="label">
       <property name="font">
@@ -188,44 +159,55 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="0" colspan="6">
-     <widget class="QPushButton" name="todayButton">
-      <property name="font">
-       <font>
-        <family>Laila Medium</family>
-        <pointsize>13</pointsize>
-       </font>
+    <item row="0" column="5">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="leftMargin">
+       <number>0</number>
       </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton#todayButton {
- color: white;
-  background: #3EACBA; /* Light blue background */
-  border: 1px solid #379AA4; /* Blue border */
-  background-image: linear-gradient(to top, #48C6D4, #3EACBA); /* Blue gradient */
-  
-  border-radius: 5px; /* Rounded corners */
-}
-
-QPushButton#todayButton:hover {
-  background: #48C6D4;
-  background-image: linear-gradient(to top, #3EACBA, #48C6D4);
-}
-
-QPushButton#todayButton:pressed {
-  background: qradialgradient(cx: 0.4, cy: -0.1,
-                             fx: 0.4, fy: -0.1,
-                             radius: 1.35, stop: 0 #fff, stop: 1 #ddd);
-  /* Background color on press */
-}
-</string>
-      </property>
-      <property name="text">
-       <string>आज</string>
-      </property>
-     </widget>
+      <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
+       <widget class="QPushButton" name="aboutbutton">
+        <property name="minimumSize">
+         <size>
+          <width>33</width>
+          <height>33</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Laila</family>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;p&gt;About the application&lt;/p&gt;</string>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="text">
+         <string extracomment="help"/>
+        </property>
+        <property name="icon">
+         <iconset resource="resources.qrc">
+          <normaloff>:/resources/info.png</normaloff>:/resources/info.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>25</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="default">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
-    <item row="4" column="4">
-     <widget class="QComboBox" name="dayselectBS">
+    <item row="3" column="4">
+     <widget class="QComboBox" name="dayselectAD">
       <property name="font">
        <font>
         <family>Noto Sans Devanagari</family>
@@ -243,6 +225,33 @@ QPushButton#todayButton:pressed {
         <property name="palette">
          <palette>
           <active>
+           <colorrole role="Button">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+           <colorrole role="Base">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+           <colorrole role="Window">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
            <colorrole role="Highlight">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
@@ -272,6 +281,33 @@ QPushButton#todayButton:pressed {
            </colorrole>
           </active>
           <inactive>
+           <colorrole role="Button">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+           <colorrole role="Base">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+           <colorrole role="Window">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
            <colorrole role="Highlight">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
@@ -301,6 +337,33 @@ QPushButton#todayButton:pressed {
            </colorrole>
           </inactive>
           <disabled>
+           <colorrole role="Button">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+           <colorrole role="Base">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+           <colorrole role="Window">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
            <colorrole role="LinkVisited">
             <brush brushstyle="SolidPattern">
              <color alpha="255">
@@ -353,6 +416,71 @@ QPushButton#todayButton:pressed {
       </item>
      </layout>
     </item>
+    <item row="4" column="1">
+     <widget class="QLabel" name="label_2">
+      <property name="font">
+       <font>
+        <family>Laila SemiBold</family>
+        <pointsize>13</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #00ac98;</string>
+      </property>
+      <property name="text">
+       <string>बिक्रम संवत् मिति</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="6">
+     <widget class="QPushButton" name="todayButton">
+      <property name="font">
+       <font>
+        <family>Laila Medium</family>
+        <pointsize>13</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton#todayButton {
+ color: white;
+  background: #3EACBA; /* Light blue background */
+  border: 1px solid #379AA4; /* Blue border */
+  background-image: linear-gradient(to top, #48C6D4, #3EACBA); /* Blue gradient */
+  
+  border-radius: 5px; /* Rounded corners */
+}
+
+QPushButton#todayButton:hover {
+  background: #48C6D4;
+  background-image: linear-gradient(to top, #3EACBA, #48C6D4);
+}
+
+QPushButton#todayButton:pressed {
+  background: qradialgradient(cx: 0.4, cy: -0.1,
+                             fx: 0.4, fy: -0.1,
+                             radius: 1.35, stop: 0 #fff, stop: 1 #ddd);
+  /* Background color on press */
+}
+</string>
+      </property>
+      <property name="text">
+       <string>आज</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="4">
+     <widget class="QComboBox" name="dayselectBS">
+      <property name="font">
+       <font>
+        <family>Noto Sans Devanagari</family>
+       </font>
+      </property>
+      <property name="maxVisibleItems">
+       <number>31</number>
+      </property>
+     </widget>
+    </item>
     <item row="4" column="3">
      <widget class="QComboBox" name="monthselectBS">
       <property name="font">
@@ -364,47 +492,6 @@ QPushButton#todayButton:pressed {
        <number>12</number>
       </property>
      </widget>
-    </item>
-    <item row="0" column="5">
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
-       <widget class="QPushButton" name="aboutbutton">
-        <property name="font">
-         <font>
-          <family>Laila</family>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;p&gt;About the application&lt;/p&gt;</string>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::RightToLeft</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
-        <property name="text">
-         <string extracomment="help"/>
-        </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/resources/info.png</normaloff>:/resources/info.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>25</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="default">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </item>
    </layout>
   </widget>

@@ -39,13 +39,11 @@ public:
     }
 
     void setTodayStyle() {
-        setStyleSheet("background-color: transparent;");
-        dayLabel->setStyleSheet("font-size: 20px; font-weight: bold; text-decoration: underline; color: green; font-family: 'laila';");
+        dayLabel->setStyleSheet("background-color: transparent; font-size: 20px; font-weight: bold; text-decoration: underline; color: green; font-family: 'laila'; ");
     }
 
     void setSaturdayStyle() {
-        setStyleSheet("background-color: transparent;");
-        dayLabel->setStyleSheet("font-size: 19px; color: red; font-family: 'laila';");
+        dayLabel->setStyleSheet("background-color: transparent; font-size: 19px; color: red; font-family: 'laila';");
     }
 
     void setIcon(const QIcon &icon, qreal opacity = 1.0) {

@@ -12,7 +12,7 @@
 static const char tithi[][30] = { "प्रथमा", "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी",
                                  "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "प्रथमा",
                                  "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी",
-                                 "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "अमावास्या" };
+                                 "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "अमावस्या" };
 class Panchang {
 public:
     double tdays;
@@ -78,16 +78,6 @@ private:
 
 };
 
-double gregorianToJulian(int year, int month, int day) {
-    if (month <= 2) {
-        year--;
-        month += 12;
-    }
-    int A = year / 100;
-    int B = 2 - A + A / 4;
-    double JD = std::floor(365.25 * (year + 4716)) + std::floor(30.6001 * (month + 1)) + day + B - 1524.5;
-    return JD;
-}
-
+double gregorianToJulian(int year, int month, int day);
 
 #endif // PANCHANGA_H
