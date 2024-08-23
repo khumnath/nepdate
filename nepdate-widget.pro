@@ -14,6 +14,7 @@ SOURCES += main.cpp \
 
 HEADERS += mainwindow.h \
            bikram.h \
+           panchanga.h \
            DayTithiWidget.h \
            calendarwindow.h
 

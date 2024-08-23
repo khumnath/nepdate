@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>285</width>
+    <width>244</width>
     <height>47</height>
    </rect>
   </property>
@@ -71,10 +71,10 @@ border-radius: 10px;</string>
     </property>
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>0</x>
       <y>0</y>
-      <width>231</width>
-      <height>31</height>
+      <width>241</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="palette">
@@ -244,10 +244,13 @@ border-radius: 10px;</string>
      <bool>true</bool>
     </property>
     <property name="focusPolicy">
-     <enum>Qt::StrongFocus</enum>
+     <enum>Qt::WheelFocus</enum>
     </property>
     <property name="acceptDrops">
      <bool>true</bool>
+    </property>
+    <property name="toolTipDuration">
+     <number>3</number>
     </property>
     <property name="styleSheet">
      <string notr="true"/>

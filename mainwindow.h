@@ -51,7 +51,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
     void exitAll();
-
+    bool eventFilter(QObject *watched, QEvent *event) override;
 public slots:
     void openCalendarWindow(const QString &link);
 
@@ -63,7 +63,6 @@ private slots:
 
 private:
     void setupDefaultDate();
-    int isleapyear(int year);
     int cnvToNepali(int mm, int dd, int yy);
     std::string getWeekdayName(int year, int month, int day);
     QString getnepalimonth(int m);
