@@ -60,13 +60,14 @@ set(NEPDATE_RESOURCES
 )
 
 # Create nepdate executable
-add_nepdate_executable(nepdate "${NEPDATE_SOURCES}" "${NEPDATE_HEADERS}" "${NEPDATE_FORMS}" "${NEPDATE_RESOURCES}")
+add_nepdate_executable(nepdate-widget "${NEPDATE_SOURCES}" "${NEPDATE_HEADERS}" "${NEPDATE_FORMS}" "${NEPDATE_RESOURCES}")
 
 ### nepdate-calendar executable ###
 
 # Collect nepdate-calendar sources
 set(NEPDATE_CALENDAR_SOURCES
-    main_calendar.cpp
+    main.cpp
+    mainwindow.cpp
     calendarwindow.cpp
 )
 
