@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), isDragging(true), calendarWindow(nullptr)
 {
     ui->setupUi(this);
-   ui->dateButton->installEventFilter(this);
+    ui->dateButton->installEventFilter(this);
 
     QString globalStyleSheet = R"(
     QToolTip {
@@ -384,13 +384,19 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
-    // Update the drag start position to the current global position minus the top-left of the window frame
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     dragStartPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
+#else
+    dragStartPosition = event->globalPos() - frameGeometry().topLeft();
+#endif
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    // Move the window based on the current global position minus the drag start position
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     move(event->globalPosition().toPoint() - dragStartPosition);
+#else
+    move(event->globalPos() - dragStartPosition);
+#endif
 }
 
 

@@ -47,9 +47,8 @@ win32 {
 
 # Linux-specific settings
 unix {
-    CONFIG += link_pkgconfig
-    PKGCONFIG += Qt6Widgets Qt6Gui Qt6Core
-
-    # Ensure dynamic linking on Linux
-    QMAKE_LFLAGS -= -static
+    QMAKE_CXXFLAGS += -I/usr/include/qt6
+    QMAKE_LIBDIR += /usr/lib/x86_64-linux-gnu
 }
+
+
