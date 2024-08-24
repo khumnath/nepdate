@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updateTimer, &QTimer::timeout, this, &MainWindow::updateDateButton);
     updateTimer->start(1000);
 
-    setWindowFlags(Qt::Tool | Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint | Qt::WindowStaysOnTopHint | Qt::WindowDoesNotAcceptFocus);
+    setWindowFlags(Qt::Tool | Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint | Qt::WindowDoesNotAcceptFocus);
     setMouseTracking(true);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -78,9 +78,20 @@ MainWindow::MainWindow(QWidget *parent) :
 #endif
 
 #ifdef Q_OS_WIN
+    // Ensure the window stays on top
     HWND hwnd = reinterpret_cast<HWND>(this->winId());
+    SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_TOPMOST);
     SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW); //Not sure this works on windows.
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+
+    // Fix me if there are any other methods to force on top.
+    // Periodically enforce the "always on top" setting
+    QTimer* topmostTimer = new QTimer(this);
+    connect(topmostTimer, &QTimer::timeout, [hwnd]() {
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    });
+    topmostTimer->start(500); // adjust the interval as needed
 #endif
 
 #ifdef Q_OS_MAC
@@ -160,18 +171,23 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
 
     return 0;
 }
+
+// The event filter to handle tooltip display
 bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
     if (watched == ui->dateButton) {
-        if (event->type() == QEvent::Enter || event->type() == QEvent::HoverEnter) {
-            // Show the tooltip when the mouse enters or hovers over the button
+        if (event->type() == QEvent::MouseMove) {
+            // Adjust the position above the button
             QPoint position = ui->dateButton->mapToGlobal(QPoint(0, 0));
-            position.setY(position.y() - ui->dateButton->height() - 10); // Adjust the y-coordinate for positioning above
+            position.setY(position.y() - ui->dateButton->height() - 10);  // Position the tooltip above the button
             QToolTip::showText(position, ui->dateButton->toolTip(), ui->dateButton);
+            return true;  // Indicate the event has been handled
         } else if (event->type() == QEvent::Leave) {
-            // Hide the tooltip when the mouse leaves the button
+            // Hide the tooltip when leaving the button area
             QToolTip::hideText();
+            return true;  // Indicate the event has been handled
         }
     }
+    // Pass the event on to the base class
     return QMainWindow::eventFilter(watched, event);
 }
 
@@ -368,13 +384,19 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
-    // Update the drag start position to the current global position minus the top-left of the window frame
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     dragStartPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
+#else
+    dragStartPosition = event->globalPos() - frameGeometry().topLeft();
+#endif
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    // Move the window based on the current global position minus the drag start position
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     move(event->globalPosition().toPoint() - dragStartPosition);
+#else
+    move(event->globalPos() - dragStartPosition);
+#endif
 }
 
 
@@ -441,7 +463,10 @@ void MainWindow::copyButtonText() {
 
 void MainWindow::updateDateButton() {
     QDate today = QDate::currentDate();
-    cnvToNepali(today.month(), today.day(), today.year());
+    if (today != lastUpdatedDate) {  // Check if the date has changed
+        lastUpdatedDate = today;
+        cnvToNepali(today.month(), today.day(), today.year());
+    }
 }
 
 QString MainWindow::getnepalimonth(int m) {
