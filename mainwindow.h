@@ -69,6 +69,7 @@ private:
     void setWindowPosition();
     void adjustTextColorBasedOnBackground();
     QColor getAverageColor(const QImage &image);
+     QDate lastUpdatedDate;
 
     Ui::MainWindow *ui;
     QTimer *updateTimer;
