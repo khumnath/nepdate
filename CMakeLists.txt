@@ -11,11 +11,20 @@ elseif (UNIX AND NOT APPLE)
     message(STATUS "Configuring for Linux")
 endif()
 
-# Find Qt6 package
-find_package(Qt6 REQUIRED COMPONENTS Widgets Gui Core)
-
-# Include directories (Qt6_INCLUDE_DIRS is not typically needed in modern CMake)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+# Try to find the highest available version of Qt (Qt7, Qt6, or Qt5)
+find_package(Qt6 QUIET COMPONENTS Widgets Gui Core)
+if (NOT Qt6_FOUND)
+    find_package(Qt5 QUIET COMPONENTS Widgets Gui Core)
+    if (NOT Qt5_FOUND)
+        message(FATAL_ERROR "Neither Qt6 nor Qt5 could be found")
+    else()
+        set(QT_VERSION_MAJOR 5)
+        message(STATUS "Configuring Using Qt5")
+    endif()
+else()
+    set(QT_VERSION_MAJOR 6)
+    message(STATUS "Configuring Using Qt6")
+endif()
 
 # Set AUTOMOC, AUTORCC, and AUTOUIC to automatically generate necessary files
 set(CMAKE_AUTOMOC ON)
@@ -25,7 +34,11 @@ set(CMAKE_AUTOUIC ON)
 # Helper function to add executables
 function(add_nepdate_executable target_name sources headers forms resources)
     add_executable(${target_name} ${sources} ${headers} ${forms} ${resources})
-    target_link_libraries(${target_name} PRIVATE Qt6::Widgets Qt6::Gui Qt6::Core)
+    if (${QT_VERSION_MAJOR} EQUAL 6)
+        target_link_libraries(${target_name} PRIVATE Qt6::Widgets Qt6::Gui Qt6::Core)
+    elseif(${QT_VERSION_MAJOR} EQUAL 5)
+        target_link_libraries(${target_name} PRIVATE Qt5::Widgets Qt5::Gui Qt5::Core)
+    endif()
 endfunction()
 
 ### nepdate executable ###

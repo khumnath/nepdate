@@ -170,7 +170,8 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     connect(ui->dayselectAD, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onAdDayChanged);
     connect(ui->yearselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsYearChanged);
     connect(ui->monthselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsMonthChanged);
-    connect(ui->dayselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsDayChanged); // Add this line
+    connect(ui->dayselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsDayChanged);
+
     connect(ui->todayButton, &QPushButton::clicked, this, &CalendarWindow::ontodayButtonclicked);
 
     // Initialize the calendar
@@ -182,7 +183,7 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
 bool CalendarWindow::eventFilter(QObject *object, QEvent *event) {
     if (object == this && event->type() == QEvent::Show) {
         // Perform action when the window is shown
-        ui->todayButton->click(); // or any other action
+        ui->todayButton->click();
     }
 
     return QMainWindow::eventFilter(object, event);
@@ -273,7 +274,6 @@ CalendarWindow::~CalendarWindow() {
 void CalendarWindow::showMenu() {
     QMenu menu(this);
 
-    // Apply stylesheet to the menu for hover effect
     QString styleSheet = "QMenu { background-color: white; color: black; border: 1px solid gray; border-radius: 5px; }"
                          "QMenu::item { background-color: transparent; }"
                          "QMenu::item:selected { background-color: #0892D0; color: #184805;}";
@@ -307,8 +307,6 @@ void CalendarWindow::showAbout() {
 void CalendarWindow::openSourceCode() {
     // Open the URL using QDesktopServices
     QDesktopServices::openUrl(QUrl("https://github.com/khumnath/nepdate"));
-
-    // Ensure MainWindow is active if needed
     activateWindow();
 }
 
@@ -489,7 +487,6 @@ void CalendarWindow::updateCalendar(int year, int month) {
         "QHeaderView::section {"
         "background-color: #d3d3d3;"
         "color: blue;"
-        "font: 11pt 'laila';"
         "border: 1px solid gray;"
         "}"
         );
@@ -503,12 +500,12 @@ void CalendarWindow::updateCalendar(int year, int month) {
         "QTableWidget .dayLabel {"
         "font-size: 24px;"
         "color: black;"
-        "font-family: 'laila';"
+
         "}"
         "QTableWidget .tithiLabel {"
         "font-size: 8px;"
         "color: blue;"
-        "font-family: 'laila';"
+
         "}"
         );
 
@@ -601,11 +598,6 @@ void CalendarWindow::updateCalendar(int year, int month) {
     ui->calendarTable->verticalHeader()->setVisible(false);
 }
 
-
-
-
-
-
 void CalendarWindow::adjustCellSizes() {
     int tableWidth = ui->calendarTable->viewport()->width();
     int tableHeight = ui->calendarTable->viewport()->height();
@@ -625,11 +617,6 @@ void CalendarWindow::adjustCellSizes() {
         }
     }
 }
-
-
-
-
-
 
 void CalendarWindow::populateBsDays(int year, int month) {
     int daysInMonth = converter.daysInMonth(year, month);

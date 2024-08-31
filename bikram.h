@@ -1,10 +1,7 @@
 #ifndef BIKRAM_H
 #define BIKRAM_H
 
-#include <cstring>
-#include <ctime>
 #include <cmath>
-#include <string>
 
 class bikram {
 private:
