@@ -20,11 +20,11 @@ public:
 
         dayLabel = new QLabel(day, this);
         dayLabel->setObjectName("dayLabel");  // Set object name for styling
-        dayLabel->setStyleSheet("font-size: 19px; color: black; background-color: transparent; font-family: 'laila';");
+        dayLabel->setStyleSheet("font-size: 19px; color: black; background-color: transparent;");
 
         tithiLabel = new QLabel(tithi, this);
         tithiLabel->setObjectName("tithiLabel");  // Set object name for styling
-        tithiLabel->setStyleSheet("font-size: 10px; color: blue; background-color: transparent; font-family: 'laila';");
+        tithiLabel->setStyleSheet("font-size: 10px; color: blue; background-color: transparent;");
 
         iconLabel = new QLabel(this);
         iconLabel->setObjectName("iconLabel");
@@ -39,11 +39,11 @@ public:
     }
 
     void setTodayStyle() {
-        dayLabel->setStyleSheet("background-color: transparent; font-size: 20px; font-weight: bold; text-decoration: underline; color: green; font-family: 'laila'; ");
+        dayLabel->setStyleSheet("background-color: transparent; font-size: 20px; font-weight: bold; text-decoration: underline; color: green;");
     }
 
     void setSaturdayStyle() {
-        dayLabel->setStyleSheet("background-color: transparent; font-size: 19px; color: red; font-family: 'laila';");
+        dayLabel->setStyleSheet("background-color: transparent; font-size: 19px; color: red;");
     }
 
     void setIcon(const QIcon &icon, qreal opacity = 1.0) {

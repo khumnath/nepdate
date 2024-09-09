@@ -45,7 +45,7 @@ public:
 
         return "";  // Return empty string if index is out of range
     }
-    // Function to convert number to Nepali numeral string
+
     // Function to convert number to Nepali numeral string
     QString convertToNepaliNumerals(int number) {
         QString nepaliNumbers[] = {"०", "१", "२", "३", "४", "५", "६", "७", "८", "९"};
