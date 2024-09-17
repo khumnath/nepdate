@@ -53,7 +53,7 @@ protected:
     void exitAll();
     bool eventFilter(QObject *watched, QEvent *event) override;
 public slots:
-    void openCalendarWindow(const QString &link);
+    void openCalendarWindow();
 
 private slots:
 

@@ -60,6 +60,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updateTimer, &QTimer::timeout, this, &MainWindow::updateDateButton);
     updateTimer->start(1000);
 
+    updateTimer = new QTimer(this);
+    connect(updateTimer, &QTimer::timeout, this, &MainWindow::adjustTextColorBasedOnBackground);
+    updateTimer->start(1000);
+
     setWindowFlags(Qt::Tool | Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint | Qt::WindowDoesNotAcceptFocus);
     setMouseTracking(true);
     setAttribute(Qt::WA_TranslucentBackground);
@@ -176,20 +180,21 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
 bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
     if (watched == ui->dateButton) {
         if (event->type() == QEvent::MouseMove) {
-            // Adjust the position above the button
-            QPoint position = ui->dateButton->mapToGlobal(QPoint(0, 0));
-            position.setY(position.y() - ui->dateButton->height() - 10);  // Position the tooltip above the button
-            QToolTip::showText(position, ui->dateButton->toolTip(), ui->dateButton);
-            return true;  // Indicate the event has been handled
+            if (!isDragging) {
+                QPoint position = ui->dateButton->mapToGlobal(QPoint(0, 0));
+                position.setY(position.y() - ui->dateButton->height() - 10);
+                QToolTip::showText(position, ui->dateButton->toolTip(), ui->dateButton);
+            }
+            return false;  // Pass the event to the base class
         } else if (event->type() == QEvent::Leave) {
-            // Hide the tooltip when leaving the button area
             QToolTip::hideText();
-            return true;  // Indicate the event has been handled
+            return false;  // Pass the event to the base class
         }
     }
-    // Pass the event on to the base class
     return QMainWindow::eventFilter(watched, event);
 }
+
+
 
 
 // Helper function to calculate the luminance of a color
@@ -231,6 +236,9 @@ void MainWindow::adjustTextColorBasedOnBackground() {
     double blackContrast = contrastRatio(averageColor, black);
     double whiteContrast = contrastRatio(averageColor, white);
 
+    // Threshold for significant contrast difference (e.g., 12% difference)
+    const double contrastThreshold = 1.12;
+
     // Determine the best color based on contrast ratios
     if (blackContrast >= whiteContrast && blackContrast >= 4.5) {
         bestColor = black;
@@ -242,12 +250,19 @@ void MainWindow::adjustTextColorBasedOnBackground() {
         bestColor = (brightness > 128) ? black : white;
     }
 
-    // Static variable to store the previous color
+    // Static variables to store the previous color and previous contrast
     static QColor previousColor;
+    static double previousContrast = 0;
+
+    // Calculate the current contrast ratio for the chosen color
+    double currentContrast = (bestColor == black) ? blackContrast : whiteContrast;
 
     // Only update the color if it differs significantly from the previous color
-    if (previousColor != bestColor) {
+    if (previousColor != bestColor &&
+        (currentContrast > previousContrast * contrastThreshold || currentContrast < previousContrast / contrastThreshold)) {
+
         previousColor = bestColor;
+        previousContrast = currentContrast;
 
         // Set the text color of the dateButton
         QString styleSheet = QString("QPushButton { color: %1; border: none; outline: none; }").arg(bestColor.name());
@@ -262,10 +277,10 @@ QColor MainWindow::getAverageColor(const QImage &image) {
 
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
-             QColor color(image.pixel(x, y));
-             red += color.red();
-             green += color.green();
-             blue += color.blue();
+            QColor color(image.pixel(x, y));
+            red += color.red();
+            green += color.green();
+            blue += color.blue();
         }
     }
 
@@ -384,77 +399,60 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    dragStartPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
-#else
-    dragStartPosition = event->globalPos() - frameGeometry().topLeft();
-#endif
+    if (event->button() == Qt::LeftButton) {
+        dragStartPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        isDragging = true;
+        event->accept();
+    } else {
+        isDragging = false;
+        event->ignore();
+    }
+    QMainWindow::mousePressEvent(event);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    move(event->globalPosition().toPoint() - dragStartPosition);
-#else
-    move(event->globalPos() - dragStartPosition);
-#endif
+    // qDebug() << "Mouse Move Event detected.";
+    if (isDragging) {
+        move(event->globalPosition().toPoint() - dragStartPosition);
+        event->accept();
+    }
+    QMainWindow::mouseMoveEvent(event);
+    adjustTextColorBasedOnBackground();
 }
 
 
-
-void MainWindow::mouseReleaseEvent(QMouseEvent *event)
-{
+void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         isDragging = false;
         event->accept();
     }
+    QMainWindow::mouseReleaseEvent(event);
+    adjustTextColorBasedOnBackground();
 }
-void MainWindow::openCalendarWindow(const QString &link) {
-    qDebug() << "Clicked on datebutton. Link: " << link;
-    if (link == "#") {
-        // Ignore the link since it doesn't represent a valid action
-        return;
-    }
 
-    // Check if calendarWindow is nullptr or not visible
+
+
+void MainWindow::openCalendarWindow() {
     if (!calendarWindow || !calendarWindow->isVisible()) {
-        // If calendarWindow is nullptr or not visible, create a new instance
         calendarWindow = new CalendarWindow(this);
+        calendarWindow->setWindowModality(Qt::NonModal);
 
-        // Connect the destroyed signal of calendarWindow to a lambda that sets calendarWindow to nullptr when the window is closed
         connect(calendarWindow, &CalendarWindow::destroyed, this, [this]() {
             calendarWindow = nullptr;
         });
-
-        // Show the calendarWindow
         calendarWindow->show();
     } else {
-        // If calendarWindow is already visible, raise it to the top
         calendarWindow->raise();
         calendarWindow->activateWindow();
-
     }
 }
 
 void MainWindow::on_dateButton_clicked()
 {
-    // Check if calendarWindow is nullptr or not visible
-    if (!calendarWindow || !calendarWindow->isVisible()) {
-        // If calendarWindow is nullptr or not visible, create a new instance
-        calendarWindow = new CalendarWindow(this);
-
-        // Connect the destroyed signal of calendarWindow to a lambda that sets calendarWindow to nullptr when the window is closed
-        connect(calendarWindow, &CalendarWindow::destroyed, this, [this]() {
-            calendarWindow = nullptr;
-        });
-
-        // Show the calendarWindow
-        calendarWindow->show();
-    } else {
-        // If calendarWindow is already visible, raise it to the top
-        calendarWindow->raise();
-        calendarWindow->activateWindow();
-    }
+    // Call openCalendarWindow when the dateButton is clicked
+    openCalendarWindow();
 }
+
 
 void MainWindow::copyButtonText() {
     QClipboard *clipboard = QGuiApplication::clipboard();
@@ -463,11 +461,13 @@ void MainWindow::copyButtonText() {
 
 void MainWindow::updateDateButton() {
     QDate today = QDate::currentDate();
-    if (today != lastUpdatedDate) {  // Check if the date has changed
+    if (today != lastUpdatedDate) {
         lastUpdatedDate = today;
         cnvToNepali(today.month(), today.day(), today.year());
+        adjustTextColorBasedOnBackground();
     }
 }
+
 
 QString MainWindow::getnepalimonth(int m) {
     const QString nepaliMonths[] = {
