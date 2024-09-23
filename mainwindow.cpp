@@ -199,93 +199,95 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
 // Helper function to calculate the luminance of a color
 double luminance(QColor color) {
+    // Extracts the red, green, and blue components of the color as floating-point values.
     double r = color.redF();
     double g = color.greenF();
     double b = color.blueF();
 
+    // Linearizes the RGB components to account for the perceptual nonlinearity of human vision.
+    // This is done using a piecewise linear function that approximates the gamma curve of a typical display.
     r = (r <= 0.03928) ? r / 12.92 : std::pow((r + 0.055) / 1.055, 2.4);
     g = (g <= 0.03928) ? g / 12.92 : std::pow((g + 0.055) / 1.055, 2.4);
     b = (b <= 0.03928) ? b / 12.92 : std::pow((b + 0.055) / 1.055, 2.4);
 
+    // Calculates the relative luminance of the color using the formula specified in the sRGB color space.
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-// Helper function to calculate the contrast ratio between two colors
-double contrastRatio(QColor color1, QColor color2) {
-    double lum1 = luminance(color1) + 0.05;
-    double lum2 = luminance(color2) + 0.05;
-    return (lum1 > lum2) ? lum1 / lum2 : lum2 / lum1;
+// Helper function to calculate the contrast ratio between two luminance values
+double contrastRatio(double lum1, double lum2) {
+    // Finds the brighter and darker luminance values.
+    double brighter = std::max(lum1, lum2);
+    double darker = std::min(lum1, lum2);
+
+    // Calculates the contrast ratio between the two luminance values, adding a small constant to avoid division by zero.
+    return (brighter + 0.05) / (darker + 0.05);
 }
 
 // Main function to adjust the text color based on the background color
 void MainWindow::adjustTextColorBasedOnBackground() {
-    // Get the screen behind the window
+    // Capture the screen behind the window.
     QScreen *screen = QGuiApplication::primaryScreen();
     QPixmap pixmap = screen->grabWindow(0, x(), y(), width(), height());
     QImage image = pixmap.toImage();
 
-    // Calculate the average color of the background
+    // Calculate the average color of the background image.
     QColor averageColor = getAverageColor(image);
 
-    // Predefined colors to choose from
-    QColor black = Qt::black;
-    QColor white = Qt::white;
-    QColor bestColor;
+    // Calculate the luminance of the background color.
+    double bgLuminance = luminance(averageColor);
 
-    // Calculate contrast ratios
-    double blackContrast = contrastRatio(averageColor, black);
-    double whiteContrast = contrastRatio(averageColor, white);
+    // Get the luminance of black and white colors.
+    double whiteLuminance = luminance(Qt::white);
+    double blackLuminance = luminance(Qt::black);
 
-    // Threshold for significant contrast difference (e.g., 12% difference)
-    const double contrastThreshold = 1.12;
+    // Calculate the contrast ratio between the background color and black/white text.
+    double whiteContrast = contrastRatio(bgLuminance, whiteLuminance);
+    double blackContrast = contrastRatio(bgLuminance, blackLuminance);
 
-    // Determine the best color based on contrast ratios
-    if (blackContrast >= whiteContrast && blackContrast >= 4.5) {
-        bestColor = black;
-    } else if (whiteContrast > blackContrast && whiteContrast >= 4.5) {
-        bestColor = white;
-    } else {
-        // If neither color provides sufficient contrast, adjust based on brightness
-        int brightness = (0.299 * averageColor.red() + 0.587 * averageColor.green() + 0.114 * averageColor.blue());
-        bestColor = (brightness > 128) ? black : white;
+    // Choose the text color with the highest contrast ratio.
+    QColor bestTextColor = (blackContrast > whiteContrast) ? Qt::black : Qt::white;
+
+    // Store the previous color for smooth transitions.
+    static QColor previousColor = bestTextColor;
+
+    // Implement a smooth transition mechanism to avoid rapid color changes.
+    const double contrastThreshold = 2;  // Adjust this threshold to fine-tune the transition
+    if (contrastRatio(luminance(previousColor), bgLuminance) < contrastThreshold) {
+        previousColor = bestTextColor;
     }
 
-    // Static variables to store the previous color and previous contrast
-    static QColor previousColor;
-    static double previousContrast = 0;
-
-    // Calculate the current contrast ratio for the chosen color
-    double currentContrast = (bestColor == black) ? blackContrast : whiteContrast;
-
-    // Only update the color if it differs significantly from the previous color
-    if (previousColor != bestColor &&
-        (currentContrast > previousContrast * contrastThreshold || currentContrast < previousContrast / contrastThreshold)) {
-
-        previousColor = bestColor;
-        previousContrast = currentContrast;
-
-        // Set the text color of the dateButton
-        QString styleSheet = QString("QPushButton { color: %1; border: none; outline: none; }").arg(bestColor.name());
-        ui->dateButton->setStyleSheet(styleSheet);
-    }
+    // Set the text color of the dateButton while preserving its transparency.
+    QString styleSheet = QString("QPushButton { color: %1; background-color: rgba(0, 0, 0, 0); border: none; outline: none; }")
+                             .arg(previousColor.name());
+    ui->dateButton->setStyleSheet(styleSheet);
 }
 
 // Function to calculate the average color of an image
 QColor MainWindow::getAverageColor(const QImage &image) {
+    // Initializes variables to store the accumulated red, green, and blue values.
     qint64 red = 0, green = 0, blue = 0;
+
+    // Calculate the total number of pixels in the image.
     int pixelCount = image.width() * image.height();
 
+    // Iterate through each pixel in the image.
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
+            // Gets the color of the current pixel.
             QColor color(image.pixel(x, y));
+
+            // Adds the red, green, and blue components of the current pixel to the accumulators.
             red += color.red();
             green += color.green();
             blue += color.blue();
         }
     }
 
+    // Calculates the average red, green, and blue values and returns the resulting average color.
     return QColor(red / pixelCount, green / pixelCount, blue / pixelCount);
 }
+
 
 void MainWindow::setupDefaultDate()
 {
