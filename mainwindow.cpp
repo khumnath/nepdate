@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     updateTimer = new QTimer(this);
     connect(updateTimer, &QTimer::timeout, this, &MainWindow::adjustTextColorBasedOnBackground);
-    updateTimer->start(1000);
+    updateTimer->start(10000); // 10 seconds to reduce cpu load. text changes on widget move so this is not neccesery to change every second.
 
     setWindowFlags(Qt::Tool | Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint | Qt::WindowDoesNotAcceptFocus);
     setMouseTracking(true);
@@ -169,7 +169,7 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     ui->dateButton->setToolTipDuration(3000);
     QFont tooltipFont("Noto Sans Devanagari", 12); // Replace "Noto Sans Devnagari" with the name of your desired font
     QToolTip::setFont(tooltipFont);
-    ui->dateButton->setToolTip(nepalitooltip);
+   ui->dateButton->setToolTip(nepalitooltip);
     adjustTextColorBasedOnBackground();
 
 
@@ -227,12 +227,20 @@ double contrastRatio(double lum1, double lum2) {
 // Main function to adjust the text color based on the background color
 void MainWindow::adjustTextColorBasedOnBackground() {
     // Capture the screen behind the window.
+    QPoint globalPos = ui->dateButton->mapToGlobal(QPoint(0, 0));
+
+    // Capture the screen behind the button.
     QScreen *screen = QGuiApplication::primaryScreen();
-    QPixmap pixmap = screen->grabWindow(0, x(), y(), width(), height());
+
+    // Grab only area behind the button with button's dimensions
+    QPixmap pixmap = screen->grabWindow(0, globalPos.x(), globalPos.y(), ui->dateButton->width(), ui->dateButton->height());
     QImage image = pixmap.toImage();
 
-    // Calculate the average color of the background image.
-    QColor averageColor = getAverageColor(image);
+    // Scale down the image to reduce processing time.(this is optional).
+    QImage scaledImage = image.scaled(10, 10, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    // Calculate the average color of the background behind the date button.
+    QColor averageColor = getAverageColor(scaledImage);
 
     // Calculate the luminance of the background color.
     double bgLuminance = luminance(averageColor);
