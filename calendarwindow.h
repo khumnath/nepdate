@@ -24,7 +24,7 @@ public:
     ~CalendarWindow(); 
     QString getBikramMonthName(int month) {
         QStringList bikramMonths = {"बैशाख", "जेठ", "असार", "श्रावण", "भाद्र",
-                                     "अश्विन", "कार्तिक", "मंसिर", "पौष", "माघ",
+                                     "आश्विन", "कार्तिक", "मंसिर", "पौष", "माघ",
                                      "फाल्गुन", "चैत"};
         if (month >= 1 && month <= 12) {
             return bikramMonths[month - 1];
