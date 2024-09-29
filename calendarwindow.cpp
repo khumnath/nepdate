@@ -102,23 +102,13 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
 
     // Initialize current date to today's date
     QDate currentDate = QDate::currentDate();
-
-    // Month names for Gregorian and Bikram Sambat calendars
-    QStringList gregorianMonths = {"जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जुन",
-                                   "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"};
-
-    QStringList bikramMonths = {"बैशाख", "जेठ", "असार", "श्रावण", "भाद्र",
-                                "आश्विन", "कार्तिक", "मंसिर", "पौष", "माघ",
-                                "फाल्गुन", "चैत"};
-
-
     // Populate AD combo boxes
     for (int year = 1900; year <= 2100; ++year) {
         ui->yearselectAD->addItem(QString::number(year));
         ui->yearselectAD->setEditable(true);
     }
-    for (const QString &month : gregorianMonths) {
-        ui->monthselectAD->addItem(month);
+    for (int month = 1; month <= 12; ++month) {
+        ui->monthselectAD->addItem(getEnglishMonthName(month));
     }
     for (int day = 1; day <= 31; ++day) {
         ui->dayselectAD->addItem(QString::number(day));
@@ -129,9 +119,13 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
         ui->yearselectBS->addItem(QString::number(year));
         ui->yearselectBS->setEditable(true);
     }
-    for (const QString &month : bikramMonths) {
-        ui->monthselectBS->addItem(month);
+    for (int month = 1; month <= 12; ++month) {
+        ui->monthselectBS->addItem(getBikramMonthName(month));
     }
+    int year = ui->yearselectBS->currentText().toInt();
+    int month = ui->monthselectBS->currentIndex() + 1;
+    populateBsDays(year, month);
+
 
     // Set current date in AD combo boxes
     ui->yearselectAD->setCurrentText(QString::number(currentDate.year()));
@@ -171,6 +165,11 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     connect(ui->yearselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsYearChanged);
     connect(ui->monthselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsMonthChanged);
     connect(ui->dayselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsDayChanged);
+    connect(ui->previousMonthButton_2, &QPushButton::clicked, this, &CalendarWindow::onpreviousMonthButtonclicked);
+    connect(ui->nextMonthButton, &QPushButton::clicked, this, &CalendarWindow::onnextMonthButtonclicked);
+
+
+
 
     connect(ui->todayButton, &QPushButton::clicked, this, &CalendarWindow::ontodayButtonclicked);
 
@@ -187,6 +186,42 @@ bool CalendarWindow::eventFilter(QObject *object, QEvent *event) {
     }
 
     return QMainWindow::eventFilter(object, event);
+}
+
+const QStringList CalendarWindow::bikramMonths = {
+    "वैशाख", "जेठ", "असार", "श्रावण", "भाद्र",
+    "आश्विन", "कार्तिक", "मंसिर", "पौष", "माघ",
+    "फाल्गुन", "चैत्र"
+};
+const QStringList CalendarWindow::gregorianMonths = {"जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जुन",
+                                                     "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"};
+
+QString CalendarWindow::getBikramMonthName(int month) {
+    if (month < 1 || month > 12) {
+        return ""; // Return an empty string for invalid month
+    }
+    return bikramMonths.at(month - 1); // Assuming 1-based month input
+}
+QString CalendarWindow::getEnglishMonthName(int month) {
+    if (month < 1 || month > 12) {
+        return ""; // Return an empty string for invalid month
+    }
+    return gregorianMonths.at(month - 1); // Assuming 1-based month input
+}
+
+QString CalendarWindow::convertToNepaliNumerals(int number) {
+    QString nepaliNumerals = QString::number(number);
+    nepaliNumerals.replace("0", "०");
+    nepaliNumerals.replace("1", "१");
+    nepaliNumerals.replace("2", "२");
+    nepaliNumerals.replace("3", "३");
+    nepaliNumerals.replace("4", "४");
+    nepaliNumerals.replace("5", "५");
+    nepaliNumerals.replace("6", "६");
+    nepaliNumerals.replace("7", "७");
+    nepaliNumerals.replace("8", "८");
+    nepaliNumerals.replace("9", "९");
+    return nepaliNumerals;
 }
 
 void CalendarWindow::ontodayButtonclicked() {
@@ -224,7 +259,33 @@ void CalendarWindow::ontodayButtonclicked() {
     // Update the calendar
     updateCalendar(bsYear, bsMonth);
 }
+// Slot for Previous Month button
+void CalendarWindow::onpreviousMonthButtonclicked() {
+    int currentIndex = ui->monthselectBS->currentIndex();
 
+    if (currentIndex > 0) {
+        ui->monthselectBS->setCurrentIndex(currentIndex - 1);
+    } else {
+        // Wrap around to December
+        ui->monthselectBS->setCurrentIndex(11); // December (0-based index)
+    }
+
+    // The change will automatically trigger the connected slot for month selection
+}
+
+// Slot for Next Month button
+void CalendarWindow::onnextMonthButtonclicked() {
+    int currentIndex = ui->monthselectBS->currentIndex();
+
+    if (currentIndex < 11) { // 11 is December
+        ui->monthselectBS->setCurrentIndex(currentIndex + 1);
+    } else {
+        // Wrap around to January
+        ui->monthselectBS->setCurrentIndex(0); // January (0-based index)
+    }
+
+    // The change will automatically trigger the connected slot for month selection
+}
 
 void CalendarWindow::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);
@@ -293,7 +354,7 @@ void CalendarWindow::showAbout() {
 <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">About</h2>
 <p>nepali calendar</p>
 <p><b>Author:</b> <span style="font-weight: bold;">khumnath</span></p>
-<p><b>Version:</b> 1.0.0</p>
+<p><b>Version:</b> 2.0.0</p>
 <p>This application is written in C++ and Qt framework. For more information, visit my <a href="https://github.com/khumnath/nepdate" style="color: blue; text-decoration: underline;">GitHub page</a>.</p>
 </center>)";
 
@@ -375,11 +436,12 @@ void CalendarWindow::onBsYearChanged(int /*index*/) {
 
     int year = ui->yearselectBS->currentText().toInt();
     int month = ui->monthselectBS->currentIndex() + 1;
-    int day = ui->dayselectBS->currentText().toInt();
 
     // Update BS day combo box based on current month and year
     populateBsDays(year, month);
 
+    // Now, use the current day selection to update AD date
+    int day = ui->dayselectBS->currentText().toInt();
     updateAdDateFromBs(year, month, day);
 
     // Update the calendar
@@ -387,6 +449,7 @@ void CalendarWindow::onBsYearChanged(int /*index*/) {
 
     blockSignals = false;
 }
+
 
 void CalendarWindow::onBsMonthChanged(int /*index*/) {
     if (blockSignals) return;
@@ -395,8 +458,6 @@ void CalendarWindow::onBsMonthChanged(int /*index*/) {
     int year = ui->yearselectBS->currentText().toInt();
     int month = ui->monthselectBS->currentIndex() + 1;
     int day = ui->dayselectBS->currentText().toInt();
-    populateBsDays(year, month);
-    // Update BS day combo box based on current month and year
     updateAdDateFromBs(year, month, day);
 
     // Update the calendar
@@ -404,6 +465,7 @@ void CalendarWindow::onBsMonthChanged(int /*index*/) {
 
     blockSignals = false;
 }
+
 
 void CalendarWindow::onBsDayChanged(int /*index*/) {
     if (blockSignals) return;
@@ -414,8 +476,6 @@ void CalendarWindow::onBsDayChanged(int /*index*/) {
     int day = ui->dayselectBS->currentText().toInt();
 
     updateAdDateFromBs(year, month, day);
-    populateBsDays(year, month);
-
     blockSignals = false;
 }
 
@@ -461,14 +521,23 @@ void CalendarWindow::updateAdDateFromBs(int year, int month, int day) {
     ui->monthselectAD->setCurrentIndex(gMonth - 1);
     ui->dayselectAD->setCurrentText(QString::number(gDay));
 
+
     int bsDaysInMonth = converter.daysInMonth(year, month);
     QString bsMonthName = getBikramMonthName(month);
-    QString adMonthName = getEnglishMonthName(gMonth);
-    ui->output->setText(QString("अङ्ग्रेजी मिति मा परिवर्तन गरियो: %1 %2 %3 \n %4 %5 मा जम्मा दिन सङ्ख्या: %6")
-                            .arg(convertToNepaliNumerals(gYear)).arg(adMonthName).arg(convertToNepaliNumerals(gDay)).arg(bsMonthName).arg(convertToNepaliNumerals(year)).arg(convertToNepaliNumerals(bsDaysInMonth)));
+    double julianDate = gregorianToJulian(gYear, gMonth, gDay);
+    Panchang panchang(julianDate);
+    QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
+    QString paksha = QString::fromStdString(panchang.paksha);
+    QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
+    ui->output->setText(QString("ईसवी सन मा परिवर्तन गरियो: %1 %2 %3 गते %5 \n%2 %1 मा जम्मा दिन सङ्ख्या: %4")
+                            .arg(convertToNepaliNumerals(gYear)).arg(bsMonthName).arg(convertToNepaliNumerals(gDay)).arg(convertToNepaliNumerals(bsDaysInMonth)).arg(tithipaksha));
 
+    // Update the calendar
+    updateCalendar(year, month);
+    // Populate BS day combo box based on current month and year
     populateBsDays(year, month);
 }
+
 
 void CalendarWindow::updateCalendar(int year, int month) {
     int daysInMonth = converter.daysInMonth(year, month);
@@ -632,3 +701,4 @@ void CalendarWindow::populateBsDays(int year, int month) {
     // Set the current day
     ui->dayselectBS->setCurrentText(QString::number(currentDay));
 }
+
