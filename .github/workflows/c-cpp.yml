@@ -7,10 +7,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-          
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-         with:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11' 
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
         aqtversion: '==3.1.*'
         version: '6.2.0'
         host: 'linux'
@@ -18,9 +25,10 @@ jobs:
         arch: 'gcc_64'
         tools: 'tools_cmake'
         archives: 'qttools qtsvg qtdeclarative qtbase icu'
-      - name: Build Project
-        run: |
-          mkdir build
-          cd build
-          qmake ../nepdate.pro
-          make
+
+    - name: Build Project
+      run: |
+        mkdir build
+        cd build
+        qmake ../nepdate.pro
+        make
