@@ -21,11 +21,6 @@ jobs:
           pip install aqtinstall
           pip install --upgrade aqt
           
-      - name: List Qt modules (Optional)
-        # This step is optional and can be removed if not needed
-        run: |
-          aqt list-qt linux desktop --modules 6.5.0 gcc_64
-
       - name: Install Qt
         run: |
           aqt install-qt linux desktop 6.5.0 gcc_64 -m qtbase qttools
