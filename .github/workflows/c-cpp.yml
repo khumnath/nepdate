@@ -13,20 +13,20 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.11'  # Ensure the correct Python version
+        python-version: '3.11'  
 
     - name: Install aqt
       run: |
         python -m pip install --upgrade pip
         pip install aqtinstall
 
-    - name: List Qt versions
+    - name: List Qt modules
       run: |
-        aqt list-qt linux desktop
+        aqt list-qt linux desktop --modules 6.5.0 gcc_64
 
     - name: Install Qt
       run: |
-        aqt install-qt linux desktop 6.2.4 gcc_64 -m qtbase qttools
+        aqt install-qt linux desktop 6.5.0 gcc_64 -m qtbase qttools
 
     - name: Build Project
       run: |
