@@ -1,42 +1,26 @@
-name: Qt CMake Build
+name: CI
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest  
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Enable Universe Repository
-      run: |
-          sudo add-apt-repository universe -y
-          sudo apt-get update
-    - name: Install Dependencies
-      run: |
-        sudo apt-get install -y qt6-default qt6-qmake qt6-base-dev qt6-tools-dev 
-        sudo apt-get install -y build-essential cmake
+    runs-on: ubuntu-latest
 
-    - name: Configure CMake
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.2.*'
+        host: 'linux'
+        target: 'desktop'
+        modules: 'qtbase qttools'  # Add any additional modules you need
+
+    - name: Build Project
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/qt6 
-
-    - name: Build
-      run: |
-        cd build
-        cmake --build . --config Release
-
-    - name: Run Executables
-      run: |
-        cd build
-        ./nepdate-widget  # Replace with the name of your Qt executable
-        ./nepdate-calendar  # Replace with the name of your Qt executable
-
+        qmake ../nepdate.pro
+        make
