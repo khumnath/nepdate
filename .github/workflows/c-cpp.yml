@@ -20,9 +20,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install aqtinstall
 
-    - name: List Qt modules
+    - name: List Qt versions
       run: |
-        aqt list-qt linux desktop 6.2.4
+        aqt list-qt linux desktop
 
     - name: Install Qt
       run: |
