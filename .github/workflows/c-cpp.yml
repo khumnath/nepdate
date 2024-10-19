@@ -17,6 +17,8 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        sudo add-apt-repository ppa:beineri/opt-qt-6.2.0 -y
+        sudo apt-get update
         sudo apt-get update
         sudo apt-get install -y qt6-default qt6-qmake qt6-base-dev qt6-tools-dev 
         sudo apt-get install -y build-essential cmake
