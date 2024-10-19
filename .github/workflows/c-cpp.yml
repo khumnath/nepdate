@@ -7,30 +7,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.11'  
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
 
-    - name: Install aqt
-      run: |
-        python -m pip install --upgrade pip
-        pip install aqtinstall
+      - name: Install aqt
+        run: |
+          python -m pip install --upgrade pip
+          pip install aqtinstall
 
-    - name: List Qt modules
-      run: |
-        aqt list-qt linux desktop --modules 6.5.0 gcc_64
+      - name: List Qt modules (Optional)
+        # This step is optional and can be removed if not needed
+        run: |
+          aqt list-qt linux desktop --modules 6.5.0 gcc_64
 
-    - name: Install Qt
-      run: |
-        aqt install-qt linux desktop 6.5.0 gcc_64 -m qtbase qttools
+      - name: Install Qt
+        run: |
+          aqt install-qt linux desktop 6.5.0 gcc_64 -m qtbase qttools || pip install --upgrade aqt
 
-    - name: Build Project
-      run: |
-        mkdir build
-        cd build
-        qmake ../nepdate.pro
-        make
+      - name: Build Project
+        run: |
+          mkdir build
+          cd build
+          qmake ../nepdate.pro
+          make
