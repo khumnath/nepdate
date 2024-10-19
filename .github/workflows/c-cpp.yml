@@ -3,15 +3,14 @@ name: Qt CMake Build
 on:
   push:
     branches:
-      - workflow-test
+      - main
   pull_request:
     branches:
-      - workflow-test
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # You can change this to windows-latest or macos-latest if needed
-
+    runs-on: ubuntu-latest  
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
