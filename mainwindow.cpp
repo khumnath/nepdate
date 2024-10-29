@@ -57,12 +57,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     updateTimer = new QTimer(this);
-    connect(updateTimer, &QTimer::timeout, this, &MainWindow::updateDateButton);
-    updateTimer->start(1000);
+connect(updateTimer, &QTimer::timeout, this, [=]() {
+    updateDateButton();
+    adjustTextColorBasedOnBackground();
+});
+updateTimer->start(1000);
 
-    updateTimer = new QTimer(this);
-    connect(updateTimer, &QTimer::timeout, this, &MainWindow::adjustTextColorBasedOnBackground);
-    updateTimer->start(1000);
 
     setWindowFlags(Qt::Tool | Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint | Qt::WindowDoesNotAcceptFocus);
     setMouseTracking(true);
