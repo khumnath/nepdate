@@ -103,7 +103,6 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     connect(ui->yearselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsYearChanged);
     connect(ui->monthselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsMonthChanged);
     connect(ui->dayselectBS, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CalendarWindow::onBsDayChanged);
-
     connect(ui->todayButton, &QPushButton::clicked, this, &CalendarWindow::ontodayButtonclicked);
 
     // Initialize the calendar
@@ -216,16 +215,28 @@ void CalendarWindow::showMenu() {
 }
 
 void CalendarWindow::showAbout() {
-    QString aboutText = R"(
+    QString version;
+    QFile versionFile(":/resources/VERSION.txt"); // Use the resource path
+
+    if (versionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&versionFile);
+        version = in.readLine(); // Read the first line
+        versionFile.close();
+    } else {
+        qDebug() << "Could not open version file from resources.";
+        version = "unknown"; // Fallback in case the file cannot be read
+    }
+
+    QString aboutText = QString(R"(
     <center>
         <h2 class='about.h2'>About</h2>
         <p class='about.p'>Nepali Calendar</p>
         <p><b>Author:</b> <span class='about'>khumnath</span></p>
-        <p><b>Version:</b> 1.0.0</p>
+        <p><b>Version:</b> %1</p>
         <p>This application is written in C++ and Qt framework. For more information, visit my
            <a href="https://github.com/khumnath/nepdate" class="about">GitHub page</a>.
         </p>
-    </center>)";
+    </center>)").arg(version);
 
     QMessageBox msgBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok, this);
     msgBox.exec();
@@ -525,15 +536,11 @@ void CalendarWindow::updateCalendar(int year, int month) {
     // Hide the numbers in the first column
     ui->calendarTable->verticalHeader()->setVisible(false);
 }
-
-
 void CalendarWindow::adjustCellSizes() {
     int tableWidth = ui->calendarTable->viewport()->width();
     int tableHeight = ui->calendarTable->viewport()->height();
-
     int numColumns = ui->calendarTable->columnCount();
     int numRows = ui->calendarTable->rowCount();
-
     if (numColumns > 0 && numRows > 0) {
         int columnWidth = tableWidth / numColumns;
         int rowHeight = tableHeight / numRows;

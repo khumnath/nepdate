@@ -7,5 +7,6 @@
         <file>resources/amawasya.png</file>
         <file>resources/purnima.png</file>
         <file>resources/style.qss</file>
+        <file>resources/VERSION.txt</file>
     </qresource>
 </RCC>

@@ -128,7 +128,7 @@ inline int bikram::getYear() const {
 }
 
 inline int bikram::getMonth() const {
-    return Month + 1; // Return month as 1-indexed
+    return Month + 1;
 }
 
 inline int bikram::getDay() const {
