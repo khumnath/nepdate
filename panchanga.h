@@ -65,11 +65,11 @@ private:
     double getMoonLongitude() {
         double L1 = 218.316 + 481267.8813 * t;
         double M1 = 134.963 + 477198.8676 * t;
-        double F = 93.272 + 483202.0175 * t;
+        // double F = 93.272 + 483202.0175 * t;  the Moon's argument of latitude Not used now
 
         L1 = fmod(L1, 360.0);
         M1 = fmod(M1, 360.0);
-        F = fmod(F, 360.0);
+        // F = fmod(F, 360.0); the Moon's argument of latitude Not used now
 
         double longitude = L1 + 6.289 * sin(M1 * d2r);
         longitude = fmod(longitude, 360.0);

@@ -11,6 +11,8 @@
 #include <QDate>
 #include <QDebug>
 #include <QIcon>
+#include <QFile>
+#include <QtWidgets>
 
 CalendarWindow::CalendarWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -24,82 +26,12 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     centerOnScreen();
     installEventFilter(this);
 
-    // Set the global stylesheet for all QComboBox widgets
-    QString globalStyleSheet = R"(
-    QComboBox {
-        background-color: rgb(240, 240, 240);
-        color: rgb(89, 189, 234);
-        border: 1px solid rgba(143, 211, 249, 127);
-        height: 26px;
-        font-size: 18px;
+    QFile file(":/resources/style.qss");  // Stylesheet file
+    if (file.open(QFile::ReadOnly | QFile::Text)) {
+        QString styleSheet = file.readAll();
+        qApp->setStyleSheet(styleSheet);
+        file.close();
     }
-
-    QComboBox::down-arrow {
-        image: url(:/resources/dropdown.png);
-        height: 7px;
-        width: 7px;
-    }
-
-    QComboBox::drop-down {
-        border: none;
-        padding-right: 4px;
-        color: black;
-    }
-
-    QComboBox QAbstractItemView {
-        outline: 0px;
-        color: black;
-        background: transparent;
-        selection-background-color: rgb(26, 138, 219);
-        border: 1px solid rgba(143, 211, 249, 127);
-    }
-
-    QComboBox::item {
-        height: 26px;
-        font-size: 16px;
-        color: black;
-        background-color: white;
-    }
-
-    QComboBox::item:selected {
-        background-color: rgb(26, 138, 219);
-    }
-
-    QComboBox::item:hover {
-        background-color: #007bff;
-        color: white;
-    }
-
-    QComboBox QAbstractItemView QScrollBar:vertical {
-        border: none;
-        background: #f0f0f0;
-        width: 15px;
-        margin: 0px 0px 0px 0px;
-    }
-
-    QComboBox QAbstractItemView QScrollBar::handle:vertical {
-        background-color: #007bff;
-        min-height: 20px;
-        border-radius: 4px;
-    }
-
-    QComboBox QAbstractItemView QScrollBar::add-line:vertical,
-    QComboBox QAbstractItemView QScrollBar::sub-line:vertical {
-        border: none;
-        background: none;
-    }
-
-    QToolTip {
-        background-color: white;
-        color: black;
-        border: 1px solid gray;
-        border-radius: 5px;
-    }
-)";
-
-    qApp->setStyleSheet(globalStyleSheet);
-
-
     // Initialize current date to today's date
     QDate currentDate = QDate::currentDate();
 
@@ -274,11 +206,6 @@ CalendarWindow::~CalendarWindow() {
 void CalendarWindow::showMenu() {
     QMenu menu(this);
 
-    QString styleSheet = "QMenu { background-color: white; color: black; border: 1px solid gray; border-radius: 5px; }"
-                         "QMenu::item { background-color: transparent; }"
-                         "QMenu::item:selected { background-color: #0892D0; color: #184805;}";
-    menu.setStyleSheet(styleSheet);
-
     QAction *aboutAction = menu.addAction("About");
     QAction *sourceCodeAction = menu.addAction("Source Code");
 
@@ -289,20 +216,21 @@ void CalendarWindow::showMenu() {
 }
 
 void CalendarWindow::showAbout() {
-    QString aboutText = R"(<center>
-<h2 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">About</h2>
-<p>nepali calendar</p>
-<p><b>Author:</b> <span style="font-weight: bold;">khumnath</span></p>
-<p><b>Version:</b> 1.0.0</p>
-<p>This application is written in C++ and Qt framework. For more information, visit my <a href="https://github.com/khumnath/nepdate" style="color: blue; text-decoration: underline;">GitHub page</a>.</p>
-</center>)";
+    QString aboutText = R"(
+    <center>
+        <h2 class='about.h2'>About</h2>
+        <p class='about.p'>Nepali Calendar</p>
+        <p><b>Author:</b> <span class='about'>khumnath</span></p>
+        <p><b>Version:</b> 1.0.0</p>
+        <p>This application is written in C++ and Qt framework. For more information, visit my
+           <a href="https://github.com/khumnath/nepdate" class="about">GitHub page</a>.
+        </p>
+    </center>)";
 
-    QMessageBox msgBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok, this); // Set parent as this (MainWindow)
-    msgBox.setStyleSheet("QDialog { background-color: white; color: black; }"
-                         "QLabel { color: black; }"
-                         "QPushButton { background-color: white; color: black; }");
+    QMessageBox msgBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok, this);
     msgBox.exec();
 }
+
 
 void CalendarWindow::openSourceCode() {
     // Open the URL using QDesktopServices
@@ -597,6 +525,7 @@ void CalendarWindow::updateCalendar(int year, int month) {
     // Hide the numbers in the first column
     ui->calendarTable->verticalHeader()->setVisible(false);
 }
+
 
 void CalendarWindow::adjustCellSizes() {
     int tableWidth = ui->calendarTable->viewport()->width();
