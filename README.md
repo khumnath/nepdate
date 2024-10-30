@@ -40,7 +40,7 @@ Nepdate and calendar relies on the following Qt libraries:
 6. The floating Nepali date widget will appear on your desktop, with automatic text color adjustment based on the background color.
 
 ## Screenshots
-nepdate in action ![nepdate](https://github.com/khumnath/nepdate/assets/50103558/8f17f73b-3dfd-4679-a2f9-2461d9b34cf9)
+nepdate (v2.0.0) in action ![Screenshot_select-area_20240930185731](https://github.com/user-attachments/assets/93a88b55-4a24-47ce-beee-1c8334ccba3c)
 
 
 ## License

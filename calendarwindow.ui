@@ -47,6 +47,16 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="7" column="1">
+     <widget class="QLabel" name="label">
+      <property name="styleSheet">
+       <string notr="true">color: #00ac98;</string>
+      </property>
+      <property name="text">
+       <string>अङ्ग्रेजी मिति</string>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="0" colspan="5">
      <widget class="QLabel" name="output">
       <property name="styleSheet">
@@ -75,14 +85,17 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="3">
-     <widget class="QComboBox" name="monthselectAD">
-      <property name="maxVisibleItems">
-       <number>12</number>
+    <item row="8" column="1">
+     <widget class="QLabel" name="label_2">
+      <property name="styleSheet">
+       <string notr="true">color: #00ac98;</string>
+      </property>
+      <property name="text">
+       <string>बिक्रम संवत् मिति</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="2">
+    <item row="8" column="2">
      <widget class="QComboBox" name="yearselectBS">
       <property name="focusPolicy">
        <enum>Qt::ClickFocus</enum>
@@ -95,7 +108,7 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="2">
+    <item row="7" column="2">
      <widget class="QComboBox" name="yearselectAD">
       <property name="focusPolicy">
        <enum>Qt::WheelFocus</enum>
@@ -114,13 +127,31 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QLabel" name="label">
-      <property name="styleSheet">
-       <string notr="true">color: #00ac98;</string>
+    <item row="7" column="3">
+     <widget class="QComboBox" name="monthselectAD">
+      <property name="maxVisibleItems">
+       <number>12</number>
       </property>
-      <property name="text">
-       <string>अङ्ग्रेजी मिति</string>
+     </widget>
+    </item>
+    <item row="7" column="4">
+     <widget class="QComboBox" name="dayselectAD">
+      <property name="maxVisibleItems">
+       <number>31</number>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="4">
+     <widget class="QComboBox" name="dayselectBS">
+      <property name="maxVisibleItems">
+       <number>32</number>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="3">
+     <widget class="QComboBox" name="monthselectBS">
+      <property name="maxVisibleItems">
+       <number>12</number>
       </property>
      </widget>
     </item>
@@ -165,13 +196,6 @@
        </widget>
       </item>
      </layout>
-    </item>
-    <item row="3" column="4">
-     <widget class="QComboBox" name="dayselectAD">
-      <property name="maxVisibleItems">
-       <number>31</number>
-      </property>
-     </widget>
     </item>
     <item row="1" column="0" colspan="6">
      <layout class="QHBoxLayout" name="horizontalLayout">
@@ -371,20 +395,42 @@
       </item>
      </layout>
     </item>
-    <item row="4" column="1">
-     <widget class="QLabel" name="label_2">
-      <property name="styleSheet">
-       <string notr="true">color: #00ac98;</string>
-      </property>
-      <property name="text">
-       <string>बिक्रम संवत् मिति</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0" colspan="6">
-     <widget class="QPushButton" name="todayButton">
-      <property name="styleSheet">
-       <string notr="true">QPushButton#todayButton {
+    <item row="3" column="0" rowspan="3" colspan="6">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="previousMonthButton_2">
+        <property name="styleSheet">
+         <string notr="true">QPushButton#previousMonthButton_2 {
+ color: white;
+  background: #3EACBA; /* Light blue background */
+  border: 1px solid #379AA4; /* Blue border */
+  background-image: linear-gradient(to top, #48C6D4, #3EACBA); /* Blue gradient */
+  
+  border-radius: 5px; /* Rounded corners */
+}
+
+QPushButton#previousMonthButton_2:hover {
+  background: #48C6D4;
+  background-image: linear-gradient(to top, #3EACBA, #48C6D4);
+}
+
+QPushButton#previousMonthButton_2:pressed {
+  background: qradialgradient(cx: 0.4, cy: -0.1,
+                             fx: 0.4, fy: -0.1,
+                             radius: 1.35, stop: 0 #fff, stop: 1 #ddd);
+  /* Background color on press */
+}
+</string>
+        </property>
+        <property name="text">
+         <string>अघिल्लो महिना</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="todayButton">
+        <property name="styleSheet">
+         <string notr="true">QPushButton#todayButton {
  color: white;
   background: #3EACBA; /* Light blue background */
   border: 1px solid #379AA4; /* Blue border */
@@ -405,25 +451,43 @@ QPushButton#todayButton:pressed {
   /* Background color on press */
 }
 </string>
-      </property>
-      <property name="text">
-       <string>आज</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="4">
-     <widget class="QComboBox" name="dayselectBS">
-      <property name="maxVisibleItems">
-       <number>31</number>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="3">
-     <widget class="QComboBox" name="monthselectBS">
-      <property name="maxVisibleItems">
-       <number>12</number>
-      </property>
-     </widget>
+        </property>
+        <property name="text">
+         <string>आज</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="nextMonthButton">
+        <property name="styleSheet">
+         <string notr="true">QPushButton#nextMonthButton {
+ color: white;
+  background: #3EACBA; /* Light blue background */
+  border: 1px solid #379AA4; /* Blue border */
+  background-image: linear-gradient(to top, #48C6D4, #3EACBA); /* Blue gradient */
+  
+  border-radius: 5px; /* Rounded corners */
+}
+
+QPushButton#nextMonthButton:hover {
+  background: #48C6D4;
+  background-image: linear-gradient(to top, #3EACBA, #48C6D4);
+}
+
+QPushButton#nextMonthButton:pressed {
+  background: qradialgradient(cx: 0.4, cy: -0.1,
+                             fx: 0.4, fy: -0.1,
+                             radius: 1.35, stop: 0 #fff, stop: 1 #ddd);
+  /* Background color on press */
+}
+</string>
+        </property>
+        <property name="text">
+         <string>अर्को महिना</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
