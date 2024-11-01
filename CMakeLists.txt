@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(nepdate VERSION 2.0.1 LANGUAGES CXX)
+project(nepdate VERSION 2.0.2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -41,17 +41,17 @@ function(add_nepdate_executable target_name sources headers forms resources)
     endif()
 endfunction()
 
-### nepdate executable ###
+### nepdate-widget executable ###
 
-# Collect nepdate sources
-set(NEPDATE_SOURCES
+# Collect nepdate-widget sources
+set(NEPDATE_WIDGET_SOURCES
     main.cpp
     mainwindow.cpp
     calendarwindow.cpp
 )
 
-# Collect nepdate headers
-set(NEPDATE_HEADERS
+# Collect nepdate-widget headers
+set(NEPDATE_WIDGET_HEADERS
     mainwindow.h
     bikram.h
     DayTithiWidget.h
@@ -59,26 +59,25 @@ set(NEPDATE_HEADERS
     calendarwindow.h
 )
 
-# Collect nepdate forms
-set(NEPDATE_FORMS
+# Collect nepdate-widget forms
+set(NEPDATE_WIDGET_FORMS
     mainwindow.ui
     calendarwindow.ui
 )
 
-# Collect nepdate resources
-set(NEPDATE_RESOURCES
+# Collect nepdate-widget resources
+set(NEPDATE_WIDGET_RESOURCES
     resources.qrc
 )
 
-# Create nepdate executable
-add_nepdate_executable(nepdate-widget "${NEPDATE_SOURCES}" "${NEPDATE_HEADERS}" "${NEPDATE_FORMS}" "${NEPDATE_RESOURCES}")
+# Create nepdate-widget executable
+add_nepdate_executable(nepdate-widget "${NEPDATE_WIDGET_SOURCES}" "${NEPDATE_WIDGET_HEADERS}" "${NEPDATE_WIDGET_FORMS}" "${NEPDATE_WIDGET_RESOURCES}")
 
 ### nepdate-calendar executable ###
 
 # Collect nepdate-calendar sources
 set(NEPDATE_CALENDAR_SOURCES
-    main.cpp
-    mainwindow.cpp
+    main_calendar.cpp
     calendarwindow.cpp
     mainwindow.cpp
 )
