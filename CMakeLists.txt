@@ -7,6 +7,7 @@ string(STRIP "${VERSION_CONTENTS}" APP_VERSION)
 # Project definition
 project(nepdate VERSION ${APP_VERSION} LANGUAGES CXX)
 
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -47,7 +48,9 @@ function(add_nepdate_executable target_name sources headers forms resources)
     endif()
 endfunction()
 
+
 # Define nepdate-widget executable
+
 set(NEPDATE_WIDGET_SOURCES
     main.cpp
     mainwindow.cpp
@@ -71,7 +74,9 @@ set(NEPDATE_WIDGET_RESOURCES
     resources.qrc
 )
 
+
 add_nepdate_executable(nepdate_widget "${NEPDATE_WIDGET_SOURCES}" "${NEPDATE_WIDGET_HEADERS}" "${NEPDATE_WIDGET_FORMS}" "${NEPDATE_WIDGET_RESOURCES}")
+
 
 # Set the output name to nepdate-widget
 set_target_properties(nepdate_widget PROPERTIES OUTPUT_NAME nepdate-widget)
