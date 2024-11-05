@@ -32,6 +32,12 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
         qApp->setStyleSheet(styleSheet);
         file.close();
     }
+
+    int fontId = QFontDatabase::addApplicationFont(":/resources/Laila-Medium.ttf");
+    QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    QFont appFont(fontFamily);
+    CalendarWindow::setFont(appFont);
+
     // Initialize current date to today's date
     QDate currentDate = QDate::currentDate();
     // Populate AD combo boxes
@@ -75,8 +81,7 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     QString bsMonthName = getBikramMonthName(bsMonth);
     QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
     QString paksha = QString::fromStdString(panchang.paksha);
-    QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
-
+     QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
 
     // Set current date in BS combo boxes
     ui->yearselectBS->setCurrentText(QString::number(bsYear));
@@ -290,17 +295,17 @@ void CalendarWindow::showAbout() {
     }
 
     QString aboutText = QString(R"(
-    <center>
-        <h2 class='about.h2'>About</h2>
-        <p class='about.p'>Nepali Calendar</p>
-        <p><b>Author:</b> <span class='about'>khumnath</span></p>
-        <p><b>Version:</b> %1</p>
-        <p>This application is written in C++ and Qt framework. For more information, visit my
-           <a href="https://github.com/khumnath/nepdate" class="about">GitHub page</a>.
+    <center style="background-color: white; padding: 20px;">
+        <h2 style="font-size: 24px; font-weight: bold; color: black;">Nepali Calendar</h2>
+        <p style="color: black;"><b>Author:</b> <span style="font-weight: normal;">khumnath</span></p>
+        <p style="color: black;"><b>Version:</b> <span style="color: green; font-weight: bold;">%1</span></p>
+        <p style="color: black;">This application is written in C++ and the Qt framework. For more information, visit my
+           <a href="https://github.com/khumnath/nepdate" style="color: blue; text-decoration: underline;">GitHub page</a>.
         </p>
     </center>)").arg(version);
 
     QMessageBox msgBox(QMessageBox::Information, "About", aboutText, QMessageBox::Ok, this);
+    msgBox.setTextFormat(Qt::RichText);
     msgBox.exec();
 }
 
@@ -443,10 +448,35 @@ void CalendarWindow::updateBsDateFromAd(int year, int month, int day) {
 
     // Populate BS day combo box based on current month and year
     populateBsDays(bsYear, bsMonth);
-
+    //QDate currentDate = QDate::currentDate();
     int bsDaysInMonth = converter.daysInMonth(bsYear, bsMonth);
-    ui->output->setText(QString("विक्रम सम्वत मा परिवर्तन गरियो: %1 %2 %3 गते %5 \n%2 %1 मा जम्मा दिन सङ्ख्या: %4")
-                            .arg(convertToNepaliNumerals(bsYear)).arg(bsMonthName).arg(convertToNepaliNumerals(bsDay)).arg(convertToNepaliNumerals(bsDaysInMonth)).arg(tithipaksha));
+    QDate bsDate(bsYear, bsMonth, bsDay);
+    // Get the current AD (Gregorian) system date
+    QDate systemDate = QDate::currentDate();
+
+    // Retrieve the selected AD date from combo boxes
+    int selectedAdYear = ui->yearselectAD->currentText().toInt();
+    int selectedAdMonth = ui->monthselectAD->currentIndex() + 1; // Adjust index
+    int selectedAdDay = ui->dayselectAD->currentText().toInt();
+    QDate selectedAdDate(selectedAdYear, selectedAdMonth, selectedAdDay);
+
+    // Check if the selected AD date matches the current system date
+    if (selectedAdDate == systemDate) {
+        ui->output->setText(QString("आज: बिक्रम सम्वत: %1 %2 %3 गते %5\n %2 %1 मा जम्मा दिन सङ्ख्या: %4")
+                                .arg(convertToNepaliNumerals(bsYear))
+                                .arg(bsMonthName)
+                                .arg(convertToNepaliNumerals(bsDay))
+                                .arg(convertToNepaliNumerals(bsDaysInMonth))
+                                .arg(tithipaksha));
+    } else {
+        ui->output->setText(QString("विक्रम सम्वत मा परिवर्तन गरियो: %1 %2 %3 गते %5\n %2 %1 मा जम्मा दिन सङ्ख्या: %4")
+                                .arg(convertToNepaliNumerals(bsYear))
+                                .arg(bsMonthName)
+                                .arg(convertToNepaliNumerals(bsDay))
+                                .arg(convertToNepaliNumerals(bsDaysInMonth))
+                                .arg(tithipaksha));
+    }
+
 
 
 

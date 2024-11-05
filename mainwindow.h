@@ -46,9 +46,6 @@ public:
     ~MainWindow();
 
 protected:
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
     void exitAll();
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -73,9 +70,12 @@ private:
 
     Ui::MainWindow *ui;
     QTimer *updateTimer;
-    bool isDragging;
-    QPoint dragStartPosition;
     CalendarWindow *calendarWindow;
+    bool isDragging;
+    bool dragStarted;
+    QPoint dragStartPosition;
+    QTimer *dragDelayTimer;
+
 };
 
 #endif // MAINWINDOW_H
