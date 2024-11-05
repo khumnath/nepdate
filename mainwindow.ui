@@ -3,21 +3,15 @@
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
   <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
+   <enum>Qt::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>278</width>
-    <height>47</height>
+    <width>280</width>
+    <height>59</height>
    </rect>
-  </property>
-  <property name="font">
-   <font>
-    <family>Noto Sans Devanagari</family>
-    <pointsize>11</pointsize>
-   </font>
   </property>
   <property name="cursor">
    <cursorShape>SizeAllCursor</cursorShape>
@@ -40,6 +34,12 @@
   <property name="windowIcon">
    <iconset theme="application-x-executable"/>
   </property>
+  <property name="toolTip">
+   <string/>
+  </property>
+  <property name="toolTipDuration">
+   <number>-1</number>
+  </property>
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
@@ -57,25 +57,26 @@ border-radius: 10px;</string>
    <bool>true</bool>
   </property>
   <property name="dockOptions">
-   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks|QMainWindow::ForceTabbedDocks|QMainWindow::VerticalTabs</set>
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks|QMainWindow::ForceTabbedDocks</set>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <property name="font">
-    <font>
-     <family>Noto Sans Devanagari</family>
-    </font>
-   </property>
    <widget class="QPushButton" name="dateButton">
     <property name="enabled">
      <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>0</y>
-      <width>241</width>
+      <x>20</x>
+      <y>10</y>
+      <width>251</width>
       <height>41</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="palette">
      <palette>
@@ -233,8 +234,8 @@ border-radius: 10px;</string>
     </property>
     <property name="font">
      <font>
-      <family>Noto Sans Devanagari</family>
-      <pointsize>14</pointsize>
+      <family>Laila</family>
+      <pointsize>16</pointsize>
      </font>
     </property>
     <property name="cursor">
@@ -243,8 +244,11 @@ border-radius: 10px;</string>
     <property name="mouseTracking">
      <bool>true</bool>
     </property>
+    <property name="tabletTracking">
+     <bool>true</bool>
+    </property>
     <property name="focusPolicy">
-     <enum>Qt::WheelFocus</enum>
+     <enum>Qt::StrongFocus</enum>
     </property>
     <property name="acceptDrops">
      <bool>true</bool>
@@ -258,7 +262,20 @@ border-radius: 10px;</string>
     <property name="text">
      <string>PushButton</string>
     </property>
+    <property name="icon">
+     <iconset resource="resources.qrc">
+      <normaloff>:/resources/flag.png</normaloff>:/resources/flag.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>17</width>
+      <height>17</height>
+     </size>
+    </property>
     <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <property name="autoDefault">
      <bool>false</bool>
     </property>
     <property name="flat">
@@ -268,6 +285,8 @@ border-radius: 10px;</string>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

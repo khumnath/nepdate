@@ -18,6 +18,7 @@
 #include <QDir>
 #include <QSettings>
 #include <QString>
+#include <QFontDatabase>
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
@@ -42,34 +43,51 @@ std::string MainWindow::getWeekdayName(int year, int month, int day) {
 }
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent), ui(new Ui::MainWindow), isDragging(true), calendarWindow(nullptr)
+    QMainWindow(parent), ui(new Ui::MainWindow), calendarWindow(nullptr), isDragging(false), dragStarted(false)
 {
     ui->setupUi(this);
+    this->installEventFilter(this);
     ui->dateButton->installEventFilter(this);
 
-    QString globalStyleSheet = R"(
+    // Initialize timer for distinguishing between click and drag
+    dragDelayTimer = new QTimer(this);
+    dragDelayTimer->setSingleShot(true);
+    connect(dragDelayTimer, &QTimer::timeout, this, [this]() {
+        if (isDragging) {
+            dragStarted = true;
+        }
+    });
+    setMouseTracking(true);
+
+    QString tooltipstyle = R"(
     QToolTip {
      background-color: white; color: black; border: 1px solid gray; border-radius: 5px;
     }
 )";
+    setStyleSheet(tooltipstyle);
 
-    setStyleSheet(globalStyleSheet);
-
-
+    int fontId = QFontDatabase::addApplicationFont(":/resources/Laila-Medium.ttf");
+    QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    QFont appFont(fontFamily);
+    QFont dateButtonFont(fontFamily, 14);  // To Do: set text size from setting menu */
+    ui->dateButton->setFont(dateButtonFont);
     updateTimer = new QTimer(this);
 connect(updateTimer, &QTimer::timeout, this, [=]() {
     updateDateButton();
     adjustTextColorBasedOnBackground();
+
 });
 updateTimer->start(1000);
 
 
-    setWindowFlags(Qt::Tool | Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint | Qt::WindowDoesNotAcceptFocus);
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::BypassWindowManagerHint | Qt::WindowDoesNotAcceptFocus);
     setMouseTracking(true);
     setAttribute(Qt::WA_TranslucentBackground);
 
     setWindowPosition();
     setupDefaultDate();
+    this->setWindowFlag(Qt::Tool);
+
 
 // Platform-specific code to ensure the window stays on top
 #ifdef Q_OS_X11
@@ -145,7 +163,7 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     Panchang panchang(julianDate);
     QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
     QString paksha = QString::fromStdString(panchang.paksha);
-    QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
+    QString tithipaksha = QString("%1 %2").arg(paksha, tithiName);
 
     // Construct the Nepali date format string
     QString nepaliFormat = QString::number(nepaliYear) + " " +
@@ -167,45 +185,70 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     // Set the Nepali formatted date to the button text and tooltip
     ui->dateButton->setText(nepaliFormat);
     ui->dateButton->setToolTipDuration(3000);
-    QFont tooltipFont("Noto Sans Devanagari", 12); // Replace "Noto Sans Devnagari" with the name of your desired font
+    QFont tooltipFont("Laila", 12); // Replace "Noto Sans Devnagari" with the name of your desired font
     QToolTip::setFont(tooltipFont);
-   ui->dateButton->setToolTip(nepalitooltip);
+    ui->dateButton->setToolTip(nepalitooltip);
     adjustTextColorBasedOnBackground();
-
-
     return 0;
 }
 
 // The event filter to handle tooltip display
 bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
-    if (watched == ui->dateButton) {
-        if (event->type() == QEvent::MouseMove) {
-            if (!isDragging) {
-                QPoint position = ui->dateButton->mapToGlobal(QPoint(0, 0));
-                position.setY(position.y() - ui->dateButton->height() - 10);
-                QToolTip::showText(position, ui->dateButton->toolTip(), ui->dateButton);
+    // Handle dragging for the entire window
+    if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+        if (mouseEvent->button() == Qt::LeftButton) {
+            isDragging = true;
+            dragStartPosition = mouseEvent->globalPosition().toPoint() - pos();
+            dragDelayTimer->start(200);
+            event->accept();
+        }
+    } else if (event->type() == QEvent::MouseMove) {
+        if (isDragging && dragDelayTimer->isActive()) {
+            QPoint movePosition = static_cast<QMouseEvent *>(event)->globalPosition().toPoint();
+            if ((movePosition - (pos() + dragStartPosition)).manhattanLength() > 5) {
+                dragDelayTimer->stop();
             }
-            return false;  // Pass the event to the base class
-        } else if (event->type() == QEvent::Leave) {
-            QToolTip::hideText();
-            return false;  // Pass the event to the base class
+        }
+
+        if (isDragging) {
+            move(static_cast<QMouseEvent *>(event)->globalPosition().toPoint() - dragStartPosition);
+            event->accept();
+        } else {
+            // Show tooltip only when not dragging
+            QToolTip::showText(static_cast<QMouseEvent *>(event)->globalPosition().toPoint(), ui->dateButton->toolTip(), ui->dateButton);
+        }
+    } else if (event->type() == QEvent::MouseButtonRelease) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+        if (mouseEvent->button() == Qt::LeftButton) {
+            dragDelayTimer->stop();
+            isDragging = false;
+            event->accept();
         }
     }
-    return QMainWindow::eventFilter(watched, event);
+
+    // Handle specific events for the dateButton
+    if (watched == ui->dateButton) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+            if (mouseEvent->button() == Qt::LeftButton) {
+                // Check if it is a click, not a drag
+                if (!isDragging) {
+                    openCalendarWindow();
+                }
+            }
+        } else if (event->type() == QEvent::Leave) {
+            QToolTip::hideText();
+        }
+    }
+    return QMainWindow::eventFilter(watched, event);  // Pass unhandled events to the base class
 }
-
-
-
 
 // Helper function to calculate the luminance of a color
 double luminance(QColor color) {
-    // Extracts the red, green, and blue components of the color as floating-point values.
     double r = color.redF();
     double g = color.greenF();
     double b = color.blueF();
-
-    // Linearizes the RGB components to account for the perceptual nonlinearity of human vision.
-    // This is done using a piecewise linear function that approximates the gamma curve of a typical display.
     r = (r <= 0.03928) ? r / 12.92 : std::pow((r + 0.055) / 1.055, 2.4);
     g = (g <= 0.03928) ? g / 12.92 : std::pow((g + 0.055) / 1.055, 2.4);
     b = (b <= 0.03928) ? b / 12.92 : std::pow((b + 0.055) / 1.055, 2.4);
@@ -216,33 +259,20 @@ double luminance(QColor color) {
 
 // Helper function to calculate the contrast ratio between two luminance values
 double contrastRatio(double lum1, double lum2) {
-    // Finds the brighter and darker luminance values.
     double brighter = std::max(lum1, lum2);
     double darker = std::min(lum1, lum2);
-
-    // Calculates the contrast ratio between the two luminance values, adding a small constant to avoid division by zero.
     return (brighter + 0.05) / (darker + 0.05);
 }
 
 // Main function to adjust the text color based on the background color
 void MainWindow::adjustTextColorBasedOnBackground() {
-    // Capture the screen behind the window.
     QPoint globalPos = ui->dateButton->mapToGlobal(QPoint(0, 0));
-
-    // Capture the screen behind the button.
     QScreen *screen = QGuiApplication::primaryScreen();
-
-    // Grab only area behind the button with button's dimensions
-    QPixmap pixmap = screen->grabWindow(0, globalPos.x(), globalPos.y(), ui->dateButton->width(), ui->dateButton->height());
+    QPixmap pixmap = screen->grabWindow(0, globalPos.x(), globalPos.y(),
+                                        ui->dateButton->width(), ui->dateButton->height());
     QImage image = pixmap.toImage();
-
-    // Scale down the image to reduce processing time.(this is optional).
     QImage scaledImage = image.scaled(10, 10, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-
-    // Calculate the average color of the background behind the date button.
     QColor averageColor = getAverageColor(scaledImage);
-
-    // Calculate the luminance of the background color.
     double bgLuminance = luminance(averageColor);
 
     // Get the luminance of black and white colors.
@@ -260,7 +290,7 @@ void MainWindow::adjustTextColorBasedOnBackground() {
     static QColor previousColor = bestTextColor;
 
     // Implement a smooth transition mechanism to avoid rapid color changes.
-    const double contrastThreshold = 2;  // Adjust this threshold to fine-tune the transition
+    const double contrastThreshold = (bgLuminance < 0.5) ? 1.5 : 2.0;  // Adjust this threshold to fine-tune the transition
     if (contrastRatio(luminance(previousColor), bgLuminance) < contrastThreshold) {
         previousColor = bestTextColor;
     }
@@ -282,10 +312,8 @@ QColor MainWindow::getAverageColor(const QImage &image) {
     // Iterate through each pixel in the image.
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
-            // Gets the color of the current pixel.
+            // Get the color of the current pixel.
             QColor color(image.pixel(x, y));
-
-            // Adds the red, green, and blue components of the current pixel to the accumulators.
             red += color.red();
             green += color.green();
             blue += color.blue();
@@ -295,7 +323,6 @@ QColor MainWindow::getAverageColor(const QImage &image) {
     // Calculates the average red, green, and blue values and returns the resulting average color.
     return QColor(red / pixelCount, green / pixelCount, blue / pixelCount);
 }
-
 
 void MainWindow::setupDefaultDate()
 {
@@ -408,40 +435,6 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
     menu.exec(event->globalPos());
 }
 
-void MainWindow::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        dragStartPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
-        isDragging = true;
-        event->accept();
-    } else {
-        isDragging = false;
-        event->ignore();
-    }
-    QMainWindow::mousePressEvent(event);
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    // qDebug() << "Mouse Move Event detected.";
-    if (isDragging) {
-        move(event->globalPosition().toPoint() - dragStartPosition);
-        event->accept();
-    }
-    QMainWindow::mouseMoveEvent(event);
-    adjustTextColorBasedOnBackground();
-}
-
-
-void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        isDragging = false;
-        event->accept();
-    }
-    QMainWindow::mouseReleaseEvent(event);
-    adjustTextColorBasedOnBackground();
-}
-
-
-
 void MainWindow::openCalendarWindow() {
     if (!calendarWindow || !calendarWindow->isVisible()) {
         calendarWindow = new CalendarWindow(this);
@@ -475,6 +468,8 @@ void MainWindow::updateDateButton() {
         lastUpdatedDate = today;
         cnvToNepali(today.month(), today.day(), today.year());
         adjustTextColorBasedOnBackground();
+        this->show();
+        this->raise();
     }
 }
 

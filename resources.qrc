@@ -8,5 +8,7 @@
         <file>resources/purnima.png</file>
         <file>resources/style.qss</file>
         <file>resources/VERSION.txt</file>
+        <file>resources/Laila-Medium.ttf</file>
+        <file>resources/flag.png</file>
     </qresource>
 </RCC>

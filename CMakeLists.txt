@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
-project(nepdate VERSION 2.0.2 LANGUAGES CXX)
+
+# Read version from VERSION.txt
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/resources/VERSION.txt" VERSION_CONTENTS)
+string(STRIP "${VERSION_CONTENTS}" APP_VERSION)
+
+# Project definition
+project(nepdate VERSION ${APP_VERSION} LANGUAGES CXX)
+
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,7 +18,7 @@ elseif (UNIX AND NOT APPLE)
     message(STATUS "Configuring for Linux")
 endif()
 
-# Try to find the highest available version of Qt (Qt7, Qt6, or Qt5)
+# Find Qt version
 find_package(Qt6 QUIET COMPONENTS Widgets Gui Core)
 if (NOT Qt6_FOUND)
     find_package(Qt5 QUIET COMPONENTS Widgets Gui Core)
@@ -41,16 +48,15 @@ function(add_nepdate_executable target_name sources headers forms resources)
     endif()
 endfunction()
 
-### nepdate-widget executable ###
 
-# Collect nepdate-widget sources
+# Define nepdate-widget executable
+
 set(NEPDATE_WIDGET_SOURCES
     main.cpp
     mainwindow.cpp
     calendarwindow.cpp
 )
 
-# Collect nepdate-widget headers
 set(NEPDATE_WIDGET_HEADERS
     mainwindow.h
     bikram.h
@@ -59,30 +65,29 @@ set(NEPDATE_WIDGET_HEADERS
     calendarwindow.h
 )
 
-# Collect nepdate-widget forms
 set(NEPDATE_WIDGET_FORMS
     mainwindow.ui
     calendarwindow.ui
 )
 
-# Collect nepdate-widget resources
 set(NEPDATE_WIDGET_RESOURCES
     resources.qrc
 )
 
-# Create nepdate-widget executable
-add_nepdate_executable(nepdate-widget "${NEPDATE_WIDGET_SOURCES}" "${NEPDATE_WIDGET_HEADERS}" "${NEPDATE_WIDGET_FORMS}" "${NEPDATE_WIDGET_RESOURCES}")
 
-### nepdate-calendar executable ###
+add_nepdate_executable(nepdate_widget "${NEPDATE_WIDGET_SOURCES}" "${NEPDATE_WIDGET_HEADERS}" "${NEPDATE_WIDGET_FORMS}" "${NEPDATE_WIDGET_RESOURCES}")
 
-# Collect nepdate-calendar sources
+
+# Set the output name to nepdate-widget
+set_target_properties(nepdate_widget PROPERTIES OUTPUT_NAME nepdate-widget)
+
+# Define nepdate-calendar executable
 set(NEPDATE_CALENDAR_SOURCES
     main_calendar.cpp
     calendarwindow.cpp
     mainwindow.cpp
 )
 
-# Collect nepdate-calendar headers
 set(NEPDATE_CALENDAR_HEADERS
     calendarwindow.h
     DayTithiWidget.h
@@ -91,16 +96,16 @@ set(NEPDATE_CALENDAR_HEADERS
     mainwindow.h
 )
 
-# Collect nepdate-calendar forms
 set(NEPDATE_CALENDAR_FORMS
     calendarwindow.ui
     mainwindow.ui
 )
 
-# Collect nepdate-calendar resources
 set(NEPDATE_CALENDAR_RESOURCES
     resources.qrc
 )
 
-# Create nepdate-calendar executable
-add_nepdate_executable(nepdate-calendar "${NEPDATE_CALENDAR_SOURCES}" "${NEPDATE_CALENDAR_HEADERS}" "${NEPDATE_CALENDAR_FORMS}" "${NEPDATE_CALENDAR_RESOURCES}")
+add_nepdate_executable(nepdate_calendar "${NEPDATE_CALENDAR_SOURCES}" "${NEPDATE_CALENDAR_HEADERS}" "${NEPDATE_CALENDAR_FORMS}" "${NEPDATE_CALENDAR_RESOURCES}")
+
+# Set the output name to nepdate-calendar
+set_target_properties(nepdate_calendar PROPERTIES OUTPUT_NAME nepdate_calendar)
