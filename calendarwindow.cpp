@@ -20,9 +20,17 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     blockSignals(false)
 {
     ui->setupUi(this);
+
+    // Apply the custom font
+    int fontId = QFontDatabase::addApplicationFont(":/resources/Laila-Medium.ttf");
+    if (fontId != -1) {
+        QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+        QFont appFont(fontFamily);
+        qApp->setFont(appFont);
+    }
+
     this->setWindowTitle("नेपाली पात्रो तथा मिति परिवर्तक");
     connect(ui->aboutbutton, &QPushButton::clicked, this, &CalendarWindow::showMenu);
-    // Center the window on the screen
     centerOnScreen();
     installEventFilter(this);
 
@@ -32,11 +40,6 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
         qApp->setStyleSheet(styleSheet);
         file.close();
     }
-
-    int fontId = QFontDatabase::addApplicationFont(":/resources/Laila-Medium.ttf");
-    QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-    QFont appFont(fontFamily);
-    CalendarWindow::setFont(appFont);
 
     // Initialize current date to today's date
     QDate currentDate = QDate::currentDate();
