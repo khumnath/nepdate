@@ -10,5 +10,6 @@
         <file>resources/VERSION.txt</file>
         <file>resources/Laila-Medium.ttf</file>
         <file>resources/flag.png</file>
+        <file>resources/Laila-Font-LICENSE</file>
     </qresource>
 </RCC>
