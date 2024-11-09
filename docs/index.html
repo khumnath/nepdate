@@ -44,7 +44,7 @@
     }
 
     .calendar {
-      display: none;  /* hidden untill correct calendar update logic fixed */
+   
       width: 100%;
       max-width: 600px;
       border: 1px solid #ccc;
@@ -232,8 +232,7 @@
         <center>
           <p>Converted Date: <span id="gYearResult" class="result"></span> <span id="gMonthResult"
                                                                                   class="result"></span> <span
-              id="gDayResult" class="result"></span> <!--<span id="gregorianWeekday"
-                                                          class="result"></span> removed --></p></center>
+              id="gDayResult" class="result"></span></p></center>
       </div>
     </div>
   </div>
@@ -241,10 +240,9 @@
 
 <div class="container">
   <div class="calendar" id="bikramCalendar">
-    <h3>Bikram Sambat Calendar Current Month </h3>
-    <div>
-      <span id="currentDate"></span>
-    </div>
+    <h3>Bikram Sambat Calendar</h3>
+    
+<br>
     <table>
       <thead>
       <tr>
@@ -264,67 +262,105 @@
   </div>
 </div>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const bikram = new Bikram();
+ document.addEventListener('DOMContentLoaded', function () {
+  const bikram = new Bikram();
 
-    function generateBikramCalendar(bsYear, bsMonth) {
-      const daysInMonth = bikram.daysInMonth(bsYear, bsMonth);
-      const firstDay = bikram.getDayOfWeek(bsYear, bsMonth, 1);
-      const currentDay = new Date().getDay();
-      const bikramBody = document.getElementById('bikramBody');
-      bikramBody.innerHTML = '';
+  // Function to generate the Bikram Sambat calendar
+ function generateBikramCalendar(bsYear, bsMonth) {
+  const daysInMonth = bikram.daysInMonth(bsYear, bsMonth); // Total number of days in the selected month
+  const firstDay = bikram.getDayOfWeek(bsYear, bsMonth, 1); // First day of the month (Bikram Sambat day of the week)
+  
+  // Get today's Bikram Sambat date
+  const today = new Date();
+  const todayBikramDate = bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
 
-      for (let i = 0; i < 6; i++) {
-        let row = document.createElement('tr');
-        for (let j = 0; j < 7; j++) {
-          let cell = document.createElement('td');
-          let dayNumber = i * 7 + j - firstDay;
 
-          if (dayNumber > 0 && dayNumber <= daysInMonth) {
-            cell.innerHTML = convertToNepaliDigits(dayNumber);
+  const bikramBody = document.getElementById('bikramBody');
+  bikramBody.innerHTML = ''; // Clear the existing calendar body
 
-            // Convert Bikram Sambat date to Gregorian date
-            let gDate = bikram.toGregorian(bsYear, bsMonth, dayNumber);
+  let dayCounter = 1; // Start with the 1st day of the month
+  let row = document.createElement('tr'); // Create the first row for weekdays
 
-            // Calculate Tithi
-            try {
-              let tithiInfo = calculateTithi(gDate.year, gDate.month, gDate.day);
-              if (tithiInfo && tithiInfo.tithi) {
-               cell.setAttribute('title', `${tithiInfo.tithi} - ${tithiInfo.paksha}`);;
-                cell.innerHTML += `<br><span class="tithi-label">${tithiInfo.tithi}</span>`;
-              } else {
-                console.error(`Tithi info is undefined for: Year: ${gDate.year}, Month: ${gDate.month}, Day: ${gDate.day}`);
-              }
-            } catch (error) {
-              console.error(`Error calculating tithi for: Year: ${gDate.year}, Month: ${gDate.month}, Day: ${gDate.day}`, error);
-            }
+  // Loop through the weeks (6 rows to handle all days in the month)
+  for (let i = 0; i < 6; i++) {
+    // Loop through the days of the week (7 columns)
+    for (let j = 0; j < 7; j++) {
+      let cell = document.createElement('td');
+      
+      // Check if it's the correct day in the calendar
+      if (i === 0 && j < firstDay) {
+        // Fill empty cells before the first day of the month
+        cell.textContent = '';
+      } else if (dayCounter <= daysInMonth) {
+        // Fill cells with actual days
+        cell.innerHTML = convertToNepaliDigits(dayCounter);
 
-            if (j === currentDay && i === 0) {
-              cell.style.color = 'red';
-            }
-          } else {
-            cell.textContent = '';
+        // Convert Bikram Sambat date to Gregorian date
+        let gDate = bikram.toGregorian(bsYear, bsMonth, dayCounter);
+
+        // Calculate Tithi (if available)
+        try {
+          let tithiInfo = calculateTithi(gDate.year, gDate.month, gDate.day);
+          if (tithiInfo && tithiInfo.tithi) {
+            cell.setAttribute('title', `${tithiInfo.tithi} - ${tithiInfo.paksha}`);
+            cell.innerHTML += `<br><span class="tithi-label">${tithiInfo.tithi}</span>`;
           }
-
-          row.appendChild(cell);
+        } catch (error) {
+          console.error(`Error calculating tithi for: Year: ${gDate.year}, Month: ${gDate.month}, Day: ${gDate.day}`, error);
         }
-        bikramBody.appendChild(row);
+
+        // Highlight today's Bikram Sambat date
+        if (dayCounter === todayBikramDate) {
+          cell.style.backgroundColor = 'yellow'; // Highlight today
+        }
+
+        dayCounter++; // Increment the day counter for the next day
+      } else {
+        // Fill remaining cells after the last day of the month
+        cell.textContent = '';
       }
 
-      document.getElementById('currentDate').textContent = `${bikram.getBikramMonthName(bsMonth)} ${convertToNepaliDigits(bsYear)}`;
+      row.appendChild(cell); // Append the cell to the row
     }
 
-    const today = new Date();
-    bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, 1);
-    generateBikramCalendar(bikram.getYear(), bikram.getMonth() + 1);
+    bikramBody.appendChild(row); // Append the row to the calendar body
 
-    document.getElementById('bikramCalendar').addEventListener('change', function () {
-      const bsYear = parseInt(document.getElementById('bikramYear').value);
-      const bsMonth = parseInt(document.getElementById('bikramMonth').value);
-      generateBikramCalendar(bsYear, bsMonth);
-      bikram.fromNepali(bsYear, bsMonth, 1);
-    });
-  });
+    // If dayCounter exceeds the number of days in the month, stop adding new rows
+    if (dayCounter > daysInMonth) {
+      break;
+    }
+
+    // Create a new row for the next week
+    row = document.createElement('tr');
+  }
+
+}
+  
+
+  // Function to update the calendar from selected Gregorian date
+  function updateCalendarFromGregorian() {
+    const gYear = parseInt(document.getElementById('gYear').value);
+    const gMonth = parseInt(document.getElementById('gMonth').value);
+    const gDay = parseInt(document.getElementById('gDay').value);
+
+    // Convert the Gregorian date to Bikram Sambat date
+    bikram.fromGregorian(gYear, gMonth, gDay);
+
+    // Generate the calendar for the corresponding Bikram Sambat year and month
+    generateBikramCalendar(bikram.getYear(), bikram.getMonth() + 1); // Bikram months are 1-indexed
+  }
+
+  // Listen for changes in the Gregorian date dropdowns
+  document.getElementById('gYear').addEventListener('change', updateCalendarFromGregorian);
+  document.getElementById('gMonth').addEventListener('change', updateCalendarFromGregorian);
+  //document.getElementById('gDay').addEventListener('change', updateCalendarFromGregorian);
+
+  // Generate the initial Bikram Sambat calendar
+  const today = new Date();
+  bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, 1); // Initialize Bikram from current Gregorian date
+  generateBikramCalendar(bikram.getYear(), bikram.getMonth() + 1); // Generate the calendar for the current month
+});
+
 </script>
 
 

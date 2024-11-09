@@ -97,7 +97,7 @@
         let nepalimonth = saura_masa_num % 12;
         this.Year = YearSaka + 135 + Math.floor((saura_masa_num - nepalimonth) / 12);
         this.Month = (saura_masa_num + 1) % 12;
-        this.Day = saura_masa_day;
+        this.Day = saura_masa_day +1;
       }
 
       // Public method to convert Bikram Sambat to Gregorian
@@ -106,7 +106,7 @@
         let YearKali = YearSaka + 3179;
         let ahar = Math.floor((YearKali * this.YugaCivilDays) / this.YugaRotation_sun);
         let [saura_masa_num, saura_masa_day] = this.getSauraMasaDay(ahar);
-        bsMonth = (bsMonth + 11) % 12; // Adjust the month to the correct range
+        bsMonth = (bsMonth + 12) % 12; // Adjust the month to the correct range
         while (saura_masa_num !== bsMonth || saura_masa_day !== bsDay) {
           if (saura_masa_num < bsMonth || (saura_masa_num === bsMonth && saura_masa_day < bsDay)) {
             ahar++;
@@ -141,7 +141,7 @@
 
 
       getDay() {
-        return this.Day;
+        return this.Day -1;
       }
 getNepaliWeekdayName() {
     const weekdayNepali = ["आइतबार", "सोमबार", "मङ्गलबार", "बुधबार", "बिहिबार", "शुक्रबार", "शनिबार"];
@@ -176,7 +176,7 @@ getGregorianMonthName() {
 
   // Method to get Nepali day name for Gregorian date
   getGregorianDayName(year, month, day) {
-    let date = new Date(year, month - 1, day);
+    let date = new Date(year, month, day);
     const weekdayNepali = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     return weekdayNepali[date.getDay()];
   }
