@@ -96,8 +96,8 @@
         let YearSaka = YearKali - 3179;
         let nepalimonth = saura_masa_num % 12;
         this.Year = YearSaka + 135 + Math.floor((saura_masa_num - nepalimonth) / 12);
-        this.Month = (saura_masa_num + 1) % 12;
-        this.Day = saura_masa_day +1;
+        this.Month = (saura_masa_num +1 ) % 12;
+        this.Day = saura_masa_day +1 ;
       }
 
       // Public method to convert Bikram Sambat to Gregorian
@@ -106,7 +106,7 @@
         let YearKali = YearSaka + 3179;
         let ahar = Math.floor((YearKali * this.YugaCivilDays) / this.YugaRotation_sun);
         let [saura_masa_num, saura_masa_day] = this.getSauraMasaDay(ahar);
-        bsMonth = (bsMonth + 12) % 12; // Adjust the month to the correct range
+        bsMonth = (bsMonth + 11) % 12; // Month is 0 indexed so last month 11
         while (saura_masa_num !== bsMonth || saura_masa_day !== bsDay) {
           if (saura_masa_num < bsMonth || (saura_masa_num === bsMonth && saura_masa_day < bsDay)) {
             ahar++;
@@ -123,7 +123,7 @@
         let { year, month, day } = this.toGregorian(bsYear, bsMonth, bsDay);
         this.Year = year;
         this.Month = month;
-        this.Day = day;
+        this.Day = day +1; // Day Index Starts from 0,   This is same as  this.Day = saura_masa_day +1 ;
       }
 
       getDayOfWeek() {
