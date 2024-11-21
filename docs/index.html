@@ -1,402 +1,370 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Date Converter: Gregorian <-> Bikram Sambat</title>
-  <link rel="icon" href="favicon.png" type="image/png">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <script src="bikram.js"></script>
-  <script src="tithi.js"></script> <!-- Include your tithi.js script here -->
-  <style>
-    body {
-      padding: 20px;
-      background-color: #f8f9fa;
-      font-family: Arial, sans-serif;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Eczar:wght@400;500&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="bikram.js"></script>
+    <script type="text/javascript" src="tithi.js"></script>
+    <style>
+body {
+    font-family: 'Eczar', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    margin: 10px 0;
+    color: #333;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.language-toggle, .conversion-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+    width: 100%;
+}
+
+label {
+    margin: 10px 0 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+select, input, button {
+    padding: 3px 19px;
+    margin: 5px 0;
+    width: 100%;
+    max-width: 250px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #007bff; /* Blue */
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-family: 'Eczar', sans-serif;
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker blue */
+}
+
+#bikramResult, #gregorianResult {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+@media (min-width: 600px) {
+    .language-toggle, .conversion-form {
+        flex-direction: column;
+        justify-content: space-between;
     }
 
+    .conversion-form label, .conversion-form select, .conversion-form input, .conversion-form button {
+        width: 48%;
+    }
+
+    .conversion-form button {
+        width: 100%;
+    }
+}
+
+@media (min-width: 768px) {
     .container {
-      max-width: 800px;
-      margin: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      background-color: #f8f9fa;
+        padding: 40px;
     }
+}
 
-    .converter-section {
-      width: 100%;
-      max-width: 600px;
-      background-color: #ffffff;
-      border: 1px solid #ccc;
-      padding: 20px;
-      margin-bottom: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .converter-section .card {
-      width: 100%;
-      max-width: 600px;
-      margin-bottom: 20px;
-    }
-
-    .calendar {
-   
-      width: 100%;
-      max-width: 600px;
-      border: 1px solid #ccc;
-      background-color: #ffffff;
-      padding: 20px;
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .calendar h3 {
-      text-align: center;
-    }
-
-    .calendar table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .calendar th, .calendar td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-
-    .calendar th {
-      background-color: #f2f2f2;
-    }
-
-    .form-check-label {
-      display: block;
-      width: fit-content;
-      margin: auto;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-
-    .form-check-label.blue {
-      margin-left: 10px;
-    }
-
-    .custom-dropdown {
-      width: 100px;
-    }
-
-    /* Switch slider styles */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 80px;
-      height: 34px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: green;
-      transition: .4s;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .4s;
-    }
-
-    input:checked + .slider {
-      background-color: #2196F3;
-    }
-
-    input:checked + .slider:before {
-      -webkit-transform: translateX(26px);
-      -ms-transform: translateX(26px);
-      transform: translateX(26px);
-    }
-
-    .slider.round {
-      border-radius: 34px;
-    }
-
-    .slider.round:before {
-      border-radius: 50%;
-    }
-.tithi-label {
-      color: blue;
-      font-size: 0.5em;
-    }
-
-  </style>
+    </style>
 </head>
 <body>
-<div class="container mt-3">
-  <h1 class="text-center">Nepali Date Converter</h1>
-  <div class="d-flex justify-content-center align-items-center">
-    <label class="form-check-label mr-3"
-           style="background-color:green;color: white;padding: 10px;border-radius: 8px;">Convert To Bikram Sambat</label>
-    <label class="switch">
-      <input type="checkbox" id="converterSwitch" onchange="toggleConverter()">
-      <span class="slider round"></span>
-    </label>
-    <label class="form-check-label ml-3"
-           style="background-color:#2196F3;color: white;padding: 10px;border-radius: 8px;">Convert To English</label>
-  </div>
+    <h1 id="title">Date Converter</h1>
 
-  <div id="gregorianToBikram" class="converter-section">
-    <div class="card">
-      <center>
-        <div class="card-header">Gregorian to Bikram Sambat</div>
-      </center>
-      <div class="card-body">
-        <form id="gregorianToBikramForm">
-          <div class="row mb-3">
-            <div class="col">
-              <label for="gYear">Year:</label>
-              <select id="gYear" class="form-control custom-dropdown" onchange="updateBikramDate()">
-                <!-- Options filled dynamically with JavaScript -->
-              </select>
-            </div>
-            <div class="col">
-              <label for="gMonth">Month:</label>
-              <select id="gMonth" class="form-control custom-dropdown" onchange="updateBikramDate()">
-                <!-- Options filled dynamically with JavaScript -->
-              </select>
-            </div>
-            <div class="col">
-              <label for="gDay">Day:</label>
-              <select id="gDay" class="form-control custom-dropdown" onchange="updateBikramDate()">
-                <!-- Options filled dynamically with JavaScript -->
-              </select>
-            </div>
-          </div>
-        </form>
-        <center>
-          <p>विक्रम सम्बत् : <span id="bikramYear" class="result"></span> <span id="bikramMonth"
-                                                                              class="result"></span> <span
-              id="bikramDay" class="result"></span> <span>गते </span><!--<span id="bikramWeekday"
-                                                                        class="result"></span> removed --></p></center>
-
-      </div>
+    <div class="language-toggle">
+        <label for="language" id="languageLabel">Select Language:</label>
+        <select id="language" onchange="changeLanguage()">
+            <option value="nepali">Nepali</option>
+            <option value="english">English</option>
+        </select>
     </div>
-  </div>
 
-  <div id="bikramToGregorian" class="converter-section" style="display:none;">
-    <div class="card">
-      <center>
-        <div class="card-header">Bikram Sambat to Gregorian</div>
-      </center>
-      <div class="card-body">
-        <form id="bikramToGregorianForm">
-          <div class="row mb-3">
-            <div class="col">
-              <label for="bsYear">Year:</label>
-              <select id="bsYear" class="form-control custom-dropdown" onchange="updateGregorianDate()">
-                <!-- Options filled dynamically with JavaScript -->
-              </select>
-            </div>
-            <div class="col">
-              <label for="bsMonth">Month:</label>
-              <select id="bsMonth" class="form-control custom-dropdown" onchange="updateGregorianDate()">
-
-              </select>
-            </div>
-            <div class="col">
-              <label for="bsDay">Day:</label>
-              <select id="bsDay" class="form-control custom-dropdown" onchange="updateGregorianDate()">
-                <!-- Options filled dynamically with JavaScript -->
-              </select>
-            </div>
-          </div>
-        </form>
-        <center>
-          <p>Converted Date: <span id="gYearResult" class="result"></span> <span id="gMonthResult"
-                                                                                  class="result"></span> <span
-              id="gDayResult" class="result"></span></p></center>
-      </div>
-    </div>
-  </div>
-</div>
-<center><p><span style="color: #0000ff;">calendar is still not working</span></p></center>
-<div class="container">
-  <div class="calendar" id="bikramCalendar">
-    <h3>Bikram Sambat Calendar</h3>
+    <h2 id="convertToBikramTitle">Gregorian to Bikram Sambat</h2>
+    <label for="gYear" id="gYearLabel">Year:</label>
+    <input type="number" id="gYear" placeholder="YYYY" />
     
-<br>
-    <table>
-      <thead>
-      <tr>
-        <th>आइत</th>
-        <th>सोम</th>
-        <th>मङ्गल</th>
-        <th>बुध</th>
-        <th>बिहि</th>
-        <th>शुक्र</th>
-        <th>शनि</th>
-      </tr>
-      </thead>
-      <tbody id="bikramBody">
-      <!-- Bikram Sambat calendar days will be inserted here -->
-      </tbody>
-    </table>
-  </div>
-</div>
-<script>
- document.addEventListener('DOMContentLoaded', function () {
-  const bikram = new Bikram();
+    <label for="gMonth" id="gMonthLabel">Month:</label>
+    <select id="gMonth"></select>
 
-  // Function to generate the Bikram Sambat calendar
- function generateBikramCalendar(bsYear, bsMonth) {
-  const daysInMonth = bikram.daysInMonth(bsYear, bsMonth); // Total number of days in the selected month
-  const firstDay = bikram.getDayOfWeek(bsYear, bsMonth, 1); // First day of the month (Bikram Sambat day of the week)
-  
-  // Get today's Bikram Sambat date
-  const today = new Date();
-  const todayBikramDate = bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    <label for="gDay" id="gDayLabel">Day:</label>
+    <input type="number" id="gDay" placeholder="DD" />
+    
+    <button onclick="convertToBikram()" id="convertToBikramButton">Convert to Bikram Sambat</button>
+    
+    <h3 id="bikramResult"></h3>
 
+    <h2 id="convertToGregorianTitle">Bikram Sambat to Gregorian</h2>
+    <label for="bsYear" id="bsYearLabel">Year:</label>
+    <input type="number" id="bsYear" placeholder="YYYY" />
+    
+    <label for="bsMonth" id="bsMonthLabel">Month:</label>
+    <select id="bsMonth"></select>
 
-  const bikramBody = document.getElementById('bikramBody');
-  bikramBody.innerHTML = ''; // Clear the existing calendar body
+    <label for="bsDay" id="bsDayLabel">Day:</label>
+    <input type="number" id="bsDay" placeholder="DD" />
+    
+    <button onclick="convertToGregorian()" id="convertToGregorianButton">Convert to Gregorian</button>
+    
+    <h3 id="gregorianResult"></h3>
 
-  let dayCounter = 1; // Start with the 1st day of the month
-  let row = document.createElement('tr'); // Create the first row for weekdays
+    <script>
 
-  // Loop through the weeks (6 rows to handle all days in the month)
-  for (let i = 0; i < 6; i++) {
-    // Loop through the days of the week (7 columns)
-    for (let j = 0; j < 7; j++) {
-      let cell = document.createElement('td');
-      
-      // Check if it's the correct day in the calendar
-      if (i === 0 && j < firstDay) {
-        // Fill empty cells before the first day of the month
-        cell.textContent = '';
-      } else if (dayCounter <= daysInMonth) {
-        // Fill cells with actual days
-        cell.innerHTML = convertToNepaliDigits(dayCounter);
+function populateDateDropdowns() {
+    const today = new Date();
+    const gYear = today.getFullYear();
+    const gMonth = today.getMonth() + 1; // Months are 0-based, so add 1
+    const gDay = today.getDate();
 
-        // Convert Bikram Sambat date to Gregorian date
-        let gDate = bikram.toGregorian(bsYear, bsMonth, dayCounter);
-
-        // Calculate Tithi (if available)
-        try {
-          let tithiInfo = calculateTithi(gDate.year, gDate.month, gDate.day);
-          if (tithiInfo && tithiInfo.tithi) {
-            cell.setAttribute('title', `${tithiInfo.tithi} - ${tithiInfo.paksha}`);
-            cell.innerHTML += `<br><span class="tithi-label">${tithiInfo.tithi}</span>`;
-          }
-        } catch (error) {
-          console.error(`Error calculating tithi for: Year: ${gDate.year}, Month: ${gDate.month}, Day: ${gDate.day}`, error);
-        }
-
-        // Highlight today's Bikram Sambat date
-        if (dayCounter === todayBikramDate) {
-          cell.style.backgroundColor = 'yellow'; // Highlight today
-        }
-
-        dayCounter++; // Increment the day counter for the next day
-      } else {
-        // Fill remaining cells after the last day of the month
-        cell.textContent = '';
-      }
-
-      row.appendChild(cell); // Append the cell to the row
+    // Populate Gregorian Year
+    const yearSelect = document.getElementById("gYear");
+    yearSelect.innerHTML = ""; // Clear existing options
+    for (let year = gYear - 10; year <= gYear + 10; year++) {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
     }
+    yearSelect.value = gYear; // Set today's year
 
-    bikramBody.appendChild(row); // Append the row to the calendar body
-
-    // If dayCounter exceeds the number of days in the month, stop adding new rows
-    if (dayCounter > daysInMonth) {
-      break;
-    }
-
-    // Create a new row for the next week
-    row = document.createElement('tr');
-  }
-
-}
-  
-
-  // Function to update the calendar from selected Gregorian date
-  function updateCalendarFromGregorian() {
-    const gYear = parseInt(document.getElementById('gYear').value);
-    const gMonth = parseInt(document.getElementById('gMonth').value);
-    const gDay = parseInt(document.getElementById('gDay').value);
-
-    // Convert the Gregorian date to Bikram Sambat date
-    bikram.fromGregorian(gYear, gMonth, gDay);
-
-    // Generate the calendar for the corresponding Bikram Sambat year and month
-    generateBikramCalendar(bikram.getYear(), bikram.getMonth() + 1); // Bikram months are 1-indexed
-  }
-
-  // Listen for changes in the Gregorian date dropdowns
-  document.getElementById('gYear').addEventListener('change', updateCalendarFromGregorian);
-  document.getElementById('gMonth').addEventListener('change', updateCalendarFromGregorian);
-  //document.getElementById('gDay').addEventListener('change', updateCalendarFromGregorian);
-
-  // Generate the initial Bikram Sambat calendar
-  const today = new Date();
-  bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, 1); // Initialize Bikram from current Gregorian date
-  generateBikramCalendar(bikram.getYear(), bikram.getMonth() + 1); // Generate the calendar for the current month
-});
-
-</script>
-
-
-
-
-
-<script>
-
-  function toggleConverter() {
-    var isChecked = document.getElementById('converterSwitch').checked;
-    if (isChecked) {
-      document.getElementById('gregorianToBikram').style.display = 'none';
-      document.getElementById('bikramToGregorian').style.display = 'block';
-    } else {
-      document.getElementById('gregorianToBikram').style.display = 'block';
-      document.getElementById('bikramToGregorian').style.display = 'none';
-    }
-  }
-
-  // Function to convert numbers to Nepali digits
-  function convertToNepaliDigits(number) {
-    const engDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    const nepaliDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
-
-    let result = '';
-    String(number).split('').forEach(char => {
-      let index = engDigits.indexOf(char);
-      if (index !== -1) {
-        result += nepaliDigits[index];
-      } else {
-        result += char; // If character is not a digit, retain it as it is
-      }
+    // Populate Gregorian Month
+    const monthSelect = document.getElementById("gMonth");
+    monthSelect.innerHTML = ""; // Clear existing options
+    translations[currentLanguage].gMonths.forEach((month, index) => {
+        const option = document.createElement("option");
+        option.value = index + 1; // Month value starts from 1
+        option.textContent = month; // Use month names
+        monthSelect.appendChild(option);
     });
+    monthSelect.value = gMonth; // Set today's month (1-based)
 
-    return result;
-  }
-</script>
+    // Populate Gregorian Day
+    const daySelect = document.getElementById("gDay");
+    daySelect.innerHTML = ""; // Clear existing options
+    const daysInMonth = new Date(gYear, gMonth, 0).getDate(); // Get the number of days in the month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const option = document.createElement("option");
+        option.value = day;
+        option.textContent = day;
+        daySelect.appendChild(option);
+    }
+    daySelect.value = gDay; // Set today's day
+
+    // Convert today's Gregorian date to Bikram Sambat
+    const bikram = new Bikram();
+    bikram.fromGregorian(gYear, gMonth, gDay);
+    const bsYear = bikram.getYear();
+    const bsMonth = bikram.getMonth();
+    const bsDay = bikram.getDay();
+
+    // Populate Bikram Sambat Year
+    const bsYearSelect = document.getElementById("bsYear");
+    bsYearSelect.innerHTML = ""; // Clear existing options
+    for (let year = bsYear - 10; year <= bsYear + 10; year++) {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        bsYearSelect.appendChild(option);
+    }
+    bsYearSelect.value = bsYear; // Set today's Bikram Sambat year
+
+    // Populate Bikram Sambat Month
+    const bsMonthSelect = document.getElementById("bsMonth");
+    bsMonthSelect.innerHTML = ""; // Clear existing options
+    translations[currentLanguage].bsMonths.forEach((month, index) => {
+        const option = document.createElement("option");
+        option.value = index + 1; // Month value starts from 1
+        option.textContent = month; // Use month names
+        bsMonthSelect.appendChild(option);
+    });
+    bsMonthSelect.value = bsMonth; // Set today's Bikram Sambat month
+
+    // Populate Bikram Sambat Day
+    const bsDaySelect = document.getElementById("bsDay");
+    bsDaySelect.innerHTML = ""; // Clear existing options
+    const bsDaysInMonth = new Bikram().daysInMonth(bsYear, bsMonth); // Get the number of days in the Bikram Sambat month
+    for (let day = 1; day <= bsDaysInMonth; day++) {
+        const option = document.createElement("option");
+        option.value = day;
+        option.textContent = day;
+        bsDaySelect.appendChild(option);
+    }
+    bsDaySelect.value = bsDay; // Set today's Bikram Sambat day
+}
+
+        const translations = {
+            english: {
+                title: "Date Converter",
+                languageLabel: "Select Language:",
+                convertToBikramTitle: "Convert Gregorian to Bikram Sambat",
+                gYearLabel: "Year:",
+                gMonthLabel: "Month:",
+                gDayLabel: "Day:",
+                convertToBikramButton: "Convert to Bikram Sambat",
+                convertToGregorianTitle: "Convert Bikram Sambat to Gregorian",
+                bsYearLabel: "Year:",
+                bsMonthLabel: "Month:",
+                bsDayLabel: "Day:",
+                convertToGregorianButton: "Convert to Gregorian",
+                gMonths: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                bsMonths: ["Baisakh", "Jestha", "Ashadh", "Shrawan", "Bhadra", "Ashwin", "Kartik", "Mangsir", "Poush", "Magh", "Falgun", "Chaitra"]
+            },
+            nepali: {
+                title: "मिति रूपान्तरण",
+                languageLabel: "भाषा चयन गर्नुहोस्:",
+                convertToBikramTitle: "विक्रम सम्बतमा रूपान्तरण",
+                gYearLabel: "वर्ष:",
+                gMonthLabel: "महिना:",
+                gDayLabel: "दिन:",
+                convertToBikramButton: "विक्रम सम्बतमा रूपान्तरण गर्नुहोस्",
+                convertToGregorianTitle: "इसवि सनमा रूपान्तरण",
+                bsYearLabel: "वर्ष:",
+                bsMonthLabel: "महिना:",
+                bsDayLabel: "दिन:",
+                convertToGregorianButton: "इसवि सनमा रूपान्तरण गर्नुहोस्",
+                gMonths: ["जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जुन", "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"],
+                bsMonths: ["बैसाख", "जेष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन", "कार्तिक", "मंसिर", "पौष", "माघ", "फागुन", "चैत"]
+            }
+        };
+     
+       let currentLanguage = 'nepali'; // Set initial language to Nepali
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById("language").value; // Update the existing variable
+            const lang = translations[currentLanguage];
+
+            document.getElementById("title").innerText = lang.title;
+            document.getElementById("languageLabel").innerText = lang.languageLabel;
+            document.getElementById("convertToBikramTitle").innerText = lang.convertToBikramTitle;
+            document.getElementById("gYearLabel").innerText = lang.gYearLabel;
+            document.getElementById("gMonthLabel").innerText = lang.gMonthLabel;
+            document.getElementById("gDayLabel").innerText = lang.gDayLabel;
+            document.getElementById("convertToBikramButton").innerText = lang.convertToBikramButton;
+            document.getElementById("convertToGregorianTitle").innerText = lang.convertToGregorianTitle;
+            document.getElementById("bsYearLabel").innerText = lang.bsYearLabel;
+            document.getElementById("bsMonthLabel").innerText = lang.bsMonthLabel;
+            document.getElementById("bsDayLabel").innerText = lang.bsDayLabel;
+            document.getElementById("convertToGregorianButton").innerText = lang.convertToGregorianButton;
+
+            // Update dropdown items
+            updateDropdowns(lang.gMonths, lang.bsMonths);
+            populateDateDropdowns();
+
+            // Clear results when language changes
+            document.getElementById("bikramResult").innerText = "";
+            document.getElementById("gregorianResult").innerText = "";
+        }
+
+
+
+
+        function updateDropdowns(gMonths, bsMonths) {
+            const gMonthSelect = document.getElementById("gMonth");
+            const bsMonthSelect = document.getElementById("bsMonth");
+
+            // Clear existing options
+            gMonthSelect.innerHTML = '';
+            bsMonthSelect.innerHTML = '';
+
+            // Populate Gregorian months
+            gMonths.forEach((month, index) => {
+                const option = document.createElement("option");
+                option.value = index + 1; // Month value starts from 1
+                option.text = month;
+                gMonthSelect.appendChild(option);
+            });
+
+            // Populate Bikram Sambat months
+            bsMonths.forEach((month, index) => {
+                const option = document.createElement("option");
+                option.value = index + 1; // Month value starts from 1
+                option.text = month;
+                bsMonthSelect.appendChild(option);
+            });
+        }
+
+        // Call changeLanguage on page load to set initial language to Nepali
+        window.onload = function() {
+    document.getElementById("language").value = "nepali"; // Set default language to Nepali
+    changeLanguage(); // Update the interface to Nepali
+    populateDateDropdowns(); // Call the function to populate the dropdowns with current date on page load
+};
+      
+       function convertToBikram() {
+    const gYear = parseInt(document.getElementById("gYear").value);
+    const gMonth = document.getElementById("gMonth").selectedIndex + 1; // Get the selected index and convert to 1-based month
+    const gDay = parseInt(document.getElementById("gDay").value);
+
+    const bikram = new Bikram();
+    bikram.fromGregorian(gYear, gMonth, gDay);
+    const bikramYear = bikram.getYear();
+    const bikramMonth = bikram.getMonth(); // Get the month index (1-12)
+    const bikramMonthName = bikram.getMonthName(bikramMonth); // Get the month name
+    const bikramDay = bikram.getDay();
+    const weekdayName = bikram.getWeekdayName(gYear, gMonth, gDay);
+    
+    // Calculate Tithi using the original Gregorian date
+    const tithiInfo = calculateTithi(gYear, gMonth, gDay); // Use Gregorian date for Tithi calculation
+    const tithiDisplay = tithiInfo.tithi;
+    const pakshaDisplay = tithiInfo.paksha;
+
+    // Display the result
+    document.getElementById("bikramResult").innerText = `${bikramYear} ${bikramMonthName} ${bikramDay} ${weekdayName} (${pakshaDisplay}, ${tithiDisplay})`;
+}
+        function convertToGregorian() {
+    const bsYear = parseInt(document.getElementById("bsYear").value);
+    const bsMonth = parseInt(document.getElementById("bsMonth").value);
+    const bsDay = parseInt(document.getElementById("bsDay").value);
+
+    const bikram = new Bikram();
+    bikram.fromNepali(bsYear, bsMonth, bsDay);
+    const gYear = bikram.getYear();
+    const gMonth = bikram.getMonth(); // Get the month number (1-based)
+    const gDay = bikram.getDay();
+    
+    // Get the correct month name for the Gregorian date
+    const language = document.getElementById("language").value;
+    const gMonthName = language === "nepali" ? 
+        translations.nepali.gMonths[gMonth - 1] : 
+        translations.english.gMonths[gMonth - 1];
+
+    const weekdayName = bikram.getWeekdayName(gYear, gMonth, gDay);
+    document.getElementById("gregorianResult").innerText = ` ${gYear} ${gMonthName} ${gDay} ${weekdayName}`;
+}
+    </script>
 </body>
 </html>

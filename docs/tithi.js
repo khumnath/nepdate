@@ -2,7 +2,7 @@ function calculateTithi(year, month, day) {
     const tdays = calculateDaysSinceJ2000(year, month, day);
     const tithiIndex = calculateTithiIndex(tdays);
     return {
-        tithi: getTithiName(tithiIndex),
+        tithi: getTithiName(tithiIndex + 1),
         paksha: getPaksha(tithiIndex)
     };
 }
