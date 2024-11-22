@@ -17,30 +17,34 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 88vh;
     background-color: #f0f2f5;
 }
 
 h1, h2, h3 {
     text-align: center;
-    margin: 10px 0;
+    margin: 20px 0;
     color: #333;
 }
 
 .container {
     width: 90%;
-    max-width: 600px;
+    max-width: 1200px;
     background: white;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.language-toggle, .conversion-form {
+.language-toggle {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin: 20px 0;
+    max-width: 300px;
     width: 100%;
 }
 
@@ -51,10 +55,9 @@ label {
 }
 
 select, input, button {
-    padding: 3px 19px;
+    padding: 12px 20px;
     margin: 5px 0;
     width: 100%;
-    max-width: 250px;
     box-sizing: border-box;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -67,7 +70,6 @@ button {
     border: none;
     cursor: pointer;
     transition: background-color 0.3s;
-    font-family: 'Eczar', sans-serif;
 }
 
 button:hover {
@@ -80,31 +82,39 @@ button:hover {
     color: #007bff;
 }
 
-@media (min-width: 600px) {
-    .language-toggle, .conversion-form {
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .conversion-form label, .conversion-form select, .conversion-form input, .conversion-form button {
-        width: 48%;
-    }
-
-    .conversion-form button {
-        width: 100%;
-    }
+.converters {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
-@media (min-width: 768px) {
-    .container {
-        padding: 40px;
+.converter-container {
+    flex: 1 1 calc(50% - 20px); /* Adjust width for two columns with margin */
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 10px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .converters {
+        flex-direction: column;
+    }
+
+    .converter-container {
+        flex: 1 1 100%; /* Full width on small screens */
+        margin-bottom: 20px;
     }
 }
 
     </style>
 </head>
 <body>
-    <h1 id="title">Date Converter</h1>
+  <h1 id="title">Date Converter</h1>
 
     <div class="language-toggle">
         <label for="language" id="languageLabel">Select Language:</label>
@@ -114,34 +124,41 @@ button:hover {
         </select>
     </div>
 
-    <h2 id="convertToBikramTitle">Gregorian to Bikram Sambat</h2>
-    <label for="gYear" id="gYearLabel">Year:</label>
-    <input type="number" id="gYear" placeholder="YYYY" />
-    
-    <label for="gMonth" id="gMonthLabel">Month:</label>
-    <select id="gMonth"></select>
+    <div class="container">
+        <div class="converters">
+            <div class="converter-container">
+                <h2 id="convertToBikramTitle">Gregorian to Bikram Sambat</h2>
+                <label for="gYear" id="gYearLabel">Year:</label>
+                <input type="number" id="gYear" placeholder="YYYY" />
+                
+                <label for="gMonth" id="gMonthLabel">Month:</label>
+                <select id="gMonth"></select>
 
-    <label for="gDay" id="gDayLabel">Day:</label>
-    <input type="number" id="gDay" placeholder="DD" />
-    
-    <button onclick="convertToBikram()" id="convertToBikramButton">Convert to Bikram Sambat</button>
-    
-    <h3 id="bikramResult"></h3>
+                <label for="gDay" id="gDayLabel">Day:</label>
+                <input type="number" id="gDay" placeholder="DD" />
+                
+                <button onclick="convertToBikram()" id="convertToBikramButton">Convert to Bikram Sambat</button>
+                
+                <h3 id="bikramResult"></h3>
+            </div>
 
-    <h2 id="convertToGregorianTitle">Bikram Sambat to Gregorian</h2>
-    <label for="bsYear" id="bsYearLabel">Year:</label>
-    <input type="number" id="bsYear" placeholder="YYYY" />
-    
-    <label for="bsMonth" id="bsMonthLabel">Month:</label>
-    <select id="bsMonth"></select>
+            <div class="converter-container">
+                <h2 id="convertToGregorianTitle">Bikram Sambat to Gregorian</h2>
+                <label for="bsYear" id="bsYearLabel">Year:</label>
+                <input type="number" id="bsYear" placeholder="YYYY" />
+                
+                <label for="bsMonth" id="bsMonthLabel">Month:</label>
+                <select id="bsMonth"></select>
 
-    <label for="bsDay" id="bsDayLabel">Day:</label>
-    <input type="number" id="bsDay" placeholder="DD" />
-    
-    <button onclick="convertToGregorian()" id="convertToGregorianButton">Convert to Gregorian</button>
-    
-    <h3 id="gregorianResult"></h3>
-
+                <label for="bsDay" id="bsDayLabel">Day:</label>
+                <input type="number" id="bsDay" placeholder="DD" />
+                
+                <button onclick="convertToGregorian()" id="convertToGregorianButton">Convert to Gregorian</button>
+                
+                <h3 id="gregorianResult"></h3>
+            </div>
+        </div>
+    </div>
     <script>
 
 function populateDateDropdowns() {
