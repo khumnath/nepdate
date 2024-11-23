@@ -8,158 +8,220 @@
     <script type="text/javascript" src="bikram.js"></script>
     <script type="text/javascript" src="tithi.js"></script>
     <style>
-body {
-    font-family: 'Eczar', sans-serif;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 88vh;
-    background-color: #f0f2f5;
-}
+        body, h1, h2, h3, label, input, select, button, div {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Eczar, sans-serif;
+        }
 
-h1, h2, h3 {
-    text-align: center;
-    margin: 20px 0;
-    color: #333;
-}
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+        }
 
-.container {
-    width: 90%;
-    max-width: 1200px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+        #title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
 
-.language-toggle {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px 0;
-    max-width: 300px;
-    width: 100%;
-}
+        .language-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-label {
-    margin: 10px 0 5px;
-    font-weight: 500;
-    color: #555;
-}
+        #languageLabel {
+            margin-right: 10px;
+        }
 
-select, input, button {
-    padding: 12px 20px;
-    margin: 5px 0;
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-}
+        .language-toggle select {
+            width: auto;
+            padding: 5px;
+        }
 
-button {
-    background-color: #007bff; /* Blue */
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
+        .btn-container {
+            display: flex;
+            align-items: center;
+        }
 
-button:hover {
-    background-color: #0056b3; /* Darker blue */
-}
+        .btn-color-mode-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            margin: 0 10px;
+            cursor: pointer;
+        }
 
-#bikramResult, #gregorianResult {
-    margin-top: 20px;
-    font-weight: bold;
-    color: #007bff;
-}
+        .btn-color-mode-switch input {
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            cursor: pointer;
+        }
 
-.converters {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    width: 100%;
-}
+        .slider {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 15px;
+            transition: background-color 0.4s;
+        }
 
-.converter-container {
-    flex: 1 1 calc(50% - 20px); /* Adjust width for two columns with margin */
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 10px;
-    box-sizing: border-box;
-}
+        .slider:before {
+            content: '⇚';
+            color: blue;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background-color: #fff;
+            border-radius: 15px;
+            transition: transform 0.4s;
+        }
 
-@media (max-width: 768px) {
-    .converters {
-        flex-direction: column;
-    }
+        .btn-color-mode-switch input:checked + .slider:before {
+            transform: translateX(100%);
+            content: '⇛';
+            color: blue;
+        }
 
-    .converter-container {
-        flex: 1 1 100%; /* Full width on small screens */
-        margin-bottom: 20px;
-    }
-}
+        .converter-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
 
+        .converter-container.active {
+            display: flex;
+        }
+
+        label {
+            margin-top: 10px;
+            margin-bottom: 5px;
+            color: #343a40;
+        }
+
+        input[type="number"], select {
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 200px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Results */
+        h3 {
+            margin-top: 20px;
+            color: #000000;
+        }
     </style>
 </head>
 <body>
-  <h1 id="title">Date Converter</h1>
+<div class="container">
+    <h1 id="title">Date Converter</h1>
 
     <div class="language-toggle">
         <label for="language" id="languageLabel">Select Language:</label>
         <select id="language" onchange="changeLanguage()">
-            <option value="nepali">Nepali</option>
-            <option value="english">English</option>
+            <option id="english" value="english">English</option>
+            <option id="nepali" value="nepali">Nepali</option>
         </select>
     </div>
 
-    <div class="container">
-        <div class="converters">
-            <div class="converter-container">
-                <h2 id="convertToBikramTitle">Gregorian to Bikram Sambat</h2>
-                <label for="gYear" id="gYearLabel">Year:</label>
-                <input type="number" id="gYear" placeholder="YYYY" />
-                
-                <label for="gMonth" id="gMonthLabel">Month:</label>
-                <select id="gMonth"></select>
+    <div class="btn-container">
+        <div class="converter-title" id="convertToBikramTitle">Gregorian to Bikram Sambat</div>
+        <label class="btn-color-mode-switch">
+            <input type="checkbox" id="converterToggle" onclick="toggleConverter()">
+            <div class="slider"></div>
+        </label>
+        <div class="converter-title" id="convertToGregorianTitle">Bikram Sambat to Gregorian</div>
+    </div><br>
 
-                <label for="gDay" id="gDayLabel">Day:</label>
-                <input type="number" id="gDay" placeholder="DD" />
-                
-                <button onclick="convertToBikram()" id="convertToBikramButton">Convert to Bikram Sambat</button>
-                
-                <h3 id="bikramResult"></h3>
-            </div>
-
-            <div class="converter-container">
-                <h2 id="convertToGregorianTitle">Bikram Sambat to Gregorian</h2>
-                <label for="bsYear" id="bsYearLabel">Year:</label>
-                <input type="number" id="bsYear" placeholder="YYYY" />
-                
-                <label for="bsMonth" id="bsMonthLabel">Month:</label>
-                <select id="bsMonth"></select>
-
-                <label for="bsDay" id="bsDayLabel">Day:</label>
-                <input type="number" id="bsDay" placeholder="DD" />
-                
-                <button onclick="convertToGregorian()" id="convertToGregorianButton">Convert to Gregorian</button>
-                
-                <h3 id="gregorianResult"></h3>
-            </div>
+    <div class="converter-container active" id="gregorianToBikramContainer">
+        <div class="form-group">
+            <label for="gYear" id="gYearLabel">Year:</label>
+            <input type="number" id="gYear" placeholder="YYYY" />
         </div>
+
+        <div class="form-group">
+            <label for="gMonth" id="gMonthLabel">Month:</label>
+            <select id="gMonth"></select>
+        </div>
+
+        <div class="form-group">
+            <label for="gDay" id="gDayLabel">Day:</label>
+            <input type="number" id="gDay" placeholder="DD" />
+        </div>
+        
+        <button onclick="convertToBikram()" id="convertToBikramButton">Convert to Bikram Sambat</button>
+        
+        <h3 id="bikramResult"></h3>
     </div>
+
+    <div class="converter-container" id="bikramToGregorianContainer">
+        <div class="form-group">
+            <label for="bsYear" id="bsYearLabel">Year:</label>
+            <input type="number" id="bsYear" placeholder="YYYY" />
+        </div>
+
+        <div class="form-group">
+            <label for="bsMonth" id="bsMonthLabel">Month:</label>
+            <select id="bsMonth"></select>
+        </div>
+
+        <div class="form-group">
+            <label for="bsDay" id="bsDayLabel">Day:</label>
+            <input type="number" id="bsDay" placeholder="DD" />
+        </div>
+        
+        <button onclick="convertToGregorian()" id="convertToGregorianButton">Convert to Gregorian</button>
+        
+        <h3 id="gregorianResult"></h3>
+    </div>
+</div>
     <script>
+function toggleConverter() {
+    const gregorianToBikramContainer = document.getElementById('gregorianToBikramContainer');
+    const bikramToGregorianContainer = document.getElementById('bikramToGregorianContainer');
+    const converterToggle = document.getElementById('converterToggle');
+
+    // Update the display of the containers based on the checked state
+    if (converterToggle.checked) {
+        gregorianToBikramContainer.classList.remove('active');
+        bikramToGregorianContainer.classList.add('active');
+    } else {
+        gregorianToBikramContainer.classList.add('active');
+        bikramToGregorianContainer.classList.remove('active');
+    }
+}
 
 function populateDateDropdowns() {
     const today = new Date();
@@ -246,13 +308,15 @@ function populateDateDropdowns() {
         const translations = {
             english: {
                 title: "Date Converter",
+                english: "English",
+                nepali: "Nepali",
                 languageLabel: "Select Language:",
-                convertToBikramTitle: "Convert Gregorian to Bikram Sambat",
+                convertToBikramTitle: "Convert to Bikram Sambat",
                 gYearLabel: "Year:",
                 gMonthLabel: "Month:",
                 gDayLabel: "Day:",
                 convertToBikramButton: "Convert to Bikram Sambat",
-                convertToGregorianTitle: "Convert Bikram Sambat to Gregorian",
+                convertToGregorianTitle: "Convert to Gregorian",
                 bsYearLabel: "Year:",
                 bsMonthLabel: "Month:",
                 bsDayLabel: "Day:",
@@ -262,17 +326,19 @@ function populateDateDropdowns() {
             },
             nepali: {
                 title: "मिति रूपान्तरण",
+                english: "अङ्ग्रेजी",
+                nepali: "नेपाली",
                 languageLabel: "भाषा चयन गर्नुहोस्:",
                 convertToBikramTitle: "विक्रम सम्बतमा रूपान्तरण",
                 gYearLabel: "वर्ष:",
                 gMonthLabel: "महिना:",
                 gDayLabel: "दिन:",
                 convertToBikramButton: "विक्रम सम्बतमा रूपान्तरण गर्नुहोस्",
-                convertToGregorianTitle: "इसवि सनमा रूपान्तरण",
+                convertToGregorianTitle: "इसवि सम्बतमा रूपान्तरण",
                 bsYearLabel: "वर्ष:",
                 bsMonthLabel: "महिना:",
                 bsDayLabel: "दिन:",
-                convertToGregorianButton: "इसवि सनमा रूपान्तरण गर्नुहोस्",
+                convertToGregorianButton: "इसवि सम्बतमा रूपान्तरण गर्नुहोस्",
                 gMonths: ["जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जुन", "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"],
                 bsMonths: ["बैसाख", "जेष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन", "कार्तिक", "मंसिर", "पौष", "माघ", "फागुन", "चैत"]
             }
@@ -285,6 +351,8 @@ function populateDateDropdowns() {
             const lang = translations[currentLanguage];
 
             document.getElementById("title").innerText = lang.title;
+            document.getElementById("nepali").innerText = lang.nepali;
+            document.getElementById("english").innerText = lang.english;
             document.getElementById("languageLabel").innerText = lang.languageLabel;
             document.getElementById("convertToBikramTitle").innerText = lang.convertToBikramTitle;
             document.getElementById("gYearLabel").innerText = lang.gYearLabel;
@@ -305,6 +373,7 @@ function populateDateDropdowns() {
             document.getElementById("bikramResult").innerText = "";
             document.getElementById("gregorianResult").innerText = "";
         }
+
 
 
 
@@ -382,6 +451,7 @@ function populateDateDropdowns() {
     const weekdayName = bikram.getWeekdayName(gYear, gMonth, gDay);
     document.getElementById("gregorianResult").innerText = ` ${gYear} ${gMonthName} ${gDay} ${weekdayName}`;
 }
+
     </script>
 </body>
 </html>
