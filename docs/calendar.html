@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bikram Calendar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Eczar:wght@400;500&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="bikram.js"></script>
+    <style>
+        body {
+            font-family: Eczar, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .today {
+            background-color: green;
+            color: white;
+        }
+        .navigation {
+            margin: 20px 0;
+        }
+        .navigation button {
+            padding: 10px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bikram Calendar</h1>
+        <div id="calendar"></div>
+    </div>
+    <div >
+        <p>Note: calendar is not well tested yet. need to add more functionality like navigation, event handling etc.</p>
+    </div>
+    <script>
+        let currentYear;
+        let currentMonth;
+        let currentDay;
+
+        function showCurrentMonth() {
+            const today = new Date();
+            const bikram = new Bikram();
+            bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
+            
+            currentYear = bikram.getYear();
+            currentMonth = bikram.getMonth();
+            currentDay = bikram.getDay();
+
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        function generateCalendar(year, month) {
+            const calendarDiv = document.getElementById('calendar');
+            calendarDiv.innerHTML = '';
+
+            const daysInMonth = new Bikram().daysInMonth(year, month);
+            const bikram = new Bikram();
+           
+            const today = new Date();
+            const todayBikram = new Bikram();
+            todayBikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
+            const todayBikramYear = todayBikram.getYear();
+            const todayBikramMonth = todayBikram.getMonth();
+            const todayBikramDay = todayBikram.getDay();
+
+            const defaultLanguage = "nepali";
+            const monthName = getMonthNameWithDefaultLanguage(month, defaultLanguage);
+            
+            let calendarHTML = `<h2>${monthName} ${year}</h2><table><tr>`;
+            
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            weekdays.forEach(day => {
+                calendarHTML += `<th>${day}</th>`;
+            });
+            calendarHTML += '</tr><tr>';
+
+            const firstGregorianDate = new Date(year, month - 1, 1);
+            const firstDay = firstGregorianDate.getDay();
+            const adjustedFirstDay = (firstDay + 1) % 7;
+
+            for (let i = 0; i < adjustedFirstDay; i++) {
+                calendarHTML += '<td></td>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = (day === todayBikramDay && month === todayBikramMonth && year === todayBikramYear);
+                const className = isToday ? 'today' : '';
+
+                calendarHTML += `<td class="${className}">${day}</td>`;
+                if ((day + adjustedFirstDay) % 7 === 0) {
+                    calendarHTML += '</tr><tr>';
+                }
+            }
+
+            calendarHTML += '</tr></table>';
+            calendarDiv.innerHTML = calendarHTML;
+        }
+
+        function getMonthNameWithDefaultLanguage(month, language) {
+            const bikram = new Bikram();
+            const originalGetMonthName = bikram.getMonthName.bind(bikram);
+            bikram.getMonthName = function(month) {
+                    const nepaliMonths = ["बैसाख", "जेष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन", "कार्तिक", "मंसिर", "पौष", "माघ", "फागुन", "चैत"];
+                    return nepaliMonths[month - 1];
+                }
+            
+
+            const monthName = bikram.getMonthName(month);
+
+            return monthName;
+        }
+
+        window.onload = showCurrentMonth;
+    </script>
+</body>
+</html>
