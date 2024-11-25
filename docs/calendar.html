@@ -4,49 +4,224 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bikram Calendar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Eczar:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=laila:wght@400;500&display=swap" rel="stylesheet">
     <script type="text/javascript" src="bikram.js"></script>
     <style>
         body {
-            font-family: Eczar, sans-serif;
+            font-family: 'Laila', serif;
             margin: 20px;
+            background-color: #f8f9fa;
+            color: #333;
         }
+
+        .container {
+            max-width: 825px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        .navigation {
+            margin: 20px 0;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .navigation select,
+        .navigation input,
+        .navigation button {
+            padding: 10px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f1f1f1;
+            font-size: 16px;
+            flex: 1 1 auto;
+        }
+
+        .navigation button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+
+        .navigation button:hover {
+            background-color: #0056b3;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 24px;
+            color: #333;
+        }
+
         table {
             width: 100%;
-            border-collapse: collapse;
+           
             margin-top: 20px;
+            table-layout: fixed;
         }
+
         th, td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: center;
         }
+
         th {
             background-color: #007bff;
             color: white;
         }
+
+        td {
+            height: 60px;
+            vertical-align: top;
+        }
+     
+        tr:first-child td:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        tr:first-child td:last-child {
+            border-top-right-radius: 8px;
+        }
+
+        tr:last-child td:first-child {
+            border-bottom-left-radius: 8px;
+        }
+
+        tr:last-child td:last-child {
+            border-bottom-right-radius: 8px;
+        }
+
         .today {
-            background-color: green;
+            background-color: rgb(73, 171, 73);
             color: white;
         }
-        .navigation {
-            margin: 20px 0;
+
+        .saturday {
+            color: #e31227;
         }
-        .navigation button {
-            padding: 10px;
-            margin: 0 5px;
-            cursor: pointer;
+
+        .empty {
+            background-color: #f1f1f1;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                margin: 10px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .navigation select,
+            .navigation input,
+            .navigation button {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            th, td {
+                padding: 5px;
+                font-size: 14px;
+            }
+
+            td {
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 18px;
+            }
+
+            .navigation select,
+            .navigation input,
+            .navigation button {
+                font-size: 12px;
+                padding: 6px;
+            }
+
+            th, td {
+                padding: 3px;
+                font-size: 12px;
+            }
+
+            td {
+                height: 50px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f1f1f1;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #333;
+            border-top: 1px solid #ddd;
+        }
+
+        footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            footer {
+                font-size: 12px;
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bikram Calendar</h1>
+        <h1>विक्रम सम्बत क्यालेण्डर</h1>
+        <div class="navigation">
+            <button onclick="previousYear()">Previous Year</button>
+            <select id="monthSelector" onchange="changeMonth()">
+                <option value="1">बैसाख</option>
+                <option value="2">जेष्ठ</option>
+                <option value="3">आषाढ</option>
+                <option value="4">श्रावण</option>
+                <option value="5">भाद्र</option>
+                <option value="6">आश्विन</option>
+                <option value="7">कार्तिक</option>
+                <option value="8">मंसिर</option>
+                <option value="9">पौष</option>
+                <option value="10">माघ</option>
+                <option value="11">फागुन</option>
+                <option value="12">चैत</option>
+            </select>
+            <input type="number" id="yearInput" value="" onchange="changeYear()" />
+            <button onclick="nextYear()">Next Year</button>
+            <button class="today-button" onclick="goToToday()">Today</button>
+        </div>
         <div id="calendar"></div>
     </div>
-    <div >
-        <p>Note: calendar is not well tested yet. need to add more functionality like navigation, event handling etc.</p>
-    </div>
+    <footer>
+        <p>© 2024 <a href="https://khumnath.com.np/">khumnath</a>. This project is licensed under the <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank">GNU General Public License v3.0 or later</a>.</p>
+        <p>For more details, see the <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank">GPL v3 license</a>.</p>
+    </footer>    
     <script>
         let currentYear;
         let currentMonth;
@@ -61,68 +236,122 @@
             currentMonth = bikram.getMonth();
             currentDay = bikram.getDay();
 
+            document.getElementById('yearInput').value = currentYear;
+            document.getElementById('monthSelector').value = currentMonth;
+
             generateCalendar(currentYear, currentMonth);
         }
 
-        function generateCalendar(year, month) {
-            const calendarDiv = document.getElementById('calendar');
-            calendarDiv.innerHTML = '';
-
-            const daysInMonth = new Bikram().daysInMonth(year, month);
+        function getfirstWeekday(year, month) {
             const bikram = new Bikram();
-           
-            const today = new Date();
-            const todayBikram = new Bikram();
-            todayBikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
-            const todayBikramYear = todayBikram.getYear();
-            const todayBikramMonth = todayBikram.getMonth();
-            const todayBikramDay = todayBikram.getDay();
-
-            const defaultLanguage = "nepali";
-            const monthName = getMonthNameWithDefaultLanguage(month, defaultLanguage);
-            
-            let calendarHTML = `<h2>${monthName} ${year}</h2><table><tr>`;
-            
-            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            weekdays.forEach(day => {
-                calendarHTML += `<th>${day}</th>`;
-            });
-            calendarHTML += '</tr><tr>';
-
-            const firstGregorianDate = new Date(year, month - 1, 1);
-            const firstDay = firstGregorianDate.getDay();
-            const adjustedFirstDay = (firstDay + 1) % 7;
-
-            for (let i = 0; i < adjustedFirstDay; i++) {
-                calendarHTML += '<td></td>';
-            }
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const isToday = (day === todayBikramDay && month === todayBikramMonth && year === todayBikramYear);
-                const className = isToday ? 'today' : '';
-
-                calendarHTML += `<td class="${className}">${day}</td>`;
-                if ((day + adjustedFirstDay) % 7 === 0) {
-                    calendarHTML += '</tr><tr>';
-                }
-            }
-
-            calendarHTML += '</tr></table>';
-            calendarDiv.innerHTML = calendarHTML;
+            const firstGregorianDate = bikram.toGregorian(year, month, 1);
+            const timeinfo = new Date(firstGregorianDate.year, firstGregorianDate.month - 1, firstGregorianDate.day);
+            const weekdayIndex = timeinfo.getDay();
+            return weekdayIndex;
         }
+
+        function generateCalendar(year, month) {
+        const calendarDiv = document.getElementById('calendar');
+        calendarDiv.innerHTML = '';
+
+        const daysInMonth = new Bikram().daysInMonth(year, month);
+        const bikram = new Bikram();
+        
+        const today = new Date();
+        const todayBikram = new Bikram();
+        todayBikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
+        const todayBikramYear = todayBikram.getYear();
+        const todayBikramMonth = todayBikram.getMonth();
+        const todayBikramDay = todayBikram.getDay();
+
+        const defaultLanguage = "nepali";
+        const monthName = getMonthNameWithDefaultLanguage(month, defaultLanguage);
+        
+        let calendarHTML = `<h2>${monthName} ${year}</h2><table><tr>`;
+        
+        const weekdays = ['आइतवार', 'सोमवार', 'मङ्गलवार', 'बुधवार', 'बिहीवार', 'शुक्रवार', 'शनिवार'];  // Nepali weekdays
+        
+        weekdays.forEach(day => {
+            calendarHTML += `<th>${day}</th>`;
+        });
+        calendarHTML += '</tr><tr>';
+
+        const firstDayOfMonth = getfirstWeekday(year, month);
+
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            calendarHTML += '<td class="empty"></td>';
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const isToday = (day === todayBikramDay && month === todayBikramMonth && year === todayBikramYear);
+            const className = isToday ? 'today' : '';
+            
+            // Highlight Saturdays (index 6)
+            const saturdayClass = (firstDayOfMonth + day - 1) % 7 === 6 ? 'saturday' : '';
+            const finalClass = className ? ` ${className}` : '';
+            
+            calendarHTML += `<td class="${finalClass} ${saturdayClass}">${day}</td>`;
+            
+            if ((firstDayOfMonth + day) % 7 === 0 && day !== daysInMonth) {
+                calendarHTML += '</tr><tr>';
+            }
+        }
+
+        const remainingCells = (firstDayOfMonth + daysInMonth) % 7;
+        if (remainingCells !== 0) {
+            for (let i = 0; i < 7 - remainingCells; i++) {
+                calendarHTML += '<td class="empty"></td>';
+            }
+        }
+
+        calendarHTML += '</tr></table>';
+        calendarDiv.innerHTML = calendarHTML;
+    }
 
         function getMonthNameWithDefaultLanguage(month, language) {
             const bikram = new Bikram();
             const originalGetMonthName = bikram.getMonthName.bind(bikram);
             bikram.getMonthName = function(month) {
-                    const nepaliMonths = ["बैसाख", "जेष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन", "कार्तिक", "मंसिर", "पौष", "माघ", "फागुन", "चैत"];
-                    return nepaliMonths[month - 1];
-                }
-            
+                const nepaliMonths = ["बैसाख", "जेष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन", "कार्तिक", "मंसिर", "पौष", "माघ", "फागुन", "चैत"];
+                return nepaliMonths[month - 1];
+            }
 
             const monthName = bikram.getMonthName(month);
 
             return monthName;
+        }
+
+        function previousYear() {
+            currentYear--;
+            document.getElementById('yearInput').value = currentYear;
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        function nextYear() {
+            currentYear++;
+            document.getElementById('yearInput').value = currentYear;
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        function changeMonth() {
+            currentMonth = parseInt(document.getElementById('monthSelector').value);
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        function changeYear() {
+            currentYear = parseInt(document.getElementById('yearInput').value);
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        function goToToday() {
+            const today = new Date();
+            const bikram = new Bikram();
+            bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
+            currentYear = bikram.getYear();
+            currentMonth = bikram.getMonth();
+            document.getElementById('yearInput').value = currentYear;
+            document.getElementById('monthSelector').value = currentMonth;
+            generateCalendar(currentYear, currentMonth);
         }
 
         window.onload = showCurrentMonth;
