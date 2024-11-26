@@ -70,7 +70,10 @@
             width: 100%;
             margin-top: 20px;
             table-layout: fixed;
-        }
+            border-radius: 15px;
+            border-collapse: separate;
+            border-spacing: initial;
+}
 
         th, td {
             border: 1px solid #ddd;
@@ -111,11 +114,16 @@
         .today {
             background-color: rgb(73, 171, 73);
             color: white;
+            border-radius: 10px;
         }
 
         .saturday {
             color: #e31227;
         }
+
+        .today.saturday {
+             color: white !important;
+}
 
         .empty {
             background-color: #f1f1f1;
@@ -238,7 +246,13 @@
         .tithi {
             color: #106bdb; 
             font-size: xx-small; 
+            font-weight: lighter !important;
         }
+
+        .today .tithi {
+            color: white !important; 
+            font-weight: bold !important;
+}
 
         .gregorian {
             color: rgb(231 175 68);
@@ -250,15 +264,24 @@
         }
 
         .gregorian-month-display {
-    /* margin-right: 38px; */
-    font-size: x-small;
-    color: #827a7a;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+            font-size: x-small;
+            color: #827a7a;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: flex-end;
 }
-
+.ConverterLink {
+            display: block;
+            padding: 10px 20px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+}
 
     </style>
 </head>
@@ -285,7 +308,8 @@
             <button onclick="nextYear()">Next Year</button>
             <button class="today-button" onclick="goToToday()">Today</button>
         </div>
-        <div id="calendar"></div>
+        <div id="calendar"></div><br>
+        <a href="index.html" class="ConverterLink">&#128073; Calendar Example</a>
     </div>
     <div id="tithiModal" class="modal">
         <div class="modal-content">
