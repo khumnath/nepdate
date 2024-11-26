@@ -6,6 +6,7 @@
     <title>Bikram Calendar</title>
     <link href="https://fonts.googleapis.com/css2?family=laila:wght@400;500&display=swap" rel="stylesheet">
     <script type="text/javascript" src="bikram.js"></script>
+    <script type="text/javascript" src="tithi.js"></script>
     <style>
         body {
             font-family: 'Laila', serif;
@@ -77,6 +78,7 @@
             border: 1px solid #ddd;
             padding: 10px;
             text-align: center;
+            font-weight: bold;
         }
 
         th {
@@ -137,6 +139,7 @@
             th, td {
                 padding: 5px;
                 font-size: 14px;
+                font-weight: bold;
             }
 
             td {
@@ -159,6 +162,7 @@
             th, td {
                 padding: 3px;
                 font-size: 12px;
+                font-weight: bold;
             }
 
             td {
@@ -191,6 +195,57 @@
                 padding: 15px;
             }
         }
+        .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+        padding-top: 60px;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .tithi {
+    color: #106bdb; 
+    font-size: 10px; 
+}
+.gregorian {
+    color: rgb(152, 191, 25);
+    font-size: x-small;
+    position: relative;
+    bottom: -10px;
+    left: -32px;
+    margin: 2px;
+}
+
     </style>
 </head>
 <body>
@@ -217,6 +272,12 @@
             <button class="today-button" onclick="goToToday()">Today</button>
         </div>
         <div id="calendar"></div>
+    </div>
+    <div id="tithiModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <p id="tithiInfo"></p>
+        </div>
     </div>
     <footer>
         <p>© 2024 <a href="https://khumnath.com.np/">khumnath</a>. This project is licensed under the <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank">GNU General Public License v3.0 or later</a>.</p>
@@ -250,63 +311,177 @@
             return weekdayIndex;
         }
 
-        function generateCalendar(year, month) {
-        const calendarDiv = document.getElementById('calendar');
-        calendarDiv.innerHTML = '';
+        function convertToDevanagari(number) {
+    const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+    return number.toString().split('').map(digit => devanagariDigits[parseInt(digit, 10)]).join('');
+}
 
-        const daysInMonth = new Bikram().daysInMonth(year, month);
-        const bikram = new Bikram();
-        
-        const today = new Date();
-        const todayBikram = new Bikram();
-        todayBikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
-        const todayBikramYear = todayBikram.getYear();
-        const todayBikramMonth = todayBikram.getMonth();
-        const todayBikramDay = todayBikram.getDay();
+function generateCalendar(year, month) {
+    const calendarDiv = document.getElementById('calendar');
+    calendarDiv.innerHTML = '';
 
-        const defaultLanguage = "nepali";
-        const monthName = getMonthNameWithDefaultLanguage(month, defaultLanguage);
-        
-        let calendarHTML = `<h2>${monthName} ${year}</h2><table><tr>`;
-        
-        const weekdays = ['आइतवार', 'सोमवार', 'मङ्गलवार', 'बुधवार', 'बिहीवार', 'शुक्रवार', 'शनिवार'];  // Nepali weekdays
-        
-        weekdays.forEach(day => {
-            calendarHTML += `<th>${day}</th>`;
-        });
-        calendarHTML += '</tr><tr>';
+    const daysInMonth = new Bikram().daysInMonth(year, month);
+    const bikram = new Bikram();
+    
+    const today = new Date();
+    const todayBikram = new Bikram();
+    todayBikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    const todayBikramYear = todayBikram.getYear();
+    const todayBikramMonth = todayBikram.getMonth();
+    const todayBikramDay = todayBikram.getDay();
 
-        const firstDayOfMonth = getfirstWeekday(year, month);
+    const defaultLanguage = "nepali";
+    const monthName = getMonthNameWithDefaultLanguage(month, defaultLanguage);
+    
+    let calendarHTML = `<h2>${monthName} ${convertToDevanagari(year)}</h2><table><tr>`;
+    
+    const weekdays = ['आइतवार', 'सोमवार', 'मङ्गलवार', 'बुधवार', 'बिहीवार', 'शुक्रवार', 'शनिवार'];  // Nepali weekdays
+    
+    weekdays.forEach(day => {
+        calendarHTML += `<th>${day}</th>`;
+    });
+    calendarHTML += '</tr><tr>';
 
-        for (let i = 0; i < firstDayOfMonth; i++) {
+    const firstDayOfMonth = getfirstWeekday(year, month);
+
+    for (let i = 0; i < firstDayOfMonth; i++) {
+        calendarHTML += '<td class="empty"></td>';
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const isToday = (day === todayBikramDay && month === todayBikramMonth && year === todayBikramYear);
+        const className = isToday ? 'today' : '';
+        
+        // Highlight Saturdays (index 6)
+        const saturdayClass = (firstDayOfMonth + day - 1) % 7 === 6 ? 'saturday' : '';
+        const finalClass = className ? ` ${className}` : '';
+        
+        // Calculate Tithi
+        const gregorianDate = bikram.toGregorian(year, month, day);
+        const tithi = calculateTithi(gregorianDate.year, gregorianDate.month, gregorianDate.day);
+        
+        let tithiImage = '';
+        if (tithi.tithi === 'पूर्णिमा') {
+            tithiImage = '<img src="purnima.png" alt="Purnima" style="width:20px;height:20px;">';
+        } else if (tithi.tithi === 'अमावास्या') {
+            tithiImage = '<img src="amawasya.png" alt="Amawasya" style="width:20px;height:20px;">';
+        }
+
+        calendarHTML += `<td class="${finalClass} ${saturdayClass}" onclick="showTithiInfo(${gregorianDate.year}, ${gregorianDate.month}, ${gregorianDate.day}, ${day}, '${tithi.tithi}', '${tithi.paksha}')">
+                            <div class="day-content">
+                                <div>${convertToDevanagari(day)}</div>
+                                <div class="tithi">${tithi.tithi} ${tithiImage}</div>
+                                <div class="gregorian">${gregorianDate.day}</div>
+                            </div>
+                         </td>`;
+        
+        if ((firstDayOfMonth + day) % 7 === 0 && day !== daysInMonth) {
+            calendarHTML += '</tr><tr>';
+        }
+    }
+
+    const remainingCells = (firstDayOfMonth + daysInMonth) % 7;
+    if (remainingCells !== 0) {
+        for (let i = 0; i < 7 - remainingCells; i++) {
             calendarHTML += '<td class="empty"></td>';
         }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-            const isToday = (day === todayBikramDay && month === todayBikramMonth && year === todayBikramYear);
-            const className = isToday ? 'today' : '';
-            
-            // Highlight Saturdays (index 6)
-            const saturdayClass = (firstDayOfMonth + day - 1) % 7 === 6 ? 'saturday' : '';
-            const finalClass = className ? ` ${className}` : '';
-            
-            calendarHTML += `<td class="${finalClass} ${saturdayClass}">${day}</td>`;
-            
-            if ((firstDayOfMonth + day) % 7 === 0 && day !== daysInMonth) {
-                calendarHTML += '</tr><tr>';
-            }
-        }
-
-        const remainingCells = (firstDayOfMonth + daysInMonth) % 7;
-        if (remainingCells !== 0) {
-            for (let i = 0; i < 7 - remainingCells; i++) {
-                calendarHTML += '<td class="empty"></td>';
-            }
-        }
-
-        calendarHTML += '</tr></table>';
-        calendarDiv.innerHTML = calendarHTML;
     }
+
+    calendarHTML += '</tr></table>';
+    calendarDiv.innerHTML = calendarHTML;
+}
+
+
+function showTithiInfo(year, month, day, bikramDay, tithi, paksha) {
+    const tithiInfo = `तिथि: ${tithi}<br>पक्ष: ${paksha}<br>इस्वि सम्बत् तारीख: ${convertToDevanagari(year)}-${convertToDevanagari(month)}-${convertToDevanagari(day)}<br>विक्रम दिन: ${convertToDevanagari(bikramDay)}`;
+    document.getElementById('tithiInfo').innerHTML = tithiInfo;
+    document.getElementById('tithiModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('tithiModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('tithiModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
+
+function showTithiInfo(year, month, day, bikramDay, tithi, paksha) {
+    const tithiInfo = `तिथि: ${tithi}<br>पक्ष: ${paksha}<br>तारीख: ${year}-${month}-${day}<br>विक्रम दिन: ${bikramDay}`;
+    document.getElementById('tithiInfo').innerHTML = tithiInfo;
+    document.getElementById('tithiModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('tithiModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('tithiModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
+
+function showTithiInfo(year, month, day, bikramDay, tithi, paksha) {
+    const tithiInfo = `तिथि: ${tithi}<br>पक्ष: ${paksha}<br>तारीख: ${year}-${month}-${day}<br>विक्रम दिन: ${bikramDay}`;
+    document.getElementById('tithiInfo').innerHTML = tithiInfo;
+    document.getElementById('tithiModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('tithiModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('tithiModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
+
+function showTithiInfo(year, month, day, bikramDay, tithi, paksha) {
+    const tithiInfo = `तिथि: ${tithi}<br>पक्ष: ${paksha}<br>मिति: ${year}-${month}-${day}<br>विक्रम दिन: ${bikramDay}`;
+    document.getElementById('tithiInfo').innerHTML = tithiInfo;
+    document.getElementById('tithiModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('tithiModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('tithiModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
+
+function showTithiInfo(year, month, day) {
+    const tithi = calculateTithi(year, month, day);
+    const tithiInfo = `तिथि: ${tithi.tithi}<br>पक्ष: ${tithi.paksha}<br>तारीख: ${year}-${month}-${day}`;
+    document.getElementById('tithiInfo').innerHTML = tithiInfo;
+    document.getElementById('tithiModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('tithiModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('tithiModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
 
         function getMonthNameWithDefaultLanguage(month, language) {
             const bikram = new Bikram();

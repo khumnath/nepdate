@@ -2,7 +2,7 @@ function calculateTithi(year, month, day) {
     const tdays = calculateDaysSinceJ2000(year, month, day);
     const tithiIndex = calculateTithiIndex(tdays);
     return {
-        tithi: getTithiName(tithiIndex + 1),
+        tithi: getTithiName(tithiIndex),
         paksha: getPaksha(tithiIndex)
     };
 }
@@ -43,9 +43,11 @@ function getSunLongitude(tdays) {
 function getTithiName(tithiIndex) {
     const tithiNames = [
         "प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी",
-        "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "अमावास्या"
+        "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "प्रतिपदा", 
+        "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी", 
+        "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "अमावास्या"
     ];
-    return tithiNames[tithiIndex % 15];
+    return tithiNames[(tithiIndex +1)% 30];
 }
 
 function getPaksha(tithiIndex) {
