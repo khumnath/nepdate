@@ -1,5 +1,17 @@
 function calculateTithi(year, month, day) {
-    const tdays = calculateDaysSinceJ2000(year, month, day);
+    // Nepal Time Offset (UTC+5:45) in minutes
+    const nepalTimeOffsetMinutes = 5 * 60 + 45; // 5 hours and 45 minutes in minutes
+
+    // Get the current local time zone offset in minutes
+    const localOffsetMinutes = new Date().getTimezoneOffset(); // This is negative for UTC+ and positive for UTC-
+
+    // Calculate the total offset to Nepal time
+    const totalOffsetMinutes = nepalTimeOffsetMinutes - localOffsetMinutes;
+
+    // Adjust the day based on the total offset
+    const adjustedDay = day - Math.floor(totalOffsetMinutes / (60 * 24)); // Adjust for day rollover
+
+    const tdays = calculateDaysSinceJ2000(year, month, adjustedDay);
     const tithiIndex = calculateTithiIndex(tdays);
     return {
         tithi: getTithiName(tithiIndex),
@@ -9,7 +21,7 @@ function calculateTithi(year, month, day) {
 
 function calculateDaysSinceJ2000(year, month, day) {
     const julianDate = getJulianDate(year, month, day);
-    return julianDate - 2451545.0;
+    return julianDate - 2451545.0; // J2000.0 Julian date
 }
 
 function getJulianDate(year, month, day) {
@@ -47,9 +59,9 @@ function getTithiName(tithiIndex) {
         "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी", 
         "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "अमावास्या"
     ];
-    return tithiNames[(tithiIndex +1)% 30];
+    return tithiNames[(tithiIndex + 1) % 30]; // Adjusting for array index
 }
 
 function getPaksha(tithiIndex) {
-    return (tithiIndex < 15) ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
+    return (tithiIndex < 15) ? "शुक्ल पक्ष" : "कृष्ण पक्ष"; // Shukla Paksha or Krishna Paksha
 }
