@@ -79,42 +79,45 @@ function generateCalendar(year, month) {
         const tithi = calculateTithi(gregorianDate.year, gregorianDate.month, gregorianDate.day);
         
         let tithiImage = '';
-        if (tithi.tithi === 'पूर्णिमा') {
-            tithiImage = '<img src="purnima.png" alt="Purnima" style="width:30px;height:30px;">';
-        } else if (tithi.tithi === 'अमावास्या') {
-            tithiImage = '<img src="amawasya.png" alt="Amawasya" style="width:30px;height:30px;">';
-        }
+if (tithi.tithi === 'पूर्णिमा') {
+    tithiImage = '<img src="assets/purnima.png" alt="Purnima" style="width:30px;height:30px;">';
+} else if (tithi.tithi === 'अमावस्या') {
+    tithiImage = '<img src="assets/amawasya.png" alt="Amawasya" style="width:30px;height:30px;">';
+}
 
-        // Check for events
-        let eventText = '';
-        let eventDetail = '';
-        const hasEvent = checkEvent(bikramBasedEvents, year, month, day, 'bikram') ||
-                         checkEvent(gregorianBasedEvents, gregorianDate.year, gregorianDate.month, gregorianDate.day, 'gregorian') ||
-                         checkEvent(fixedDateEvents, year, month, day, 'fixed');
+// Check for events
+let eventText = '';
+let eventDetail = '';
+const hasEvent = checkEvent(bikramFixedEvents, year, month, day, 'bikram') ||
+                 checkEvent(gregorianEvents, gregorianDate.year, gregorianDate.month, gregorianDate.day, 'gregorian') ||
+                 checkEvent(bikramRecurringEvents, year, month, day, 'brecurring');
 
-        // If there is an event, collect the event text and details
-        if (hasEvent) {
-            eventText = getEventText(bikramBasedEvents, year, month, day, 'bikram') ||
-                        getEventText(gregorianBasedEvents, gregorianDate.year, gregorianDate.month, gregorianDate.day, 'gregorian') ||
-                        getEventText(fixedDateEvents, year, month, day, 'fixed');
+// If there is an event, collect the event text and details
+if (hasEvent) {
+    eventText = getEventText(bikramFixedEvents, year, month, day, 'bikram') ||
+                getEventText(gregorianEvents, gregorianDate.year, gregorianDate.month, gregorianDate.day, 'gregorian') ||
+                getEventText(bikramRecurringEvents, year, month, day, 'brecurring');
 
-            eventDetail = getEventDetail(bikramBasedEvents, year, month, day, 'bikram') ||
-                         getEventDetail(gregorianBasedEvents, gregorianDate.year, gregorianDate.month, gregorianDate.day, 'gregorian') ||
-                         getEventDetail(fixedDateEvents, year, month, day, 'fixed');
-        }
+    eventDetail = getEventDetail(bikramFixedEvents, year, month, day, 'bikram') ||
+                 getEventDetail(gregorianEvents, gregorianDate.year, gregorianDate.month, gregorianDate.day, 'gregorian') ||
+                 getEventDetail(bikramRecurringEvents, year, month, day, 'brecurring');
+}
 
-        // Add the HTML for the calendar cell
-        calendarHTML += `<td class="${finalClass} ${saturdayClass}" onclick="showEventDetails('${day}', '${tithi.tithi.replace(/'/g, "\\'")}', '${tithi.paksha.replace(/'/g, "\\'")}', '${gregorianDate.day}', '${bikram.toString()}', '${eventText.replace(/'/g, "\\'")}', '${eventDetail.replace(/'/g, "\\'")}')">
-            <div class="day-content">
-                <div>${convertToDevanagari(day)}</div>
-                <div class="tithi">
-                    ${hasEvent ? '' : tithi.tithi}
-                    ${tithiImage}
-                </div>
-                ${hasEvent ? `<div class="event">${eventText}</div>` : ''}
-                <div class="gregorian">${gregorianDate.day}</div>
-            </div>
-        </td>`;
+// Add the HTML for the calendar cell
+calendarHTML += `<td class="${finalClass} ${saturdayClass}" onclick="showEventDetails('${convertToDevanagari(day)}/${convertToDevanagari(month)}/${convertToDevanagari(year)}', '${tithi.tithi.replace(/'/g, "\\'")}', '${tithi.paksha.replace(/'/g, "\\'")}', '${gregorianDate.day}/${gregorianDate.month}/${gregorianDate.year}', '${year}', '${month}', '${day}', '${eventText.replace(/'/g, "\\'")}', '${eventDetail.replace(/'/g, "\\'")}')">
+    <div class="day-content">
+        <div>${convertToDevanagari(day)}</div>
+        <div class="tithi">
+            ${hasEvent ? '' : tithi.tithi}
+            ${tithiImage}
+        </div>
+        ${hasEvent ? `<div class="event">${eventText}</div>` : ''}
+        <div class="gregorian">${gregorianDate.day}</div>
+    </div>
+</td>`;
+
+
+
 
         if ((firstDayOfMonth + day) % 7 === 0 && day !== daysInMonth) {
             calendarHTML += '</tr><tr>';
@@ -152,7 +155,7 @@ function checkEvent(events, year, month, day, dateType) {
             if (year === eventYear && month === eventMonth && day === eventDay) {
                 hasEvent = true;
             }
-        } else if (dateType === 'gregorian' || dateType === 'fixed') {
+        } else if (dateType === 'gregorian' || dateType === 'brecurring') {
             const [eventMonth, eventDay] = event.date.split('/').map(Number);
             if (month === eventMonth && day === eventDay) {
                 hasEvent = true;
@@ -179,7 +182,7 @@ function getEventText(events, year, month, day, dateType) {
             if (year === eventYear && month === eventMonth && day === eventDay) {
                 eventText += `<div>${event.event}</div>`;
             }
-        } else if (dateType === 'gregorian' || dateType === 'fixed') {
+        } else if (dateType === 'gregorian' || dateType === 'brecurring') {
             const [eventMonth, eventDay] = event.date.split('/').map(Number);
             if (month === eventMonth && day === eventDay) {
                 eventText += `<div>${event.event}</div>`;
@@ -202,7 +205,7 @@ function getEventDetail(events, year, month, day, dateType) {
             if (year === eventYear && month === eventMonth && day === eventDay) {
                 eventDetail += `<div>${event.detail}</div>`;
             }
-        } else if (dateType === 'gregorian' || dateType === 'fixed') {
+        } else if (dateType === 'gregorian' || dateType === 'brecurring') {
             const [eventMonth, eventDay] = event.date.split('/').map(Number);
             if (month === eventMonth && day === eventDay) {
                 eventDetail += `<div>${event.detail}</div>`;
@@ -213,22 +216,27 @@ function getEventDetail(events, year, month, day, dateType) {
 }
 
 
-function showEventDetails(day, tithi, paksha, gregorianDate, bikramDate, eventText, eventDetail, year, month) {
-    // Get the modal element
+function showEventDetails(day, tithi, paksha, gregorianDate, bikramYear, bikramMonth, bikramDay, eventText, eventDetail) {
     const modal = document.getElementById('tithiModal');
     const tithiInfo = document.getElementById('tithiInfo');
-    
-    
+
+    // Format the dates and details
+    const weekday = getWeekdayFromGregorianDate(gregorianDate);
+    const bikramDateFormatted = `${convertToDevanagari(bikramYear)} ${getMonthNameWithDefaultLanguage(parseInt(bikramMonth), 'nepali')} ${convertToDevanagari(bikramDay)} गते ${weekday}`;
+    const gregorianDateFormatted = `${gregorianDate.split('/')[2]} ${getGregorianMonthName(parseInt(gregorianDate.split('/')[1]))} ${gregorianDate.split('/')[0]}`;
+
     // Construct the content for the modal
     let content = `
-        <p> ${paksha} ${tithi}</p>
+        <div class="bikram-date"><strong>${bikramDateFormatted}</strong></div>
+        <div class="tithi-paksha"><strong>${paksha}, ${tithi}</strong></div>
+        <div class="gregorian-date">${gregorianDateFormatted}</div>
     `;
 
     // If there are events, append event details to the modal content
     if (eventText && eventDetail) {
         content += `
-            <p><strong>${eventText}</strong></p>
-            <p> ${eventDetail}</p>
+            <div class="event-text"><strong>Event:</strong> ${eventText}</div>
+            <div class="event-detail">${eventDetail.replace(/\n/g, '<br>')}</div>
         `;
     }
 
@@ -238,6 +246,17 @@ function showEventDetails(day, tithi, paksha, gregorianDate, bikramDate, eventTe
     // Display the modal
     modal.style.display = "block";
 }
+
+// Function to get the weekday from the Gregorian date
+function getWeekdayFromGregorianDate(gregorianDate) {
+    const [day, month, year] = gregorianDate.split('/').map(Number);
+    const date = new Date(year, month - 1, day); // JavaScript Date object (months are 0-indexed)
+    const weekdays = ['आइतबार', 'सोमबार', 'मंगलबार', 'बुधबार', 'बिहिबार', 'शुक्रबार', 'शनिबार'];
+    return weekdays[date.getDay()];
+}
+
+
+
 
 function closeModal() {
     const tithiModal = document.getElementById('tithiModal');
@@ -250,18 +269,6 @@ window.onclick = function(event) {
         modal.style.display = 'none';
     }
 }
-function closeModal() {
-    document.getElementById('tithiModal').style.display = 'none';
-}
-
-window.onclick = function(event) {
-    const modal = document.getElementById('tithiModal');
-    if (event.target == modal) {
-        modal.style.display = 'none';
-    }
-}
-
-
         function getMonthNameWithDefaultLanguage(month, language) {
             const bikram = new Bikram();
             const originalGetMonthName = bikram.getMonthName.bind(bikram);
@@ -297,15 +304,7 @@ window.onclick = function(event) {
             generateCalendar(currentYear, currentMonth);
         }
 
-        function goToToday() {
-            const today = new Date();
-            const bikram = new Bikram();
-            bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate());
-            currentYear = bikram.getYear();
-            currentMonth = bikram.getMonth();
-            document.getElementById('yearInput').value = currentYear;
-            document.getElementById('monthSelector').value = currentMonth;
-            generateCalendar(currentYear, currentMonth);
+        function goToToday() { const today = new Date(); const bikram = new Bikram(); bikram.fromGregorian(today.getFullYear(), today.getMonth() + 1, today.getDate()); currentYear = bikram.getYear(); currentMonth = bikram.getMonth(); document.getElementById('yearInput').value = currentYear; document.getElementById('monthSelector').value = currentMonth; generateCalendar(currentYear, currentMonth); 
         }
 
         function getGregorianDate(year, month, day) {
@@ -343,3 +342,4 @@ function formatGregorianMonthDisplay(gregorianStart, gregorianEnd) {
 
 
         window.onload = showCurrentMonth;
+        
