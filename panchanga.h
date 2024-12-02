@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <string>
+#include <iostream>
 
 #define PI 3.14159265358979323846
 #define r2d 180.0 / PI
@@ -10,15 +11,15 @@
 
 // Tithi names in Nepali
 static const char tithi[][30] = { "प्रथमा", "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी",
-                                 "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "प्रथमा",
-                                 "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी",
-                                 "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "अमावस्या" };
+                                   "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "प्रथमा",
+                                   "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी",
+                                   "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "अमावस्या" };
+
 class Panchang {
 public:
     double tdays;
-    double t, tithi_index/*, nakshatra_index, yoga_index*/;
+    double t, tithi_index;
     std::string paksha;
-
 
     Panchang(double julianDate) {
         tdays = julianDate - 2451545.0;  // Days since J2000.0
@@ -30,26 +31,23 @@ public:
         calculateTithi();
     }
 
-
 private:
     void calculateTithi() {
         double moon_longitude = getMoonLongitude();
         double sun_longitude = getSunLongitude();
 
-
         double difference = moon_longitude - sun_longitude;
         if (difference < 0) difference += 360.0;
 
-        tithi_index = std::floor(difference / 12.0);
-
+        // Round the tithi index according to the specified rules
+        tithi_index = std::round(difference / 12.0);
+        tithi_index = static_cast<int>(tithi_index) % 30; // Wrap around to ensure valid index
 
         paksha = (tithi_index < 15) ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
-       //debug print
-        //std::cout << "Tithi: " << tithi[(int)tithi_index] << " (" << paksha << ")" << std::endl;
+        
+        // Debug print
+        std::cout << "Tithi: " << tithi[static_cast<int>(tithi_index)] << " (" << paksha << ")" << std::endl;
     }
-
-
-
 
     double getSunLongitude() {
         double l0 = 280.4665 + 36000.7698 * t;
@@ -65,17 +63,14 @@ private:
     double getMoonLongitude() {
         double L1 = 218.316 + 481267.8813 * t;
         double M1 = 134.963 + 477198.8676 * t;
-        // double F = 93.272 + 483202.0175 * t;  the Moon's argument of latitude Not used now
 
         L1 = fmod(L1, 360.0);
         M1 = fmod(M1, 360.0);
-        // F = fmod(F, 360.0); the Moon's argument of latitude Not used now
 
         double longitude = L1 + 6.289 * sin(M1 * d2r);
         longitude = fmod(longitude, 360.0);
         return longitude;
     }
-
 };
 
 double gregorianToJulian(int year, int month, int day);
