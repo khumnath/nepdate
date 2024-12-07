@@ -424,9 +424,14 @@ void CalendarWindow::onBsDayChanged(int /*index*/) {
     int day = ui->dayselectBS->currentText().toInt();
 
     updateAdDateFromBs(year, month, day);
+
+    // Ensure the selected day remains consistent
+    if (ui->dayselectBS->currentText().toInt() != day) {
+        ui->dayselectBS->setCurrentText(QString::number(day));
+    }
+
     blockSignals = false;
 }
-
 void CalendarWindow::updateBsDateFromAd(int year, int month, int day) {
     converter.fromGregorian(year, month, day);
 
@@ -496,14 +501,14 @@ void CalendarWindow::updateAdDateFromBs(int year, int month, int day) {
 
 
     int bsDaysInMonth = converter.daysInMonth(year, month);
-    QString bsMonthName = getBikramMonthName(month);
+    QString gmonthname = getEnglishMonthName(gMonth);
     double julianDate = gregorianToJulian(gYear, gMonth, gDay);
     Panchang panchang(julianDate);
     QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
     QString paksha = QString::fromStdString(panchang.paksha);
     QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
     ui->output->setText(QString("ईसवी सन मा परिवर्तन गरियो: %1 %2 %3 गते %5 \n%2 %1 मा जम्मा दिन सङ्ख्या: %4")
-                            .arg(convertToNepaliNumerals(gYear)).arg(bsMonthName).arg(convertToNepaliNumerals(gDay)).arg(convertToNepaliNumerals(bsDaysInMonth)).arg(tithipaksha));
+                            .arg(convertToNepaliNumerals(gYear)).arg(gmonthname).arg(convertToNepaliNumerals(gDay)).arg(convertToNepaliNumerals(bsDaysInMonth)).arg(tithipaksha));
 
     // Update the calendar
     updateCalendar(year, month);

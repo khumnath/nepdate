@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-class bikram {
+class Bikram {
 private:
     int Year = 0;
     int Month = -1;
@@ -11,15 +11,15 @@ private:
 
     double YugaRotation_star = 1582237828;
     double YugaRotation_sun = 4320000;
-    double YugaCivilDays;
-    double PlanetApogee_sun = 77 + static_cast<float>(17) / 60;
-    double PlanetCircumm_sun = 13 + static_cast<float>(50) / 60;
+    double YugaCivilDays = YugaRotation_star - YugaRotation_sun; // Initialize here
+    double PlanetApogee_sun = 77 + 17.0 / 60; // Use double for division
+    double PlanetCircumm_sun = 13 + 50.0 / 60; // Use double for division
     static constexpr double rad = 57.2957795; // 180 / pi
 
-    void get_saura_masa_day(long ahar, int* m, int* d) const;
-    int today_saura_masa_first_p(long ahar) const;
-    double get_tslong(long ahar) const;
-    double get_julian_date(int year, int month, int day) const;
+    void getSauraMasaDay(long ahar, int* m, int* d) const;
+    int todaySauraMasaFirstP(long ahar) const;
+    double getTslong(long ahar) const;
+    double getJulianDate(int year, int month, int day) const;
     void fromJulianDate(double julian_date, int& year, int& month, int& day) const;
 
 public:
@@ -31,32 +31,32 @@ public:
     int daysInMonth(int year, int month);
 };
 
-inline void bikram::get_saura_masa_day(long ahar, int* m, int* d) const {
+inline void Bikram::getSauraMasaDay(long ahar, int* m, int* d) const {
     double tslong_tomorrow;
     int month;
     int day;
-    if (today_saura_masa_first_p(ahar)) {
+    if (todaySauraMasaFirstP(ahar)) {
         day = 1;
-        tslong_tomorrow = get_tslong(ahar + 1);
-        month = (long)(tslong_tomorrow / 30) % 12;
+        tslong_tomorrow = getTslong(ahar + 1);
+        month = static_cast<int>(tslong_tomorrow / 30) % 12;
         month = (month + 12) % 12;
     } else {
-        get_saura_masa_day(ahar - 1, &month, &day);
+        getSauraMasaDay(ahar - 1, &month, &day);
         day += 1;
     }
     *m = month;
     *d = day;
 }
 
-inline int bikram::today_saura_masa_first_p(long ahar) const {
-    double tslong_today = get_tslong(ahar);
-    double tslong_tomorrow = get_tslong(ahar + 1);
-    tslong_today = tslong_today - (int)(tslong_today / 30) * 30;
-    tslong_tomorrow = tslong_tomorrow - (int)(tslong_tomorrow / 30) * 30;
-    return (25 < tslong_today) && (tslong_tomorrow < 5) ? 1 : 0;
+inline int Bikram::todaySauraMasaFirstP(long ahar) const {
+    double tslong_today = getTslong(ahar);
+    double tslong_tomorrow = getTslong(ahar + 1);
+    tslong_today -= static_cast<int>(tslong_today / 30) * 30;
+    tslong_tomorrow -= static_cast<int>(tslong_tomorrow / 30) * 30;
+    return (25 < tslong_today && tslong_tomorrow < 5) ? 1 : 0;
 }
 
-inline double bikram::get_tslong(long ahar) const {
+inline double Bikram::getTslong(long ahar) const {
     double mslong;
     double t1 = (YugaRotation_sun * ahar / YugaCivilDays);
     t1 -= static_cast<long>(t1);
@@ -70,17 +70,17 @@ inline double bikram::get_tslong(long ahar) const {
     return x3;
 }
 
-inline double bikram::get_julian_date(int year, int month, int day) const {
+inline double Bikram::getJulianDate(int year, int month, int day) const {
     if (month <= 2) {
         year -= 1;
         month += 12;
     }
     double a = floor(year / 100.0);
     double b = 2 - a + floor(a / 4.0);
-    return floor(365.25 * (year + 4716)) + floor(30.6001 * (month + 1)) + day + b - 1524.5;
+    return floor (365.25 * (year + 4716)) + floor(30.6001 * (month + 1)) + day + b - 1524.5;
 }
 
-inline void bikram::fromJulianDate(double julian_date, int& year, int& month, int& day) const {
+inline void Bikram::fromJulianDate(double julian_date, int& year, int& month, int& day) const {
     int a = static_cast<int>(julian_date + 0.5);
     int b = a + 1537;
     int c = static_cast<int>((b - 122.1) / 365.25);
@@ -92,13 +92,12 @@ inline void bikram::fromJulianDate(double julian_date, int& year, int& month, in
     year = (month > 2) ? (c - 4716) : (c - 4715);
 }
 
-inline void bikram::fromGregorian(int y, int m, int d) {
-    YugaCivilDays = YugaRotation_star - YugaRotation_sun;
-    double julian = get_julian_date(y, m, d);
+inline void Bikram::fromGregorian(int y, int m, int d) {
+    double julian = getJulianDate(y, m, d);
     long ahar = julian - 588465.5;
     int saura_masa_num;
     int saura_masa_day;
-    get_saura_masa_day(ahar, &saura_masa_num, &saura_masa_day);
+    getSauraMasaDay(ahar, &saura_masa_num, &saura_masa_day);
     long YearKali = static_cast<long>(ahar * YugaRotation_sun / YugaCivilDays);
     int YearSaka = YearKali - 3179;
     int nepalimonth = (saura_masa_num) % 12;
@@ -107,42 +106,41 @@ inline void bikram::fromGregorian(int y, int m, int d) {
     Day = saura_masa_day;
 }
 
-inline void bikram::toGregorian(int bsYear, int bsMonth, int bsDay, int& gYear, int& gMonth, int& gDay) {
-    YugaCivilDays = YugaRotation_star - YugaRotation_sun;
+inline void Bikram::toGregorian(int bsYear, int bsMonth, int bsDay, int& gYear, int& gMonth, int& gDay) {
     int YearSaka = bsYear - 135;
     long YearKali = YearSaka + 3179;
     long ahar = static_cast<long>((YearKali * YugaCivilDays) / YugaRotation_sun);
     int saura_masa_num, saura_masa_day;
-    get_saura_masa_day(ahar, &saura_masa_num, &saura_masa_day);
+    getSauraMasaDay(ahar, &saura_masa_num, &saura_masa_day);
     bsMonth = (bsMonth + 11) % 12;
     while (saura_masa_num != bsMonth || saura_masa_day != bsDay) {
         ahar += (saura_masa_num < bsMonth || (saura_masa_num == bsMonth && saura_masa_day < bsDay)) ? 1 : -1;
-        get_saura_masa_day(ahar, &saura_masa_num, &saura_masa_day);
+        getSauraMasaDay(ahar, &saura_masa_num, &saura_masa_day);
     }
     double julian_date = ahar + 588465.5;
     fromJulianDate(julian_date, gYear, gMonth, gDay);
 }
 
-inline int bikram::getYear() const {
+inline int Bikram::getYear() const {
     return Year;
 }
 
-inline int bikram::getMonth() const {
+inline int Bikram::getMonth() const {
     return Month + 1;
 }
 
-inline int bikram::getDay() const {
+inline int Bikram::getDay() const {
     return Day;
 }
 
-inline int bikram::daysInMonth(int bsYear, int bsMonth)  {
+inline int Bikram::daysInMonth(int bsYear, int bsMonth) {
     int gYear, gMonth, gDay;
     int nextMonth = (bsMonth % 12) + 1;
     int nextYear = (bsMonth == 12) ? bsYear + 1 : bsYear;
     toGregorian(bsYear, bsMonth, 1, gYear, gMonth, gDay);
-    double julian_date_start = get_julian_date(gYear, gMonth, gDay);
+    double julian_date_start = getJulianDate(gYear, gMonth, gDay);
     toGregorian(nextYear, nextMonth, 1, gYear, gMonth, gDay);
-    double julian_date_end = get_julian_date(gYear, gMonth, gDay);
+    double julian_date_end = getJulianDate(gYear, gMonth, gDay);
     return static_cast<int>(julian_date_end - julian_date_start);
 }
 

@@ -145,7 +145,7 @@ MainWindow::~MainWindow()
 // considering bikram date as nepali date.
 int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     // Perform the conversion using the bikram class
-    bikram bsdate;
+    Bikram bsdate;
     bsdate.fromGregorian(yy, mm, dd); // Convert the provided Gregorian date to Bikram Sambat
 
     // Get the converted Nepali date components from the bikram class
