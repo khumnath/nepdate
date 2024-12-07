@@ -52,7 +52,7 @@ protected:
 
 private:
     Ui::CalendarWindow *ui;
-    bikram converter;
+    Bikram converter;
     bool blockSignals;
     int gYear, gMonth, gDay;  // Moved to private section for encapsulation
     QDate currentBikramDate;
