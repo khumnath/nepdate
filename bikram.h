@@ -11,10 +11,118 @@ private:
 
     double YugaRotation_star = 1582237828;
     double YugaRotation_sun = 4320000;
-    double YugaCivilDays = YugaRotation_star - YugaRotation_sun; // Initialize here
-    double PlanetApogee_sun = 77 + 17.0 / 60; // Use double for division
-    double PlanetCircumm_sun = 13 + 50.0 / 60; // Use double for division
+    double YugaCivilDays = YugaRotation_star - YugaRotation_sun;
+    double PlanetApogee_sun = 77 + 17.0 / 60;
+    double PlanetCircumm_sun = 13 + 50.0 / 60;
     static constexpr double rad = 57.2957795; // 180 / pi
+
+    // Precomputed Data (starting from 2000 BS)
+    static const int BS_START_YEAR = 2000;
+    static const int BS_END_YEAR = 2089; // Need adjustment depending how much data we have
+
+    inline static const int NP_MONTHS_DATA[][13] = {
+        {30,32,31,32,31,30,30,30,29,30,29,31,365}, // 2000
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2001
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2002
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2003
+        {30,32,31,32,31,30,30,30,29,30,29,31,365}, // 2004
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2005
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2006
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2007
+        {31,31,31,32,31,31,29,30,30,29,29,31,365}, // 2008
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2009
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2010
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2011
+        {31,31,31,32,31,31,29,30,30,29,30,30,365}, // 2012
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2013
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2014
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2015
+        {31,31,31,32,31,31,29,30,30,29,30,30,365}, // 2016
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2017
+        {31,32,31,32,31,30,30,29,30,29,30,30,365}, // 2018
+        {31,32,31,32,31,30,30,30,29,30,29,31,366}, // 2019
+        {31,31,31,32,31,31,30,29,30,29,30,30,365}, // 2020
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2021
+        {31,32,31,32,31,30,30,30,29,29,30,30,365}, // 2022
+        {31,32,31,32,31,30,30,30,29,30,29,31,366}, // 2023
+        {31,31,31,32,31,31,30,29,30,29,30,30,365}, // 2024
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2025
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2026
+        {30,32,31,32,31,30,30,30,29,30,29,31,365}, // 2027
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2028
+        {31,31,32,31,32,30,30,29,30,29,30,30,365}, // 2029
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2030
+        {30,32,31,32,31,30,30,30,29,30,29,31,365}, // 2031
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2032
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2033
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2034
+        {30,32,31,32,31,31,29,30,30,29,29,31,365}, // 2035
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2036
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2037
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2038
+        {31,31,31,32,31,31,29,30,30,29,30,30,365}, // 2039
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2040
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2041
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2042
+        {31,31,31,32,31,31,29,30,30,29,30,30,365}, // 2043
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2044
+        {31,32,31,32,31,30,30,29,30,29,30,30,365}, // 2045
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2046
+        {31,31,31,32,31,31,30,29,30,29,30,30,365}, // 2047
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2048
+        {31,32,31,32,31,30,30,30,29,29,30,30,365}, // 2049
+        {31,32,31,32,31,30,30,30,29,30,29,31,366}, // 2050
+        {31,31,31,32,31,31,30,29,30,29,30,30,365}, // 2051
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2052
+        {31,32,31,32,31,30,30,30,29,29,30,30,365}, // 2053
+        {31,32,31,32,31,30,30,30,29,30,29,31,366}, // 2054
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2055
+        {31,31,32,31,32,30,30,29,30,29,30,30,365}, // 2056
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2057
+        {30,32,31,32,31,30,30,30,29,30,29,31,365}, // 2058
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2059
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2060
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2061
+        {30,32,31,32,31,31,29,30,29,30,29,31,365}, // 2062
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2063
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2064
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2065
+        {31,31,31,32,31,31,29,30,30,29,29,31,365}, // 2066
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2067
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2068
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2069
+        {31,31,31,32,31,31,29,30,30,29,30,30,365}, // 2070
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2071
+        {31,32,31,32,31,30,30,29,30,29,30,30,365}, // 2072
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2073
+        {31,31,31,32,31,31,30,29,30,29,30,30,365}, // 2074
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2075
+        {31,32,31,32,31,30,30,30,29,29,30,30,365}, // 2076
+        {31,32,31,32,31,30,30,30,29,30,29,31,366}, // 2077
+        {31,31,31,32,31,31,30,29,30,29,30,30,365}, // 2078
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2079
+        {31,32,31,32,31,30,30,30,29,29,30,30,365}, // 2080
+        {31,32,31,32,31,30,30,30,29,30,29,31,366}, // 2081
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2082
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2083
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2084
+        {30,32,31,32,31,30,30,30,29,30,29,31,365}, // 2085
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2086
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2087
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2088
+        {30,32,31,32,31,31,29,30,29,30,29,31,365}, // 2089
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2090
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2091
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2092
+        {31,31,31,32,31,31,29,30,30,29,29,31,365}, // 2093
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2094
+        {31,31,32,32,31,30,30,29,30,29,30,30,365}, // 2095
+        {31,32,31,32,31,30,30,30,29,29,30,31,366}, // 2096
+        {31,31,31,32,31,31,29,30,30,29,30,30,365}, // 2097
+        {31,31,32,31,31,31,30,29,30,29,30,30,365}, // 2098
+        {31,32,31,32,31,30,30,29,30,29,30,30,365}, // 2099
+    };
+    static const int NP_DATA_YEAR_COUNT = sizeof(NP_MONTHS_DATA) / sizeof(NP_MONTHS_DATA[0]);
 
     void getSauraMasaDay(long ahar, int* m, int* d) const;
     int todaySauraMasaFirstP(long ahar) const;
@@ -22,13 +130,16 @@ private:
     double getJulianDate(int year, int month, int day) const;
     void fromJulianDate(double julian_date, int& year, int& month, int& day) const;
 
+    void fromGregorianAstronomical(int y, int m, int d);  // fallback
+    void toGregorianAstronomical(int bsYear, int bsMonth, int bsDay, int& gYear, int& gMonth, int& gDay); // fallback
+
 public:
     void fromGregorian(int y, int m, int d);
     void toGregorian(int bsYear, int bsMonth, int bsDay, int& gYear, int& gMonth, int& gDay);
     int getYear() const;
     int getMonth() const;
     int getDay() const;
-    int daysInMonth(int year, int month);
+    int daysInMonth(int bsYear, int bsMonth);
 };
 
 inline void Bikram::getSauraMasaDay(long ahar, int* m, int* d) const {
@@ -77,7 +188,7 @@ inline double Bikram::getJulianDate(int year, int month, int day) const {
     }
     double a = floor(year / 100.0);
     double b = 2 - a + floor(a / 4.0);
-    return floor (365.25 * (year + 4716)) + floor(30.6001 * (month + 1)) + day + b - 1524.5;
+    return floor(365.25 * (year + 4716)) + floor(30.6001 * (month + 1)) + day + b - 1524.5;
 }
 
 inline void Bikram::fromJulianDate(double julian_date, int& year, int& month, int& day) const {
@@ -92,7 +203,58 @@ inline void Bikram::fromJulianDate(double julian_date, int& year, int& month, in
     year = (month > 2) ? (c - 4716) : (c - 4715);
 }
 
+// ------------- Modified fromGregorian to use precomputed first --------------
 inline void Bikram::fromGregorian(int y, int m, int d) {
+    // First calculate Julian days from fixed known date
+    double julian = getJulianDate(y, m, d);
+    double ref_julian = getJulianDate(1943, 4, 14); // 1 Baisakh 2000 BS = 14 April 1943
+
+    long diff = static_cast<long>(julian - ref_julian);
+    int bs_year = BS_START_YEAR;
+
+    if (diff >= 0) {
+        while (bs_year <= BS_START_YEAR + NP_DATA_YEAR_COUNT - 1) {
+            for (int i = 0; i < 12; ++i) {
+                if (diff < NP_MONTHS_DATA[bs_year - BS_START_YEAR][i]) {
+                    Year = bs_year;
+                    Month = i + 1;
+                    Day = static_cast<int>(diff) + 1;
+                    return;
+                } else {
+                    diff -= NP_MONTHS_DATA[bs_year - BS_START_YEAR][i];
+                }
+            }
+            bs_year++;
+        }
+    }
+    // fallback to astronomical if outside precomputed
+    fromGregorianAstronomical(y, m, d);
+}
+
+// -------------  Use precomputed first --------------
+inline void Bikram::toGregorian(int bsYear, int bsMonth, int bsDay, int& gYear, int& gMonth, int& gDay) {
+    if (bsYear >= BS_START_YEAR && bsYear < BS_START_YEAR + NP_DATA_YEAR_COUNT) {
+        double ref_julian = getJulianDate(1943, 4, 14); // 1 Baisakh 2000 BS
+        long total_days = 0;
+        for (int year = BS_START_YEAR; year < bsYear; ++year) {
+            total_days += NP_MONTHS_DATA[year - BS_START_YEAR][12];
+        }
+        for (int month = 0; month < bsMonth - 1; ++month) {
+            total_days += NP_MONTHS_DATA[bsYear - BS_START_YEAR][month];
+        }
+        total_days += (bsDay - 1);
+
+        double target_julian = ref_julian + total_days;
+        fromJulianDate(target_julian, gYear, gMonth, gDay);
+        return;
+    }
+    // fallback to astronomical
+    toGregorianAstronomical(bsYear, bsMonth, bsDay, gYear, gMonth, gDay);
+}
+
+// fallback methods
+
+inline void Bikram::fromGregorianAstronomical(int y, int m, int d) {
     double julian = getJulianDate(y, m, d);
     long ahar = julian - 588465.5;
     int saura_masa_num;
@@ -102,11 +264,11 @@ inline void Bikram::fromGregorian(int y, int m, int d) {
     int YearSaka = YearKali - 3179;
     int nepalimonth = (saura_masa_num) % 12;
     Year = YearSaka + 135 + static_cast<int>((saura_masa_num - nepalimonth) / 12);
-    Month = (saura_masa_num + 12) % 12;
+    Month = (saura_masa_num + 12) % 12 + 1;
     Day = saura_masa_day;
 }
 
-inline void Bikram::toGregorian(int bsYear, int bsMonth, int bsDay, int& gYear, int& gMonth, int& gDay) {
+inline void Bikram::toGregorianAstronomical(int bsYear, int bsMonth, int bsDay, int& gYear, int& gMonth, int& gDay) {
     int YearSaka = bsYear - 135;
     long YearKali = YearSaka + 3179;
     long ahar = static_cast<long>((YearKali * YugaCivilDays) / YugaRotation_sun);
@@ -126,7 +288,7 @@ inline int Bikram::getYear() const {
 }
 
 inline int Bikram::getMonth() const {
-    return Month + 1;
+    return Month;
 }
 
 inline int Bikram::getDay() const {
@@ -134,6 +296,10 @@ inline int Bikram::getDay() const {
 }
 
 inline int Bikram::daysInMonth(int bsYear, int bsMonth) {
+    if (bsYear >= BS_START_YEAR && bsYear < BS_START_YEAR + NP_DATA_YEAR_COUNT) {
+        return NP_MONTHS_DATA[bsYear - BS_START_YEAR][bsMonth - 1];
+    }
+    // fallback method
     int gYear, gMonth, gDay;
     int nextMonth = (bsMonth % 12) + 1;
     int nextYear = (bsMonth == 12) ? bsYear + 1 : bsYear;
