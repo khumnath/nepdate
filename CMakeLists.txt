@@ -108,4 +108,4 @@ set(NEPDATE_CALENDAR_RESOURCES
 add_nepdate_executable(nepdate_calendar "${NEPDATE_CALENDAR_SOURCES}" "${NEPDATE_CALENDAR_HEADERS}" "${NEPDATE_CALENDAR_FORMS}" "${NEPDATE_CALENDAR_RESOURCES}")
 
 # Set the output name to nepdate-calendar
-set_target_properties(nepdate_calendar PROPERTIES OUTPUT_NAME nepdate_calendar)
+set_target_properties(nepdate_calendar PROPERTIES OUTPUT_NAME nepdate-calendar)
