@@ -123,22 +123,31 @@ updateTimer->start(1000);
 }
 
 void MainWindow::setWindowPosition() {
-    QScreen *primaryScreen = QGuiApplication::primaryScreen();
-    QRect screenGeometry = primaryScreen->geometry();
+    QSettings settings("Nepdate", "NepdateWidget");
+    QPoint savedPos = settings.value("MainWindow/pos", QPoint(-1, -1)).toPoint();
 
-    int x = screenGeometry.left() + (screenGeometry.width() - width()) / 1.3; // Before statusbar in most cases.
-    int offsetY = 10;  // Number of pixels to move downward
-    int y = screenGeometry.bottom() - height() + offsetY;
+    if (savedPos != QPoint(-1, -1)) {
+        move(savedPos);
+    } else {
+        QScreen *primaryScreen = QGuiApplication::primaryScreen();
+        QRect screenGeometry = primaryScreen->geometry();
+
+        int x = screenGeometry.left() + (screenGeometry.width() - width()) / 1.3; // Before statusbar in most cases.
+        int offsetY = 10;  // Number of pixels to move downward
+        int y = screenGeometry.bottom() - height() + offsetY;
 
 #ifdef Q_OS_MAC
     int dockHeight = 0; //No idea how mac os handles dock
 #endif
-    move(x, y);
+        move(x, y);
+      }
 }
 
 
 MainWindow::~MainWindow()
 {
+    QSettings settings("Nepdate", "NepdateWidget");
+    settings.setValue("MainWindow/pos", this->pos());
     delete ui;
 }
 
