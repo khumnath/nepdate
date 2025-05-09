@@ -1,0 +1,41 @@
+
+@media print {
+  /* Hide elements with the no-print class when printing */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Remove background colors and shadows for printing */
+  body {
+    background-image: none !important;
+    background-color: white !important;
+  }
+
+  /* Ensure the calendar fits nicely on the printed page */
+  .beautiful-calendar-grid {
+    width: 100% !important;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+
+  /* Make text darker for better print quality */
+  .calendar-day-number {
+    color: black !important;
+  }
+
+  /* Fix the header for printing */
+  .beautiful-header {
+    background: #3787a9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  /* Make sure all text is visible */
+  * {
+    color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

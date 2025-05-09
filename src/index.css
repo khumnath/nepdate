@@ -1,0 +1,137 @@
+/* Add Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Laila:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.nepali-text,
+.font-laila {
+  font-family: 'Laila', sans-serif;
+}
+
+.font-mukta {
+  font-family: 'Mukta', sans-serif;
+}
+
+.beautiful-calendar-grid {
+  border-radius: 0 0 1rem 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.beautiful-calendar-day {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.beautiful-calendar-day:hover {
+  background-color: #f5f5f5;
+}
+
+.beautiful-header {
+  border-radius: 1rem 1rem 0 0;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.beautiful-card {
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bg-nepali-offwhite {
+  background-color: #f9f8f7;
+}
+
+.text-nepali-dark {
+  color: #333;
+}
+
+.bg-nepali-yellow {
+  background-color: #f0d799;
+}
+
+.text-nepali-red {
+  color: #e44d26;
+}
+
+.border-nepali-red {
+  border-color: #e44d26;
+}
+
+.animated-hover {
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.animated-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.upcoming-event-next {
+  border-left: 4px solid #4CAF50; /* Green color for next event */
+}
+
+.upcoming-event-future {
+  border-left: 4px solid #2196F3; /* Blue color for future events */
+}
+
+/* Add a subtle shadow on hover for cards */
+.card-hover:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Add ease-spring animation for spring effect */
+.ease-spring {
+  transition-timing-function: cubic-bezier(0.5, 1.5, 0.6, 1.0);
+}
+
+/* No print class for elements that shouldn't be printed */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Modal styling for rounded corners */
+.rounded-xl {
+  border-radius: 1rem !important;
+}
+
+.rounded-t-xl {
+  border-top-left-radius: 1rem !important;
+  border-top-right-radius: 1rem !important;
+}
+
+.rounded-b-xl {
+  border-bottom-left-radius: 1rem !important;
+  border-bottom-right-radius: 1rem !important;
+}
+
+/* Blue text for upcoming events */
+.upcoming-event-text {
+  color: #3b82f6;
+}
+
+/* Override for dialog content to ensure rounded corners */
+[data-radix-dialog-content] {
+  border-radius: 1rem !important;
+  overflow: hidden;
+}

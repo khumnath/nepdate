@@ -1,56 +1,128 @@
-# Nepdate calendar
-`nepdate-calendar` provides a standalone Nepali calendar and converter for Bikram Sambat and Gregorian calendars.
+# Bikram Sambat Calendar
 
-# Nepdate widget
+A modern React + TypeScript web application for converting and viewing Nepali (Bikram Sambat) and Gregorian dates, with tithi calculation, event/holiday display, and a beautiful calendar UI.
 
-`nepdate-widget` is a desktop floating widget for Linux that displays the Nepali date. It provides the following features:
+## Features
 
-- Displays the Nepali date on your desktop.
-- Can be moved anywhere on the screen.
-- with automatic text color adjustment based on the background color.
+- Convert between Bikram Sambat (BS) and Gregorian (AD) dates
+- View Nepali and English months, days, and years
+- Calculate lunar tithi for any date
+- See major Nepali festivals and holidays
+- Responsive, accessible, and print-friendly calendar UI
+- Toggle between Nepali and English language
+- "Show in Calendar" and event modal support
+- Built with [Vite](https://vitejs.dev/), [React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/), and [shadcn/ui](https://ui.shadcn.com/)
 
-##To-Do List
+## Getting Started
 
-1. Create an installable DEB file for Debian-based distributions. (released appimages for wider linux distributions but gcc version is high now in release build. I will build with lower gcc version in future release.)
-2. Make the calendar responsive to window resizing.(Done)
-3. Implement tithi and other panchanga calculations in the calendar app.( Tithi implemented. in future i will check other components like nakshatra karan and yoga too.)
-4. make cross plateform application. now nepdate-calendar and widget builds and runs perfectly in windows.
-using qtcreator and mingw compiler. not tested cmake.(Done)
+### Prerequisites
 
-## Dependencies
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+- [Yarn](https://yarnpkg.com/) or [npm](https://www.npmjs.com/)
 
-Nepdate and calendar relies on the following Qt libraries:
+### Installation
 
-- Qt Core
-- Qt Widgets
-- Qt GUI
+```sh
+git clone https://github.com/yourusername/nepdate.git
+cd nepdate
+yarn install
+# or
+npm install
+```
 
-## Usage
+### Development
 
-1. Clone this repository to your local machine.
-2. Create a build folder in the project directory.
-3. Build the project using `cmake ..` and then run `make all`.
-4. You can also compile the project using Qt Creator or Qmake.
-5. Run the Nepdate executables:
-    `nepdate-widget` for the desktop widget
-    `nepdate-calendar` for the calendar
-6. The floating Nepali date widget will appear on your desktop, with automatic text color adjustment based on the background color.
+Start the local development server:
 
-## Screenshots
-nepdate in action ![nepdate](https://github.com/khumnath/nepdate/assets/50103558/8f17f73b-3dfd-4679-a2f9-2461d9b34cf9)
+```sh
+yarn dev
+# or
+npm run dev
+```
 
+Open [http://localhost:8080](http://localhost:8080) in your browser.
+
+> **Note:** If you encounter a "too many open files" error, you may need to increase your system's file watch limit. See [this StackOverflow answer](https://stackoverflow.com/questions/53930305/nodemon-error-system-limit-for-number-of-file-watchers-reached) for help.
+
+### Local Production Build
+
+Build and preview locally:
+
+```sh
+yarn build
+yarn preview
+# or
+npm run build
+npm run preview
+```
+
+This will output the production build to the `dist/` directory, which is **not pushed to GitHub**.
+
+### Build for GitHub Pages
+
+To build for GitHub Pages (output to `docs/` and set correct base path):
+
+```sh
+yarn build-gh
+# or
+npm run build-gh
+```
+
+Preview the GitHub Pages build locally:
+
+```sh
+yarn preview-gh
+# or
+npm run preview-gh
+```
+
+This will output the production build to the `docs/` directory, which **should be committed and pushed** to your repository for GitHub Pages deployment.
+
+### Deploy to GitHub Pages
+
+1. Commit and push the `docs` folder to your repository.
+2. In your repository settings, set GitHub Pages to serve from the `docs` folder on the `main` branch.
+3. Your site will be available at `https://<username>.github.io/nepdate/`.
+
+## Project Structure
+
+```
+├── bikram-calendar/      # Bikram Sambat calendar calculation library 
+├── src/                  # React app source code
+│   ├── components/       # React components
+│   ├── data/             # Event and holiday data
+│   ├── hooks/            # Custom React hooks
+│   ├── utils/            # Utility functions
+│   └── index.css         # Main CSS (Tailwind)
+├── docs/                 # Production build output for GitHub Pages (should be pushed)
+├── dist/                 # Production build output for local preview (not pushed)
+├── index.html            # Main HTML entry
+├── package.json
+├── postcss.config.js
+├── tailwind.config.ts
+└── vite.config.ts
+```
+
+## Scripts
+
+| Command         | Description                                 |
+|-----------------|---------------------------------------------|
+| `dev`           | Start local dev server                      |
+| `build`         | Build for local production (`dist/`)        |
+| `preview`       | Preview local production build              |
+| `build-gh`      | Build for GitHub Pages (`docs/`)            |
+| `preview-gh`    | Preview GitHub Pages build                  |
+| `lint`          | Run ESLint                                  |
+
+## Notes on Build Outputs
+
+- The `dist/` directory is for local production builds and **should not be pushed to Git**.
+- The `docs/` directory is for GitHub Pages deployment and **should be committed and pushed**.
 
 ## License
 
-This project is licensed under the **GNU General Public License (GPL) version 3**. See the LICENSE file for details.
+This project is licensed under the [GPL v3 or later](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
-## contribution
+---
 
-first of all any suggestion and bug reports can be filed on github issue here https://github.com/khumnath/nepdate/issues
-
-# for contribution 
-1. Clone repository
- 2. make changes
-  3. make a pull request with proper description of changes.
-
-
+**Made with love by Khumnath.**

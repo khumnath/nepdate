@@ -1,0 +1,16 @@
+
+# source
+src
+
+# builds
+*.tgz
+
+# tests
+__tests__
+coverage
+jest.config.js
+
+# Development files
+.eslintrc.js
+.prettierrc
+tsconfig.json
