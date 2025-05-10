@@ -191,11 +191,15 @@ const BikramCalendar: React.FC = () => {
       
         {/* Event Modal */}
         <EventModal 
-          isOpen={calendarState.eventModalOpen} 
-          onClose={() => calendarState.setEventModalOpen(false)} 
-          eventData={calendarState.eventModalData} 
-          useNepaliLanguage={calendarState.useNepaliLanguage} 
-        />
+  isOpen={calendarState.eventModalOpen} 
+  onClose={() => {
+    calendarState.setEventModalOpen(false);
+    calendarState.setSelectedDate(null);      // <-- Reset selected date
+    calendarState.setEventModalData(null);    // <-- Optionally reset event modal data
+  }} 
+  eventData={calendarState.eventModalData} 
+  useNepaliLanguage={calendarState.useNepaliLanguage} 
+/>
       </div>
     </div>
   );
