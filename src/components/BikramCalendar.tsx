@@ -82,7 +82,7 @@ const BikramCalendar: React.FC = () => {
     }
   }, [calendarState]);
   return (
-    <div className="min-h-screen bg-[url('/subtle-pattern.png')] pt-2 md:pt-4">
+    <div className="min-h-screen bg-[url('$assets/subtle-pattern.png')] pt-2 md:pt-4">
       {/* Calendar Container */}
       <div className="mx-auto px-2 sm:px-4 max-w-sm sm:max-w-md md:max-w-lg lg:max-w-4xl">
         {/* Top header with month/year */}

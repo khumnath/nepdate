@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "build-gh": "vite build --outDir docs && cp docs/index.html docs/404.html",
-   
+    "preview-gh": "vite preview --mode=ghpages",
     "lint": "eslint ."
   },
   "dependencies": {
