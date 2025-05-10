@@ -4,7 +4,7 @@ import path from "path";
 
 export default defineConfig(({ mode }) => ({
   // fixme here: does not work on ghpages
-  base: mode === "ghpages" ? "/nepdate/" : "/",
+  base: mode === "ghpages" ? "./" : "/",
   build: {
     outDir: mode === "ghpages" ? "docs" : "dist",
     emptyOutDir: true,
