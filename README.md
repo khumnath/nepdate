@@ -23,7 +23,7 @@ A modern React + TypeScript web application for converting and viewing Nepali (B
 ### Installation
 
 ```sh
-git clone https://github.com/yourusername/nepdate.git
+git clone --branch page --single-branch https://github.com/khumnath/nepdate.git
 cd nepdate
 yarn install
 # or
