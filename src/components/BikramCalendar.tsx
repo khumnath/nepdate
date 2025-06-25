@@ -130,6 +130,12 @@ const BikramCalendar: React.FC = () => {
             usingApproximation={calendarState.usingApproximation} 
           />
         </div>
+
+        <p className={`${calendarState.useNepaliLanguage ? "nepali-text" : ""} text-center font-light text-xs sm:text-xs mt-1`} style={{color: '#E6A75A'}}>
+    {calendarState.useNepaliLanguage 
+      ? "यो गणना गरिएको डाटा हो। सधैं भरपर्दो स्रोतहरूमा वास्तविक डाटा जाँच गर्नुहोस्।"
+      : "this is calculated data. always check with real data on reliable sources."}
+</p>
         
         {/* Upcoming Events List with customizable UI properties */}
         <UpcomingEvents 

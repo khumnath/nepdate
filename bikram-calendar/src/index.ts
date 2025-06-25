@@ -25,4 +25,4 @@ export {
   getTithiNamesEn,
   getPakshaNames,
   type TithiResult
-} from './tithi';
+} from './panchanga';

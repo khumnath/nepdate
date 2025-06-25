@@ -1,17 +1,52 @@
-
-// Re-export all needed functionality from the bikram-calendar package
 import {
   calculateTithi,
   getTithiNamesNp,
   getTithiNamesEn,
   getPakshaNames,
-  type TithiResult
-} from '../../bikram-calendar/src/tithi';
+  calculatePanchanga,
+  calculateTithiTimes,
+  calculateSunriseOrSunset,
+  formatAMPM,
+  jdToDateParts,
+  crossedRashiBoundary,
+  calculateSolarDayDetails,
+  tithi,
+  nakshatra,
+  rashi,
+  karan,
+  yoga,
+  solarMonthNames,
+  calc_ayanamsa,
+  sun_long,
+  moon_long,
+  julianDay,
+  type TithiResult,
+  type PanchangaResult
+} from '../../bikram-calendar/src/panchanga';
+
 
 export {
   calculateTithi,
   getTithiNamesNp,
   getTithiNamesEn,
   getPakshaNames,
-  type TithiResult
+  calculatePanchanga,
+  calculateTithiTimes,
+  calculateSunriseOrSunset,
+  formatAMPM,
+  jdToDateParts,
+  crossedRashiBoundary,
+  calculateSolarDayDetails,
+  tithi,
+  nakshatra,
+  rashi,
+  karan,
+  yoga,
+  solarMonthNames,
+  calc_ayanamsa,
+  sun_long,
+  moon_long,
+  julianDay,
 };
+export type { TithiResult, PanchangaResult };
+
