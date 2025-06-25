@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BikramDateObj, BikramMonth, getToday, getBikramMonth, getNepaliDigits, containsNepaliDigits, getEnglishDigits } from '../utils/bikramConverter';
+import { BikramDateObj, BikramMonth, getToday, getBikramMonth, getNepaliDigits, containsNepaliDigits, getEnglishDigits, getNepalTodayDate } from '../utils/bikramConverter';
 import { EventModalData } from '../types/events';
 import { CalendarEvent } from '../types/events';
 import { loadEventsForYear } from '../utils/events';
@@ -8,7 +8,17 @@ import { calculateTithi } from '../utils/tithiCalculation';
 import { getAllEventText, getAllEventDetails } from '../utils/events';
 
 export function useCalendarState() {
-  const [today, setToday] = useState<BikramDateObj>(getToday());
+  const [today, setToday] = useState<BikramDateObj>(() => getToday(getNepalTodayDate()));
+
+  // Keep today in sync with Nepal time
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setToday(getToday(getNepalTodayDate()));
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, []);
+
   const [currentView, setCurrentView] = useState<BikramMonth>(() => getBikramMonth(today.year, today.month));
   const [selectedDate, setSelectedDate] = useState<BikramDateObj | null>(null);
   const [useNepaliLanguage, setUseNepaliLanguage] = useState<boolean>(true);
@@ -61,7 +71,7 @@ export function useCalendarState() {
   };
 
   const handleTodayClick = () => {
-    const todayDate = getToday();
+    const todayDate = getToday(getNepalTodayDate());
     setCurrentView(getBikramMonth(todayDate.year, todayDate.month));
     setSelectedDate(todayDate);
     setYearInput(useNepaliLanguage ? getNepaliDigits(todayDate.year) : todayDate.year.toString());

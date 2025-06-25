@@ -1,4 +1,3 @@
-
 import { BikramDate, BS_START_YEAR, BS_END_YEAR } from './bikram';
 
 export type BikramDateObj = {
@@ -43,14 +42,15 @@ export const nepaliDaysEn = [
 ];
 
 // Get Today's Bikram Date
-export const getToday = (): BikramDateObj => {
-  const bikramDate = new BikramDate();
+export const getToday = (date?: Date): BikramDateObj => {
+  const today = date || new Date();
+  const bikramDate = BikramDate.fromDate(today);
   
   return {
     year: bikramDate.getYear(),
     month: bikramDate.getMonth(),
     day: bikramDate.getDate(),
-    englishDate: bikramDate.toJsDate(),
+    englishDate: today,
   };
 };
 

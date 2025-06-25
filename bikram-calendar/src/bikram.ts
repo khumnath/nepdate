@@ -1,4 +1,3 @@
-
 /*
  * TypeScript implementation of Bikram calendar conversion
  * Copyright (c) 2024 onwards - khumnath cg, nath.khum@gmail.com
@@ -43,8 +42,9 @@ export class BikramDate {
       const { gYear, gMonth, gDay } = this.toGregorian(year, month, day);
       this.englishDate = new Date(gYear, gMonth - 1, gDay);
     } else {
-      // Default to current date
-      this.englishDate = new Date();
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      this.englishDate = now;
       const { bsYear, bsMonth, bsDay } = this.fromGregorian(
         this.englishDate.getFullYear(),
         this.englishDate.getMonth() + 1,
@@ -58,16 +58,14 @@ export class BikramDate {
 
   // Create a new BikramDate from a JavaScript Date
   static fromDate(date: Date): BikramDate {
-    const bikramDate = new BikramDate();
-    const { bsYear, bsMonth, bsDay } = bikramDate.fromGregorian(
-      date.getFullYear(),
-      date.getMonth() + 1,
-      date.getDate()
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const { bsYear, bsMonth, bsDay } = new BikramDate().fromGregorian(
+      d.getFullYear(),
+      d.getMonth() + 1,
+      d.getDate()
     );
-    bikramDate.year = bsYear;
-    bikramDate.month = bsMonth;
-    bikramDate.day = bsDay;
-    return bikramDate;
+    return new BikramDate(bsYear, bsMonth, bsDay);
   }
 
   // Convert to JavaScript Date
@@ -109,8 +107,8 @@ export class BikramDate {
   // Convert AD (Gregorian) date to BS (Bikram Sambat)
   fromGregorian(gYear: number, gMonth: number, gDay: number): { bsYear: number; bsMonth: number; bsDay: number } {
     // Reference date: 1 Baisakh 2000 BS = 14 April 1943 AD
-    const refDate = new Date(1943, 3, 14); // Month is 0-indexed in JS Date
-    const targetDate = new Date(gYear, gMonth - 1, gDay);
+    const refDate = new Date(Date.UTC(1943, 3, 14)); // Month is 0-indexed in JS Date
+    const targetDate = new Date(Date.UTC(gYear, gMonth - 1, gDay));
     
     // Calculate difference in days
     const timeDiff = targetDate.getTime() - refDate.getTime();

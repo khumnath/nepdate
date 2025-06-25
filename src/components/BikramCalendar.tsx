@@ -121,7 +121,7 @@ const BikramCalendar: React.FC = () => {
             days={calendarState.currentView.days} 
             startWeekDay={calendarState.currentView.startWeekDay} 
             englishStartDate={calendarState.currentView.englishStartDate} 
-            currentDate={calendarState.today.year === calendarState.currentView.year && calendarState.today.month === calendarState.currentView.month ? calendarState.today : undefined} 
+            currentDate={calendarState.today} 
             selectedDate={calendarState.selectedDate || undefined} 
             onDateSelect={calendarState.handleDateSelect} 
             useNepaliLanguage={calendarState.useNepaliLanguage} 
