@@ -47,3 +47,7 @@ compile_commands.json
 
 # QtCreator local machine specific files for imported projects
 *creator.user*
+
+# Node js related files
+*dist*
+*node_modules*
