@@ -49,25 +49,31 @@ const CalendarNavigation = ({
   // Enhanced year input handler with immediate Nepali digit conversion
   const handleLocalYearInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawInput = e.target.value;
-    if (/^[0-9०-९]*$/.test(rawInput)) {
-      let processedInput = rawInput;
-      if (useNepaliLanguage && /[0-9]/.test(rawInput)) {
-        processedInput = rawInput.replace(/[0-9]/g, match => {
-          const digit = parseInt(match);
-          return ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'][digit];
-        });
-      }
-      setLocalYearInput(processedInput);
-      const syntheticEvent = {
-        ...e,
-        target: {
-          ...e.target,
-          value: processedInput
-        }
-      };
-      onYearInputChange(syntheticEvent);
+    let processedInput = rawInput;
+    if (useNepaliLanguage && /[0-9]/.test(rawInput)) {
+      processedInput = rawInput.replace(/[0-9]/g, match => {
+        const digit = parseInt(match);
+        return ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'][digit];
+      });
     }
+    setLocalYearInput(processedInput);
+    const syntheticEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        value: processedInput
+      }
+    };
+    onYearInputChange(syntheticEvent);
+    // Do NOT call onYearSubmit here
   };
+
+  // useEffect to trigger onYearSubmit when localYearInput is a valid year (all digits, not empty)
+  useEffect(() => {
+    if (/^[0-9०-९]+$/.test(localYearInput) && localYearInput.length > 0) {
+      onYearSubmit({ preventDefault: () => {} } as React.FormEvent);
+    }
+  }, [localYearInput, onYearSubmit]);
 
   useEffect(() => {
     setLocalYearInput(yearInput);

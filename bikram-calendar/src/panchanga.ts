@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { tithi, nakshatra, rashi, karan, yoga, solarMonthNames } from './constants';
+import { tithi, nakshatra, rashi, karan, yoga, solarMonthNames, tithiNp, nakshatraNp, rashiNp, karanNp, yogaNp, solarMonthNamesNp } from './constants';
 
 
 // --- Constants ---
@@ -481,7 +481,7 @@ export function calculatePanchanga(dateObj: Date) {
     const tithiAngle = (siderealMoon - siderealSun < 0) ? siderealMoon - siderealSun + 360 : siderealMoon - siderealSun;
     const tithiIndex = Math.floor(tithiAngle / 12);
     const dtithi = tithi[tithiIndex];
-    const dpaksha = tithiIndex < 15 ? "Shukla" : "Krishna";
+    const dpaksha = tithiIndex < 15 ? "Shuklapaksha" : "Krishnapaksha";
 
     const nakshatraIndex = Math.floor(siderealMoon / (360 / 27));
     const dnakshatra = nakshatra[nakshatraIndex];
@@ -533,7 +533,8 @@ export function calculatePanchanga(dateObj: Date) {
         tithiEnd: tithiEnd || 'N/A',
         sunrise: sunriseStr || 'N/A',
         sunset: sunsetStr || 'N/A',
-        debug: debugOutput
+        debug: debugOutput,
+        tithiIndex
     };
 }
 
@@ -578,5 +579,11 @@ export {
   jdToDateParts,
   calculateTithiTimes,
   crossedRashiBoundary,
-  calculateSolarDayDetails
+  calculateSolarDayDetails,
+  tithiNp,
+  nakshatraNp,
+  rashiNp,
+  karanNp,
+  yogaNp,
+  solarMonthNamesNp
 };
