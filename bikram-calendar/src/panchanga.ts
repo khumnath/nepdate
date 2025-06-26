@@ -143,66 +143,42 @@ function calculateTithiTimes(dateForPanchanga: Date) {
         const elongation = siderealMoon_calc - siderealSun_calc;
         return REV(elongation);
     }
-    
-
-function findTithiBoundary(
-    searchStartJD: number,
-    searchEndJD: number,
-    targetBoundaryAngle: number,
-    tithiAngleFunc: (jd: number) => number,
-    contextLog: string = ""
-): number {
-    let lowJD = searchStartJD;
-    let highJD = searchEndJD;
-    let midJD;
-    let iterations = 0;
-    const maxIterations = 100; // Max iterations to prevent infinite loops
-    const normalizedTargetAngle = REV(targetBoundaryAngle);
-    const angleAtLow = REV(tithiAngleFunc(lowJD));
-    const angleAtHigh = REV(tithiAngleFunc(highJD));
-
-    if (angleAtLow <= angleAtHigh) {
-        if (!(angleAtLow <= normalizedTargetAngle && normalizedTargetAngle <= angleAtHigh)) {
-            return -1; // Optional: Handle unbracketed case if needed
+    function findTithiBoundary(
+        searchStartJD: number,
+        searchEndJD: number,
+        targetBoundaryAngle: number,
+        tithiAngleFunc: (jd: number) => number
+    ): number {
+        let lowJD = searchStartJD;
+        let highJD = searchEndJD;
+        let midJD;
+        let iterations = 0;
+        const maxIterations = 100;
+        const normalizedTargetAngle = REV(targetBoundaryAngle);
+        while ((highJD - lowJD) * 86400.0 > 1 && iterations < maxIterations) {
+            midJD = (lowJD + highJD) / 2;
+            if (midJD === lowJD || midJD === highJD) {
+                break;
+            }
+            const angleAtMid = REV(tithiAngleFunc(midJD));
+            const diff = REV(angleAtMid - normalizedTargetAngle + 180) - 180;
+            if (diff < 0) {
+                lowJD = midJD;
+            } else {
+                highJD = midJD;
+            }
+            iterations++;
         }
-    } else {
-        if (!(angleAtLow <= normalizedTargetAngle || normalizedTargetAngle <= angleAtHigh)) {
-            return -1; // Optional: Handle unbracketed case if needed
-        }
+        return (lowJD + highJD) / 2;
     }
-
-    // Precision target: interval smaller than 1 second
-    while ((highJD - lowJD) * 86400.0 > 1 && iterations < maxIterations) {
-        midJD = (lowJD + highJD) / 2;
-        if (midJD === lowJD || midJD === highJD) { // Prevent infinite loop if JDs become identical due to precision
-            break;
-        }
-        const angleAtMid = REV(tithiAngleFunc(midJD));
-        const diff = REV(angleAtMid - normalizedTargetAngle + 180) - 180;
-
-        if (diff < 0) {
-            lowJD = midJD;
-        } else {
-            highJD = midJD;
-        }
-        iterations++;
-    }
-    // --- Test ---
-    if (iterations >= maxIterations) {
-        console.warn(
-            `IMPROVED SEARCH (${contextLog}): Max iterations (${maxIterations}) reached for target ${normalizedTargetAngle.toFixed(4)}.\n` +
-            `  Final Window JD: [${lowJD.toFixed(6)}, ${highJD.toFixed(6)}]. Result might be imprecise.`
-        );
-    }
-    return (lowJD + highJD) / 2;
-}
-
+    // --- Find tithi angle and index at sunrise ---
     const tithiAngleAtSunrise = tithiAngleAt(jdSunrise);
     const currentTithiIndex = Math.floor(tithiAngleAtSunrise / 12);
     const currentTithiStartBoundaryAngle = currentTithiIndex * 12;
     const nextTithiStartBoundaryAngle = (currentTithiIndex + 1) * 12;
-    const tithiStartJD = findTithiBoundary(jdSunrise - 1.5, jdSunrise + 0.5, currentTithiStartBoundaryAngle, tithiAngleAt);
-    const tithiEndJD = findTithiBoundary(jdSunrise - 0.5, jdSunrise + 1.5, nextTithiStartBoundaryAngle, tithiAngleAt);
+    // Find start and end for the tithi at sunrise
+    const tithiStartJD = findTithiBoundary(jdSunrise - 2, jdSunrise, currentTithiStartBoundaryAngle, tithiAngleAt);
+    const tithiEndJD = findTithiBoundary(jdSunrise, jdSunrise + 2, nextTithiStartBoundaryAngle, tithiAngleAt);
     const tithiStartParts = jdToDateParts(tithiStartJD, zhr_nepal);
     const tithiEndParts = jdToDateParts(tithiEndJD, zhr_nepal);
     const tithiStartTimeStr = `${pad(tithiStartParts.day)}/${pad(tithiStartParts.month)}/${tithiStartParts.year} ${formatAMPM(tithiStartParts.hours, tithiStartParts.minutes)}`;
