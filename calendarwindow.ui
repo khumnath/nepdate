@@ -19,6 +19,17 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="baseSize">
+   <size>
+    <width>700</width>
+    <height>400</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>12</pointsize>
+   </font>
+  </property>
   <property name="focusPolicy">
    <enum>Qt::StrongFocus</enum>
   </property>
@@ -97,6 +108,11 @@
     </item>
     <item row="8" column="2">
      <widget class="QComboBox" name="yearselectBS">
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
       <property name="focusPolicy">
        <enum>Qt::ClickFocus</enum>
       </property>
@@ -104,17 +120,25 @@
        <bool>true</bool>
       </property>
       <property name="frame">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
      </widget>
     </item>
     <item row="7" column="2">
      <widget class="QComboBox" name="yearselectAD">
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
       <property name="focusPolicy">
        <enum>Qt::WheelFocus</enum>
       </property>
       <property name="acceptDrops">
        <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
       </property>
       <property name="editable">
        <bool>true</bool>
@@ -123,12 +147,17 @@
        <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
       </property>
       <property name="frame">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
      </widget>
     </item>
     <item row="7" column="3">
      <widget class="QComboBox" name="monthselectAD">
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
       <property name="maxVisibleItems">
        <number>12</number>
       </property>
@@ -136,6 +165,11 @@
     </item>
     <item row="7" column="4">
      <widget class="QComboBox" name="dayselectAD">
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
       <property name="maxVisibleItems">
        <number>31</number>
       </property>
@@ -143,6 +177,11 @@
     </item>
     <item row="8" column="4">
      <widget class="QComboBox" name="dayselectBS">
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
       <property name="maxVisibleItems">
        <number>32</number>
       </property>
@@ -150,6 +189,11 @@
     </item>
     <item row="8" column="3">
      <widget class="QComboBox" name="monthselectBS">
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
       <property name="maxVisibleItems">
        <number>12</number>
       </property>
@@ -340,6 +384,15 @@
               <red>255</red>
               <green>255</green>
               <blue>255</blue>
+             </color>
+            </brush>
+           </colorrole>
+           <colorrole role="Highlight">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>145</red>
+              <green>145</green>
+              <blue>145</blue>
              </color>
             </brush>
            </colorrole>

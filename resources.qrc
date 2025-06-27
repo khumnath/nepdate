@@ -11,5 +11,7 @@
         <file>resources/Laila-Medium.ttf</file>
         <file>resources/flag.png</file>
         <file>resources/Laila-Font-LICENSE</file>
+        <file>resources/Martel-Bold.ttf</file>
+        <file>resources/Martel-Font-LICENCE</file>
     </qresource>
 </RCC>

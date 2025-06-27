@@ -46,8 +46,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), calendarWindow(nullptr), isDragging(false), dragStarted(false)
 {
     ui->setupUi(this);
+    disconnect(ui->dateButton, &QPushButton::clicked, this, &MainWindow::on_dateButton_clicked);
+    ui->dateButton->setMouseTracking(true);  // Enables hover tracking
+
+
     this->installEventFilter(this);
     ui->dateButton->installEventFilter(this);
+    ui->dateButton->setMouseTracking(true);  // Required for hover
 
     // Initialize timer for distinguishing between click and drag
     dragDelayTimer = new QTimer(this);
@@ -69,8 +74,19 @@ MainWindow::MainWindow(QWidget *parent) :
     int fontId = QFontDatabase::addApplicationFont(":/resources/Laila-Medium.ttf");
     QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
     QFont appFont(fontFamily);
-    QFont dateButtonFont(fontFamily, 14);  // To Do: set text size from setting menu */
+    QFont dateButtonFont(fontFamily, 12);  // To Do: set text size from setting menu */
     ui->dateButton->setFont(dateButtonFont);
+
+
+
+        QFontMetrics fontMetrics(ui->dateButton->font());
+        int fontHeight = fontMetrics.height();
+        int iconSize = (fontHeight * 3) / 4;
+        ui->dateButton->setIconSize(QSize(iconSize, iconSize));
+
+        qDebug() << "Calculated icon size based on font height:" << iconSize;
+
+
     updateTimer = new QTimer(this);
 connect(updateTimer, &QTimer::timeout, this, [=]() {
     updateDateButton();
@@ -194,7 +210,7 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     // Set the Nepali formatted date to the button text and tooltip
     ui->dateButton->setText(nepaliFormat);
     ui->dateButton->setToolTipDuration(3000);
-    QFont tooltipFont("Laila", 12); // Replace "Noto Sans Devnagari" with the name of your desired font
+    QFont tooltipFont("Laila", 9); // Replace "Noto Sans Devnagari" with the name of your desired font
     QToolTip::setFont(tooltipFont);
     ui->dateButton->setToolTip(nepalitooltip);
     adjustTextColorBasedOnBackground();
@@ -203,55 +219,68 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
 
 // The event filter to handle tooltip display
 bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
-    // Handle dragging for the entire window
-    if (event->type() == QEvent::MouseButtonPress) {
-        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-        if (mouseEvent->button() == Qt::LeftButton) {
-            isDragging = true;
-            dragStartPosition = mouseEvent->globalPosition().toPoint() - pos();
-            dragDelayTimer->start(200);
-            event->accept();
-        }
-    } else if (event->type() == QEvent::MouseMove) {
-        if (isDragging && dragDelayTimer->isActive()) {
-            QPoint movePosition = static_cast<QMouseEvent *>(event)->globalPosition().toPoint();
-            if ((movePosition - (pos() + dragStartPosition)).manhattanLength() > 5) {
-                dragDelayTimer->stop();
-            }
-        }
-
-        if (isDragging) {
-            move(static_cast<QMouseEvent *>(event)->globalPosition().toPoint() - dragStartPosition);
-            event->accept();
-        } else {
-            // Show tooltip only when not dragging
-            QToolTip::showText(static_cast<QMouseEvent *>(event)->globalPosition().toPoint(), ui->dateButton->toolTip(), ui->dateButton);
-        }
-    } else if (event->type() == QEvent::MouseButtonRelease) {
-        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-        if (mouseEvent->button() == Qt::LeftButton) {
-            dragDelayTimer->stop();
-            isDragging = false;
-            event->accept();
-        }
-    }
-
-    // Handle specific events for the dateButton
-    if (watched == ui->dateButton) {
+    if (watched == this || watched == ui->dateButton) {
         if (event->type() == QEvent::MouseButtonPress) {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
             if (mouseEvent->button() == Qt::LeftButton) {
-                // Check if it is a click, not a drag
-                if (!isDragging) {
+                isDragging = true;
+                dragStarted = false;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                dragStartPosition = mouseEvent->globalPosition().toPoint() - this->pos();
+#else
+                dragStartPosition = mouseEvent->globalPos() - this->pos();
+#endif
+
+                event->accept();
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            if (isDragging) {
+                QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                QPoint currentPos = mouseEvent->globalPosition().toPoint();
+#else
+                QPoint currentPos = mouseEvent->globalPos();
+#endif
+                int distance = (currentPos - (this->pos() + dragStartPosition)).manhattanLength();
+                if (distance > 5) {
+                    dragStarted = true;
+                    move(currentPos - dragStartPosition);
+                    adjustTextColorBasedOnBackground();
+                    event->accept();
+                    return true;
+                }
+            } else if (watched == ui->dateButton) {
+                // Show tooltip on hover when not dragging
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                QToolTip::showText(static_cast<QMouseEvent *>(event)->globalPosition().toPoint(), ui->dateButton->toolTip(), ui->dateButton);
+#else
+                QToolTip::showText(static_cast<QMouseEvent *>(event)->globalPos(), ui->dateButton->toolTip(), ui->dateButton);
+#endif
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+            if (mouseEvent->button() == Qt::LeftButton) {
+                isDragging = false;
+
+                // Only trigger click if no drag
+                if (!dragStarted && watched == ui->dateButton) {
                     openCalendarWindow();
                 }
+
+                dragStarted = false;
+                event->accept();
+                return true;
             }
         } else if (event->type() == QEvent::Leave) {
             QToolTip::hideText();
         }
     }
-    return QMainWindow::eventFilter(watched, event);  // Pass unhandled events to the base class
+    return QMainWindow::eventFilter(watched, event);
 }
+
+
 
 // Helper function to calculate the luminance of a color
 double luminance(QColor color) {

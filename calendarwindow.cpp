@@ -13,13 +13,18 @@
 #include <QIcon>
 #include <QFile>
 #include <QtWidgets>
+#include <QSettings>
+#include <QCloseEvent>
 
 CalendarWindow::CalendarWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CalendarWindow),
     blockSignals(false)
 {
-    ui->setupUi(this);
+    ui->setupUi(this);    
+        setWindowPosition();
+
+
 
     // Apply the custom font
     int fontId = QFontDatabase::addApplicationFont(":/resources/Laila-Medium.ttf");
@@ -119,6 +124,61 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     adjustCellSizes();
     adjustCalendarTableSize();
 }
+
+#include <QTimer>
+
+void CalendarWindow::setWindowPosition() {
+    QSettings settings("Nepdate", "Nepdatecalendar");
+
+    // Load saved size
+    QSize savedSize = settings.value("MainWindow/size", QSize(-1, -1)).toSize();
+    if (savedSize != QSize(-1, -1)) {
+        resize(savedSize);
+    } else {
+        QRect screenGeometry = QApplication::primaryScreen()->availableGeometry();
+        int width = screenGeometry.width() * 0.7;
+        int height = screenGeometry.height() * 0.6;
+        resize(width, height);
+    }
+
+    // Defer restoring position until after window has been shown
+    QTimer::singleShot(0, this, [this]() { // <-- No captured QSettings
+        QSettings settings("Nepdate", "Nepdatecalendar"); // Create new instance inside lambda
+
+        QPoint savedPos = settings.value("MainWindow/pos", QPoint(-1, -1)).toPoint();
+
+        if (savedPos != QPoint(-1, -1)) {
+            // Make sure position is on a valid screen
+            bool foundValidScreen = false;
+            for (QScreen *screen : QGuiApplication::screens()) {
+                if (screen->geometry().contains(savedPos)) {
+                    move(savedPos);
+                    foundValidScreen = true;
+                    break;
+                }
+            }
+
+            // If not found on any screen, center it
+            if (!foundValidScreen) {
+                QRect screenGeometry = QApplication::primaryScreen()->availableGeometry();
+                int x = (screenGeometry.width() - width()) / 2;
+                int y = (screenGeometry.height() - height()) / 2;
+                move(x, y);
+            }
+        }
+    });
+}
+
+void CalendarWindow::closeEvent(QCloseEvent *event) {
+    // Save window geometry
+    QSettings settings("Nepdate", "Nepdatecalendar");
+    settings.setValue("MainWindow/pos", pos());
+    settings.setValue("MainWindow/size", size());
+    settings.setValue("MainWindow/maximized", isMaximized());
+
+    QMainWindow::closeEvent(event);
+}
+
 bool CalendarWindow::eventFilter(QObject *object, QEvent *event) {
     if (object == this && event->type() == QEvent::Show) {
         // Perform action when the window is shown
@@ -592,7 +652,8 @@ void CalendarWindow::updateCalendar(int year, int month) {
         QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
 
         // Create custom widget for day and tithi
-        DayTithiWidget *customWidget = new DayTithiWidget(convertToNepaliNumerals(day), tithiName);
+        QString englishDayStr = QString::number(gDay); // gDay is the Gregorian day for this cell
+        DayTithiWidget *customWidget = new DayTithiWidget(convertToNepaliNumerals(day), tithiName, englishDayStr);
 
         // Set tooltip
         QString paksha = QString::fromStdString(panchang.paksha);
@@ -612,7 +673,6 @@ void CalendarWindow::updateCalendar(int year, int month) {
             customWidget->setTodayStyle(); // defined in DayTithiWidget.h
         } else if (isToday) {
             // If it's just today, apply the "today" style
-            item->setBackground(QColor(153, 255, 204)); // light green
             customWidget->setTodayStyle(); // defined in DayTithiWidget.h
         } else if (isSaturday) {
             // If it's just Saturday, apply the "Saturday" style
@@ -620,9 +680,9 @@ void CalendarWindow::updateCalendar(int year, int month) {
         }
 
         if (panchang.tithi_index == 14) {
-            customWidget->setIcon(purnimaIcon, 0.8);  // Example opacity set to 0.8
+            customWidget->setIcon(purnimaIcon, 0.9);
         } else if (panchang.tithi_index == 29) {
-            customWidget->setIcon(amavasyaIcon, 0.8);  // Example opacity set to 0.8
+            customWidget->setIcon(amavasyaIcon, 0.9);
         } else {
             customWidget->setIcon(QIcon(), 0.0);  // Clear icon and set transparency
         }

@@ -75,6 +75,7 @@ private:
     bool dragStarted;
     QPoint dragStartPosition;
     QTimer *dragDelayTimer;
+    QPoint windowPosOnPress;
 
 };
 

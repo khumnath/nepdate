@@ -45,10 +45,12 @@ private slots:
     void showMenu();
     void showAbout();
     void openSourceCode();
+    void setWindowPosition();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject *object, QEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     Ui::CalendarWindow *ui;
