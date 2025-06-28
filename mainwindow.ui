@@ -6,13 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>450</width>
+    <width>414</width>
     <height>91</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="font">
    <font>
-    <family>Laila</family>
+    <family>Sans Serif</family>
     <pointsize>11</pointsize>
    </font>
   </property>
@@ -63,7 +69,7 @@ QPushButton:pressed {
       </property>
       <property name="font">
        <font>
-        <family>Laila</family>
+        <family>Sans Serif</family>
         <pointsize>11</pointsize>
        </font>
       </property>

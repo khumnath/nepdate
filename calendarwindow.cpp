@@ -15,6 +15,7 @@
 #include <QtWidgets>
 #include <QSettings>
 #include <QCloseEvent>
+#include <QTimer>
 
 CalendarWindow::CalendarWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -125,7 +126,6 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     adjustCalendarTableSize();
 }
 
-#include <QTimer>
 
 void CalendarWindow::setWindowPosition() {
     QSettings settings("Nepdate", "Nepdatecalendar");
@@ -669,7 +669,6 @@ void CalendarWindow::updateCalendar(int year, int month) {
 
         if (isToday && isSaturday) {
             // If today is both Saturday and the current date, apply the "today" style
-            item->setBackground(QColor(153, 255, 204)); // light green
             customWidget->setTodayStyle(); // defined in DayTithiWidget.h
         } else if (isToday) {
             // If it's just today, apply the "today" style

@@ -88,7 +88,7 @@ private:
     QIcon storedIcon;
     qreal storedIconOpacity = 1.0;
     void adjustIconSize() {
-        int minSize = qMin(width(), height()) / 2;
+        int minSize = qMin(width(), height()) / 4;
         iconSize = QSize(minSize + 18, minSize + 18);
         iconLabel->setFixedSize(iconSize);
         iconLabel->setScaledContents(true);
@@ -119,18 +119,12 @@ public:
 protected:
     void resizeEvent(QResizeEvent *event) override {
         QWidget::resizeEvent(event);
-
         int w = width();
         int h = height();
-
         int minDim = qMin(w, h);
-
-        // Font sizes
         int dayFontSize = std::max(12, static_cast<int>(minDim * 0.14));
         int tithiFontSize = std::max(8, static_cast<int>(minDim * 0.05));
         int englishDayFontSize = std::max(8, static_cast<int>(minDim * 0.05));
-
-        // --- Update Fonts ---
         int fontId = QFontDatabase::addApplicationFont(":/resources/Martel-Bold.ttf");
         QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
         QFont dayFont = dayLabel->font();
@@ -138,34 +132,20 @@ protected:
         dayFont.setFamily(fontFamily);
         dayFont.setBold(true);
         dayLabel->setFont(dayFont);
-        dayLabel->repaint();
-
         QFont tithiFont = tithiLabel->font();
         tithiFont.setPointSize(tithiFontSize);
         tithiFont.setItalic(true);
         tithiLabel->setFont(tithiFont);
-
-
-        dayLabel->adjustSize();
-        int dayX = 20;
-        int dayY = (h / 3) - (dayLabel->height() / 2); // Move up
-        dayLabel->move(dayX, dayY);
-
-        // --- Reposition English Day Label (top-right) ---
-        englishDayLabel->adjustSize();
-        englishDayLabel->move(width() - englishDayLabel->width() - 6, 6);
-
-
-        // --- Reposition Tithi Label (bottom-left) ---
-        tithiLabel->adjustSize();
-        tithiLabel->move(6, h - tithiLabel->height() - 6);
-
-
         QFont englishDayFont = englishDayLabel->font();
         englishDayFont.setPointSize(englishDayFontSize);
         englishDayLabel->setFont(englishDayFont);
-        englishDayLabel->adjustSize();
-        adjustIconSize(); // Should reposition icon manually too
+        // Position labels without adjustSize/repaint
+        int dayX = 20;
+        int dayY = (h / 3) - (dayLabel->height() / 2);
+        dayLabel->move(dayX, dayY);
+        englishDayLabel->move(width() - englishDayLabel->width() - 6, 6);
+        tithiLabel->move(6, h - tithiLabel->height() - 6);
+        adjustIconSize();
     }
 
 };
