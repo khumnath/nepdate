@@ -22,3 +22,6 @@ FORMS += mainwindow.ui \
          calendarwindow.ui
 RESOURCES += \
             resources.qrc
+
+DISTFILES += \
+    resources/Laila-Regular.ttf

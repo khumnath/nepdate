@@ -71,9 +71,11 @@ MainWindow::MainWindow(QWidget *parent) :
 )";
     setStyleSheet(tooltipstyle);
 
-    int fontId = QFontDatabase::addApplicationFont(":/resources/Laila-Medium.ttf");
-    QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-    QFont appFont(fontFamily);
+    //int fontId = QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
+    QString fontFamily = "Noto Sans Devanagari";
+    //if (fontId != -1) {
+       // fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    //}
     QFont dateButtonFont(fontFamily, 12);  // To Do: set text size from setting menu */
     ui->dateButton->setFont(dateButtonFont);
 
@@ -210,7 +212,7 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     // Set the Nepali formatted date to the button text and tooltip
     ui->dateButton->setText(nepaliFormat);
     ui->dateButton->setToolTipDuration(3000);
-    QFont tooltipFont("Laila", 9); // Replace "Noto Sans Devnagari" with the name of your desired font
+    QFont tooltipFont("fontFamily", 9);
     QToolTip::setFont(tooltipFont);
     ui->dateButton->setToolTip(nepalitooltip);
     adjustTextColorBasedOnBackground();

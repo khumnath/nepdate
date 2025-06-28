@@ -125,12 +125,12 @@ protected:
         int dayFontSize = std::max(12, static_cast<int>(minDim * 0.14));
         int tithiFontSize = std::max(8, static_cast<int>(minDim * 0.05));
         int englishDayFontSize = std::max(8, static_cast<int>(minDim * 0.05));
-        int fontId = QFontDatabase::addApplicationFont(":/resources/Martel-Bold.ttf");
+        int fontId = QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
         QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
         QFont dayFont = dayLabel->font();
         dayFont.setPointSize(dayFontSize);
         dayFont.setFamily(fontFamily);
-        dayFont.setBold(true);
+        dayFont.setBold(false);
         dayLabel->setFont(dayFont);
         QFont tithiFont = tithiLabel->font();
         tithiFont.setPointSize(tithiFontSize);

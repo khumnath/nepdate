@@ -28,12 +28,13 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
 
 
     // Apply the custom font
-    int fontId = QFontDatabase::addApplicationFont(":/resources/Laila-Medium.ttf");
+    int fontId = QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
+    QString fontFamily = "Noto Sans Devnagari";
     if (fontId != -1) {
-        QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-        QFont appFont(fontFamily);
-        qApp->setFont(appFont);
+        fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
     }
+        qApp->setFont(fontFamily);
+
 
     this->setWindowTitle("नेपाली पात्रो तथा मिति परिवर्तक");
     connect(ui->aboutbutton, &QPushButton::clicked, this, &CalendarWindow::showMenu);

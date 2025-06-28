@@ -8,10 +8,8 @@
         <file>resources/purnima.png</file>
         <file>resources/style.qss</file>
         <file>resources/VERSION.txt</file>
-        <file>resources/Laila-Medium.ttf</file>
         <file>resources/flag.png</file>
-        <file>resources/Laila-Font-LICENSE</file>
-        <file>resources/Martel-Bold.ttf</file>
-        <file>resources/Martel-Font-LICENCE</file>
+        <file>resources/NotoSans-font-LICENCE</file>
+        <file>resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf</file>
     </qresource>
 </RCC>
