@@ -1,5 +1,4 @@
 #include "DayTithiWidget.h"
-#include "panchanga.h"
 #include "ui_calendarwindow.h"
 #include "calendarwindow.h"
 #include "bikram.h"
@@ -18,7 +17,8 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QTimer>
-#include "convertor.h"
+#include "converter.h"
+#include "panchanga.h"
 
 CalendarWindow::CalendarWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -503,7 +503,6 @@ void CalendarWindow::updateBsDateFromAd(int year, int month, int day) {
     QString bsMonthName = getBikramMonthName(bs.month);
     AdDate ad;
     bsToAd(bs.year, bs.month, bs.day, ad);
-    double julianDate = toJulian(ad.year, ad.month, ad.day);
     QString paksha;
     QString tithiName = getTithiName(ad.year, ad.month, ad.day, paksha);
     QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
@@ -539,7 +538,6 @@ void CalendarWindow::updateAdDateFromBs(int year, int month, int day) {
     ui->dayselectAD->setCurrentText(QString::number(ad.day));
     int bsDaysInMonth = Bikram().daysInMonth(year, month);
     QString gmonthname = getEnglishMonthName(ad.month);
-    double julianDate = toJulian(ad.year, ad.month, ad.day);
     QString paksha;
     QString tithiName = getTithiName(ad.year, ad.month, ad.day, paksha);
     QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);

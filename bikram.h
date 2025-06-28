@@ -1,8 +1,6 @@
 #ifndef BIKRAM_H
 #define BIKRAM_H
 
-#include "panchanga.h"
-
 #include <cmath>
 
 class Bikram {

@@ -57,7 +57,7 @@ set(NEPDATE_WIDGET_SOURCES
     calendarwindow.cpp
     calendarlogic.cpp
     calendartable.cpp
-    convertor.cpp
+    converter.cpp
     panchanga.cpp
 )
 
@@ -69,7 +69,7 @@ set(NEPDATE_WIDGET_HEADERS
     calendarwindow.h
     calendarlogic.h
     calendartable.h
-    convertor.h
+    converter.h
 )
 
 set(NEPDATE_WIDGET_FORMS
@@ -95,7 +95,7 @@ set(NEPDATE_CALENDAR_SOURCES
     mainwindow.cpp
     calendarlogic.cpp
     calendartable.cpp
-    convertor.cpp
+    converter.cpp
     panchanga.cpp
 )
 
@@ -105,10 +105,9 @@ set(NEPDATE_CALENDAR_HEADERS
     bikram.h
     mainwindow.h
     panchanga.h
-    calendarwindow.h
     calendarlogic.h
     calendartable.h
-    convertor.h
+    converter.h
 )
 
 set(NEPDATE_CALENDAR_FORMS

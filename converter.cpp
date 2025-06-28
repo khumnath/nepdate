@@ -1,5 +1,5 @@
-#include "convertor.h"
-
+#include "converter.h"
+#include "panchanga.h"
 double toJulian(int year, int month, int day) {
     return gregorianToJulian(year, month, day);
 }

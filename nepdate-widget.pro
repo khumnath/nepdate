@@ -13,14 +13,14 @@ SOURCES += main.cpp \
            mainwindow.cpp \
            calendarlogic.cpp \
            calendartable.cpp \
-           convertor.cpp \
+           converter.cpp \
            panchanga.cpp
 
 HEADERS += mainwindow.h \
            calendarwindow.h \
            calendarlogic.h \
            calendartable.h \
-           convertor.h \
+           converter.h \
            bikram.h \
            DayTithiWidget.h \
            panchanga.h
@@ -29,6 +29,3 @@ FORMS += mainwindow.ui \
          calendarwindow.ui
 RESOURCES += \
             resources.qrc
-
-DISTFILES += \
-    resources/Laila-Regular.ttf

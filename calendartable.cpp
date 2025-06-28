@@ -1,13 +1,13 @@
 #include "calendartable.h"
 #include "DayTithiWidget.h"
 #include "calendarlogic.h"
-#include "panchanga.h"
 #include <QComboBox>
 #include <QHeaderView>
 #include <QIcon>
 #include <QDate>
 #include <QTableWidgetItem>
 #include <QTableWidget>
+#include "panchanga.h"
 
 void CalendarTableHelper::updateCalendar(QTableWidget* table, Bikram& converter, int year, int month, int& gYear, int& gMonth, int& gDay) {
     int daysInMonth = converter.daysInMonth(year, month);
@@ -46,7 +46,11 @@ void CalendarTableHelper::updateCalendar(QTableWidget* table, Bikram& converter,
         customWidget->setProperty("year", cellGYear);
         customWidget->setProperty("month", cellGMonth);
         customWidget->setProperty("gDay", cellGDay); // Store actual Gregorian day
-        TithiResult tithiResult = calculateTithi({cellGYear - 1900, cellGMonth - 1, cellGDay});
+        std::tm date_to_pass = {}; // This zero-initializes all members of the struct
+        date_to_pass.tm_year = cellGYear - 1900;
+        date_to_pass.tm_mon = cellGMonth - 1;
+        date_to_pass.tm_mday = cellGDay;
+        TithiResult tithiResult = calculateTithi(date_to_pass);
         QString tooltipText = QString("%1 (%2)")
             .arg(QString::fromStdString(tithiResult.tithiName))
             .arg(QString::fromStdString(tithiResult.paksha));

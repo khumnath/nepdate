@@ -13,10 +13,10 @@
 #include <QtGlobal>
 #include <QMouseEvent>
 #include <QMessageBox>
-#include "panchanga.h"
 #include "bikram.h"
 #include <QDate>
 #include "calendarlogic.h"
+#include "panchanga.h"
 
 class DayTithiWidget : public QWidget {
     Q_OBJECT

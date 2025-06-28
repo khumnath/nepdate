@@ -4,6 +4,17 @@
 #include <sstream>
 #include <iomanip>
 
+const char* tithi[] = { "प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पञ्चमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पञ्चमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "औंसी" };
+const char* paksha[] = { "शुक्ल पक्ष", "कृष्ण पक्ष" };
+const char* nakshatra[] = { "अश्विनी", "भरणी", "कृत्तिका", "रोहिणी", "मृगशिरा", "आर्द्रा", "पुनर्वसु", "पुष्य", "आश्रेषा", "मघा", "पूर्वा फाल्गुनी", "उत्तर फाल्गुनी", "हस्त", "चित्रा", "स्वाति", "विशाखा", "अनुराधा", "ज्येष्ठा", "मूला", "पूर्वाषाढा", "उत्तराषाढा", "श्रवण", "श्रविष्ठा", "शतभिषा", "पूर्वा भाद्रपदा", "उत्तर भाद्रपदा", "रेवती" };
+const char* rashi[] = { "मेष", "वृष", "मिथुन", "कर्कट", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुम्भ", "मीन" };
+const char* karan[] = { "बव", "बालव", "कौलव", "तैतिल", "गर", "वणिज", "विष्टि", "शकुनि", "चतुष्पद", "नाग", "किंस्तुघ्न" };
+const char* yoga[] = { "विष्कुम्भ", "प्रीति", "आयुष्मान्", "सौभाग्य", "शोभन", "अतिगण्ड", "सुकर्मा", "धृति", "शूल", "गण्ड", "वृद्धि", "ध्रुव", "व्याघात", "हर्षण", "वज्र", "सिद्धि", "व्यतीपात", "वरीयान्", "परिघ", "शिव", "सिद्ध", "साध्य", "शुभ", "शुक्ल", "ब्रह्म", "इन्द्र", "वैधृति" };
+
+
+
+// --- Utility functions (defined outside the Panchang class) ---
+
 std::string formatAMPM(int hours, int minutes) {
     int h_12 = hours % 12;
     if (h_12 == 0) h_12 = 12;
@@ -86,9 +97,11 @@ TithiResult calculateTithi(const std::tm& date) {
     int sunriseHour = std::stoi(sunriseStr.substr(0, 2));
     int sunriseMin = std::stoi(sunriseStr.substr(3, 2));
     double jdAtSunrise = julianDay(year, month, day, sunriseHour + sunriseMin / 60.0, NEPAL_OFFSET);
-    // double d_days_since_j2000 = jdAtSunrise - 2451543.5;
-    // For simplicity, use the Panchang class for tithi index
+
+    // Create a Panchang object and let its constructor and methods do the calculation
     Panchang p(jdAtSunrise);
+
+    // Now you can safely access the calculated members of the Panchang object
     int tithiIndex = static_cast<int>(p.tithi_index);
     int pakshaIndex = tithiIndex < 15 ? 0 : 1;
     return {tithiIndex, tithi[tithiIndex], paksha[pakshaIndex], pakshaIndex};
@@ -158,8 +171,13 @@ RashiResult calculateRashi(const std::tm& date) {
     return {rashiIndex, rashi[rashiIndex]};
 }
 
-double getSunLongitude(double d) {
-    // Based on the TypeScript logic
+// --- Member functions for the Panchang class ---
+
+// Correctly define this as a member function of Panchang
+// It uses the 'Panchang::' scope resolution operator.
+double Panchang::getSunLongitude() {
+    // Use the class's member variable 'tdays' directly
+    double d = tdays;
     double w = 282.9404 + 4.70935e-5 * d;
     double e = 0.016709 - 1.151e-9 * d;
     double M = REV(356.0470 + 0.9856002585 * d);
@@ -170,7 +188,11 @@ double getSunLongitude(double d) {
     return REV(v + w);
 }
 
-double getMoonLongitude(double d) {
+// Correctly define this as a member function of Panchang
+// It uses the 'Panchang::' scope resolution operator.
+double Panchang::getMoonLongitude() {
+    // Use the class's member variable 'tdays' directly
+    double d = tdays;
     double N = REV(125.1228 - 0.0529538083 * d);
     double i = 5.1454;
     double w = REV(318.0634 + 0.1643573223 * d);
@@ -187,7 +209,8 @@ double getMoonLongitude(double d) {
     double yh = r_dist * (sin(N * D2R) * cos((v_true_anomaly + w) * D2R) + cos(N * D2R) * sin((v_true_anomaly + w) * D2R) * cos(i * D2R));
     double moonLon = REV(R2D * atan2(yh, xh));
     // Periodic corrections (simplified, as in TS)
-    double D_elong = REV(L0 - getSunLongitude(d));
+    // NOTE: This correctly calls the member function getSunLongitude()
+    double D_elong = REV(L0 - getSunLongitude());
     double Ms_global = REV(356.0470 + 0.9856002585 * d);
     moonLon += -1.274 * sin((M - 2 * D_elong) * D2R);
     moonLon += +0.658 * sin((2 * D_elong) * D2R);
@@ -204,6 +227,22 @@ double getMoonLongitude(double d) {
     return REV(moonLon);
 }
 
+// Correct implementation of the Panchang class method
 void Panchang::calculateTithi() {
-    TithiResult calculateTithi(const std::tm& date);
+    double sunLongitude = getSunLongitude();
+    double moonLongitude = getMoonLongitude();
+
+    // Calculate the difference in longitude and normalize it
+    double tithiElongation = REV(moonLongitude - sunLongitude);
+
+    // Calculate the tithi index (360 degrees / 12 degrees per tithi = 30 tithis)
+    tithi_index = std::floor(tithiElongation / 12.0);
+
+    // Determine the Paksha (bright or dark half of the lunar month)
+    // The first 15 tithis are Shukla Paksha (bright), the next 15 are Krishna Paksha (dark)
+    if (tithi_index < 15) {
+        paksha = "शुक्ल पक्ष"; // Shukla Paksha
+    } else {
+        paksha = "कृष्ण पक्ष"; // Krishna Paksha
+    }
 }

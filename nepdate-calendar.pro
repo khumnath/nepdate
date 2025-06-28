@@ -11,13 +11,20 @@ TEMPLATE = app
 TARGET = nepdate-calendar
 SOURCES += main_calendar.cpp \
            calendarwindow.cpp \
-           mainwindow.cpp
+           mainwindow.cpp \
+           calendarlogic.cpp \
+           calendartable.cpp \
+           converter.cpp \
+           panchanga.cpp
 
 HEADERS += calendarwindow.h \
            DayTithiWidget.h \
            bikram.h \
            mainwindow.h \
-           panchanga.h
+           panchanga.h \
+           calendarlogic.h \
+           calendartable.h \
+           converter.h
 
 FORMS += calendarwindow.ui \
          mainwindow.ui

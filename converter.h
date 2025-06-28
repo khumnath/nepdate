@@ -2,7 +2,6 @@
 #define CONVERTOR_H
 #include <QString>
 #include "bikram.h"
-#include "panchanga.h"
 
 struct BsDate {
     int year;
