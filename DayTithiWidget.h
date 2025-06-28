@@ -11,6 +11,12 @@
 #include <QFont>
 #include <QFontDatabase>
 #include <QtGlobal>
+#include <QMouseEvent>
+#include <QMessageBox>
+#include "panchanga.h"
+#include "bikram.h"
+#include <QDate>
+#include "calendarlogic.h"
 
 class DayTithiWidget : public QWidget {
     Q_OBJECT
@@ -146,6 +152,49 @@ protected:
         englishDayLabel->move(width() - englishDayLabel->width() - 6, 6);
         tithiLabel->move(6, h - tithiLabel->height() - 6);
         adjustIconSize();
+    }
+    void mousePressEvent(QMouseEvent *event) override {
+        if (event->button() == Qt::LeftButton) {
+            int day = property("gDay").toInt(); // Use actual Gregorian day
+            int month = property("month").toInt();
+            int year = property("year").toInt();
+            // Gregorian date
+            QDate gdate(year, month, day);
+            // Bikram date
+            Bikram bs;
+            bs.fromGregorian(year, month, day);
+            int bsYear = bs.getYear();
+            int bsMonth = bs.getMonth();
+            int bsDay = bs.getDay();
+            // Panchanga details
+            std::tm date = {};
+            date.tm_year = year - 1900;
+            date.tm_mon = month - 1;
+            date.tm_mday = day;
+            TithiResult tithi = calculateTithi(date);
+            YogaResult yoga = calculateYoga(date);
+            KaranResult karan = calculateKaran(date);
+            NakshatraResult nakshatra = calculateNakshatra(date);
+            RashiResult rashi = calculateRashi(date);
+            QString sunrise = QString::fromStdString(calculateSunriseOrSunset(date, true));
+            QString sunset = QString::fromStdString(calculateSunriseOrSunset(date, false));
+            // Show details dialog
+            QString details = QString(
+                "Gregorian: %1\nBikram: %2-%3-%4\nTithi: %5\nPaksha: %6\nYoga: %7\nKarana: %8\nNakshatra: %9\nRashi: %10\nSunrise: %11\nSunset: %12")
+                .arg(QString::number(gdate.year()) + "-" + QString::number(gdate.month()).rightJustified(2, '0') + "-" + QString::number(gdate.day()).rightJustified(2, '0'))
+                .arg(convertToNepaliNumerals(bsYear)).arg(convertToNepaliNumerals(bsMonth)).arg(convertToNepaliNumerals(bsDay))
+                .arg(QString::fromStdString(tithi.tithiName))
+                .arg(QString::fromStdString(tithi.paksha))
+                .arg(QString::fromStdString(yoga.yogaName))
+                .arg(QString::fromStdString(karan.karanName))
+                .arg(QString::fromStdString(nakshatra.nakshatraName))
+                .arg(QString::fromStdString(rashi.rashiName))
+                .arg(sunrise)
+                .arg(sunset);
+            QWidget *topLevel = this->window();
+            QMessageBox::information(topLevel, tr("Day Details"), details);
+        }
+        QWidget::mousePressEvent(event);
     }
 
 };

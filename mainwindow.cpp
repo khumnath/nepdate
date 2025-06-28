@@ -186,11 +186,14 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     // Adjust the day of the week
     QString nepaliMonthName = getnepalimonth(nepaliMonth);
     QString nepaliDayOfWeekName = QString::fromStdString(weekdayName);
-    double julianDate = gregorianToJulian(yy, mm, dd);
-    Panchang panchang(julianDate);
-    QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
-    QString paksha = QString::fromStdString(panchang.paksha);
-    QString tithipaksha = QString("%1 %2").arg(paksha, tithiName);
+
+    // Use modern TithiResult calculation
+    std::tm date = {};
+    date.tm_year = yy - 1900;
+    date.tm_mon = mm - 1;
+    date.tm_mday = dd;
+    TithiResult tithiResult = calculateTithi(date);
+    QString tithipaksha = QString::fromStdString(tithiResult.paksha + " " + tithiResult.tithiName);
 
     // Construct the Nepali date format string
     QString nepaliFormat = QString::number(nepaliYear) + " " +
@@ -525,18 +528,6 @@ QString MainWindow::getnepalimonth(int m) {
     } else {
         return QString();
     }
-}
-
-//for tithi calculation
-double gregorianToJulian(int year, int month, int day) {
-    if (month <= 2) {
-        year--;
-        month += 12;
-    }
-    int A = year / 100;
-    int B = 2 - A + A / 4;
-    double JD = std::floor(365.25 * (year + 4716)) + std::floor(30.6001 * (month + 1)) + day + B - 1524.5;
-    return JD;
 }
 
 

@@ -55,6 +55,10 @@ set(NEPDATE_WIDGET_SOURCES
     main.cpp
     mainwindow.cpp
     calendarwindow.cpp
+    calendarlogic.cpp
+    calendartable.cpp
+    convertor.cpp
+    panchanga.cpp
 )
 
 set(NEPDATE_WIDGET_HEADERS

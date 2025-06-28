@@ -10,13 +10,20 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
            calendarwindow.cpp \
-           mainwindow.cpp
+           mainwindow.cpp \
+           calendarlogic.cpp \
+           calendartable.cpp \
+           convertor.cpp \
+           panchanga.cpp
 
 HEADERS += mainwindow.h \
+           calendarwindow.h \
+           calendarlogic.h \
+           calendartable.h \
+           convertor.h \
            bikram.h \
-           panchanga.h \
            DayTithiWidget.h \
-           calendarwindow.h
+           panchanga.h
 
 FORMS += mainwindow.ui \
          calendarwindow.ui
