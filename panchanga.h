@@ -3,16 +3,64 @@
 
 #include <cmath>
 #include <string>
+#include <ctime>
 
 #define PI 3.14159265358979323846
-#define r2d (180.0 / PI)
-#define d2r (PI / 180.0)
 
-// Tithi names in Nepali
-static const char tithi[][30] = { "प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी",
-                                 "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "प्रतिपदा",
-                                 "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी",
-                                 "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "अमावस्या" };
+// --- Constants ---
+constexpr double D2R = PI / 180.0;
+constexpr double R2D = 180.0 / PI;
+constexpr double NEPAL_OFFSET = 5.75;
+constexpr double KATHMANDU_LAT = 27.7172;
+constexpr double KATHMANDU_LON = 85.324;
+
+extern const char* tithi[];
+extern const char* paksha[];
+extern const char* nakshatra[];
+extern const char* rashi[];
+extern const char* karan[];
+extern const char* yoga[];
+// --- Utility functions ---
+inline double REV(double x) { return x - std::floor(x / 360.0) * 360.0; }
+inline std::string pad(int n) { return (n < 10 ? "0" : "") + std::to_string(n); }
+std::string formatAMPM(int hours, int minutes);
+
+double julianDay(int yy, int mm, int dd, double hour = 0.0, double zhr = NEPAL_OFFSET);
+std::string calculateSunriseOrSunset(const std::tm& date, bool isSunrise, double latitude = KATHMANDU_LAT, double longitude = KATHMANDU_LON, double nepalOffset = NEPAL_OFFSET);
+
+struct TithiResult {
+    int tithiIndex;
+    std::string tithiName;
+    std::string paksha;
+    int pakshaIndex;
+};
+TithiResult calculateTithi(const std::tm& date);
+
+struct NakshatraResult {
+    int nakshatraIndex;
+    std::string nakshatraName;
+};
+
+struct YogaResult {
+    int yogaIndex;
+    std::string yogaName;
+};
+
+struct KaranResult {
+    int karanIndex;
+    std::string karanName;
+};
+
+struct RashiResult {
+    int rashiIndex;
+    std::string rashiName;
+};
+
+
+NakshatraResult calculateNakshatra(const std::tm& date);
+YogaResult calculateYoga(const std::tm& date);
+KaranResult calculateKaran(const std::tm& date);
+RashiResult calculateRashi(const std::tm& date);
 
 class Panchang {
 public:
@@ -32,60 +80,9 @@ public:
     }
 
 private:
-    void calculateTithi() {
-        double moon_longitude = getMoonLongitude();
-        double sun_longitude = getSunLongitude();
-
-        // Adjust for Nepal time (UTC+5:45)
-        double nepalTimeOffset = 5.75; // in hours
-        double localTimeAdjustment = nepalTimeOffset * 15; // Convert hours to degrees
-
-        // Adjust the longitudes
-        moon_longitude += localTimeAdjustment;
-        sun_longitude += localTimeAdjustment;
-
-        // Wrap around to keep within 0-360 degrees
-        moon_longitude = fmod(moon_longitude + 360.0, 360.0);
-        sun_longitude = fmod(sun_longitude + 360.0, 360.0);
-
-        // Calculate the difference
-        double difference = moon_longitude - sun_longitude;
-        if (difference < 0) difference += 360.0;
-
-        tithi_index = std::floor(difference / 12.0);
-        paksha = (tithi_index < 15) ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
-
-        // Debug print
-       // std::cout << "Tithi: " << tithi[(int)tithi_index] << " (" << paksha << ")" << std::endl;
-    }
-
-    double getMoonLongitude() {
-        double L1 = 218.316 + 481267.8813 * t;
-        double D = 297.8502 + 445267.1115 * t;
-        // double M = 357.5291 + 35999.0503 * t;
-        double M1 = 134.963 + 477198.8671 * t;
-        // double F = 93.272 + 483202.0175 * t;
-
-        double moonLongitude = L1
-                               + (6.289 * sin(M1 * M_PI / 180.0))
-                               - (1.274 * sin((2 * D - M1) * M_PI / 180.0))
-                               - (0.658 * sin(2 * D * M_PI / 180.0))
-                               - (0.214 * sin(2 * M1 * M_PI / 180.0))
-                               + (0.11 * sin(D * M_PI / 180.0));
-
-        return fmod(moonLongitude, 360.0);
-    }
-
-    double getSunLongitude() {
-        double l0 = 280.4665 + 36000.7698 * t;
-        double m = 357.5291 + 35999.0503 * t;
-        double c = (1.9146 - 0.004817 * t - 0.000014 * t * t) * sin(m * M_PI / 180.0)
-                   + (0.019993 - 0.000101 * t) * sin(2 * m * M_PI / 180.0)
-                   + 0.000289 * sin(3 * m * M_PI / 180.0);
-
-        double sunLongitude = l0 + c;
-        return fmod(sunLongitude, 360.0);
-    }
+    void calculateTithi();
+    double getMoonLongitude();
+    double getSunLongitude();
 };
 
 double gregorianToJulian(int year, int month, int day);
