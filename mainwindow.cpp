@@ -1,7 +1,4 @@
-#include <QGuiApplication>
-#include <QScreen>
 #include "mainwindow.h"
-#include "qmenu.h"
 #include "ui_mainwindow.h"
 #include <QMouseEvent>
 #include <QTimer>
@@ -19,175 +16,149 @@
 #include <QSettings>
 #include <QString>
 #include <QFontDatabase>
+
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
-
 #ifdef Q_OS_MAC
 #include <Cocoa/Cocoa.h>
 #endif
 
+const QString MainWindow::kAppName = "nepdate-widget";
+const QString MainWindow::kAutostartKey = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+const QString MainWindow::kAutostartDirLinux = QDir::homePath() + "/.config/autostart/";
+const QString MainWindow::kDesktopFileLinux = kAutostartDirLinux + "nepdate-widget.desktop";
+
+// Static regex patterns (precompiled once)
+static const QRegularExpression numberRegex(R"(\b\d+\b)");
+static const QRegularExpression commaRegex(",");
+
 std::string MainWindow::getWeekdayName(int year, int month, int day) {
 #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
-    // On Unix-like systems, where tm_gmtoff and tm_zone exist
     std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, nullptr };
 #else
-    // On Windows or systems where tm_gmtoff and tm_zone don't exist
     std::tm timeinfo = { 0, 0, 0, day, month - 1, year - 1900, 0, 0, 0 };
 #endif
-
-    std::mktime(&timeinfo); // Update timeinfo to fill in the week day field
-
+    std::mktime(&timeinfo);
     const std::string nepaliWeekdays[] = { "आइतबार", "सोमबार", "मंगलबार", "बुधबार", "बिहिबार", "शुक्रबार", "शनिबार" };
     return nepaliWeekdays[timeinfo.tm_wday];
 }
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent), ui(new Ui::MainWindow), calendarWindow(nullptr), isDragging(false), dragStarted(false)
+    QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    calendarWindow(nullptr),
+    isDragging(false),
+    dragStarted(false)
 {
     ui->setupUi(this);
+
     disconnect(ui->dateButton, &QPushButton::clicked, this, &MainWindow::on_dateButton_clicked);
-    ui->dateButton->setMouseTracking(true);  // Enables hover tracking
-
-
+    ui->dateButton->setMouseTracking(true);
     this->installEventFilter(this);
     ui->dateButton->installEventFilter(this);
-    ui->dateButton->setMouseTracking(true);  // Required for hover
+    ui->dateButton->setMouseTracking(true);
 
     // Initialize timer for distinguishing between click and drag
     dragDelayTimer = new QTimer(this);
     dragDelayTimer->setSingleShot(true);
     connect(dragDelayTimer, &QTimer::timeout, this, [this]() {
-        if (isDragging) {
-            dragStarted = true;
-        }
+        if (isDragging) dragStarted = true;
     });
-    setMouseTracking(true);
 
+    setMouseTracking(true);
     QString tooltipstyle = R"(
     QToolTip {
      background-color: white; color: black; border: 1px solid gray; border-radius: 5px;
     }
-)";
+    )";
     setStyleSheet(tooltipstyle);
 
-    //int fontId = QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
-    QString fontFamily = "Noto Sans Devanagari";
-    //if (fontId != -1) {
-       // fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-    //}
-    QFont dateButtonFont(fontFamily, 12);  // To Do: set text size from setting menu */
-    ui->dateButton->setFont(dateButtonFont);
-
-
-
-        QFontMetrics fontMetrics(ui->dateButton->font());
-        int fontHeight = fontMetrics.height();
-        int iconSize = (fontHeight * 3) / 4;
-        ui->dateButton->setIconSize(QSize(iconSize, iconSize));
-
-        qDebug() << "Calculated icon size based on font height:" << iconSize;
-
+    // Load settings
+    QSettings settings("Nepdate", "NepdateWidget");
+    // Load text color setting (default to darkGray)
+    textColor = settings.value("TextColor", QColor(Qt::darkGray)).value<QColor>();
+    // Load font size setting (default to 11)
+    fontSize = settings.value("FontSize", 11).toInt();
+    // Apply the loaded color and font size
+    applyTextAndFont();
 
     updateTimer = new QTimer(this);
-connect(updateTimer, &QTimer::timeout, this, [=]() {
-    updateDateButton();
-    adjustTextColorBasedOnBackground();
+    connect(updateTimer, &QTimer::timeout, this, &MainWindow::updateDateButton);
+    updateTimer->start(1000);
 
-});
-updateTimer->start(1000);
-
-
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::BypassWindowManagerHint | Qt::WindowDoesNotAcceptFocus);
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint |
+                   Qt::BypassWindowManagerHint | Qt::WindowDoesNotAcceptFocus);
     setMouseTracking(true);
     setAttribute(Qt::WA_TranslucentBackground);
-
     setWindowPosition();
     setupDefaultDate();
     this->setWindowFlag(Qt::Tool);
 
+    // Set tooltip font once at startup
+    QFont tooltipFont("Nirmala UI", 9);
+    QToolTip::setFont(tooltipFont);
 
-// Platform-specific code to ensure the window stays on top
-#ifdef Q_OS_X11
+    // Platform-specific code
+    #ifdef Q_OS_X11
     QWindow *window = this->windowHandle();
     if (window) {
         window->setFlag(Qt::X11BypassWindowManagerHint);
         window->setFlag(Qt::WindowStaysOnTopHint);
         window->setType(Qt::Notification);
     }
-#endif
+    #endif
 
-#ifdef Q_OS_WIN
-    // Ensure the window stays on top
+    #ifdef Q_OS_WIN
     HWND hwnd = reinterpret_cast<HWND>(this->winId());
     SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_TOPMOST);
     SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
                  SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    #endif
 
-    // Fix me if there are any other methods to force on top.
-    // Periodically enforce the "always on top" setting
-    QTimer* topmostTimer = new QTimer(this);
-    connect(topmostTimer, &QTimer::timeout, [hwnd]() {
-        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-    });
-    topmostTimer->start(500); // adjust the interval as needed
-#endif
-
-#ifdef Q_OS_MAC
+    #ifdef Q_OS_MAC
     NSWindow *nsWindow = [this->windowHandle() nsWindow];
     [nsWindow setLevel:NSMainMenuWindowLevel + 1];
-#endif
+    #endif
 }
 
 void MainWindow::setWindowPosition() {
     QSettings settings("Nepdate", "NepdateWidget");
     QPoint savedPos = settings.value("MainWindow/pos", QPoint(-1, -1)).toPoint();
-
     if (savedPos != QPoint(-1, -1)) {
         move(savedPos);
     } else {
         QScreen *primaryScreen = QGuiApplication::primaryScreen();
         QRect screenGeometry = primaryScreen->geometry();
-
-        int x = screenGeometry.left() + (screenGeometry.width() - width()) / 1.3; // Before statusbar in most cases.
-        int offsetY = 10;  // Number of pixels to move downward
+        int x = screenGeometry.left() + (screenGeometry.width() - width()) / 1.3;
+        int offsetY = 10;
         int y = screenGeometry.bottom() - height() + offsetY;
-
-#ifdef Q_OS_MAC
-    int dockHeight = 0; //No idea how mac os handles dock
-#endif
+    #ifdef Q_OS_MAC
+        int dockHeight = 0;
+    #endif
         move(x, y);
-      }
+    }
 }
 
-
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     QSettings settings("Nepdate", "NepdateWidget");
     settings.setValue("MainWindow/pos", this->pos());
+    settings.setValue("TextColor", textColor);  // Save text color
+    settings.setValue("FontSize", fontSize);    // Save font size
     delete ui;
 }
 
-// considering bikram date as nepali date.
 int MainWindow::cnvToNepali(int mm, int dd, int yy) {
-    // Perform the conversion using the bikram class
     Bikram bsdate;
-    bsdate.fromGregorian(yy, mm, dd); // Convert the provided Gregorian date to Bikram Sambat
-
-    // Get the converted Nepali date components from the bikram class
+    bsdate.fromGregorian(yy, mm, dd);
     int nepaliYear = bsdate.getYear();
     int nepaliMonth = bsdate.getMonth();
     int nepaliDay = bsdate.getDay();
 
-    // Calculate the weekday name for the given Gregorian date
     std::string weekdayName = getWeekdayName(yy, mm, dd);
-
-    // Adjust the day of the week
     QString nepaliMonthName = getnepalimonth(nepaliMonth);
     QString nepaliDayOfWeekName = QString::fromStdString(weekdayName);
 
-    // Use modern TithiResult calculation
     std::tm date = {};
     date.tm_year = yy - 1900;
     date.tm_mon = mm - 1;
@@ -195,85 +166,88 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     TithiResult tithiResult = calculateTithi(date);
     QString tithipaksha = QString::fromStdString(tithiResult.paksha + " " + tithiResult.tithiName);
 
-    // Construct the Nepali date format string
     QString nepaliFormat = QString::number(nepaliYear) + " " +
                            nepaliMonthName + " " +
                            QString::number(nepaliDay) + " गते " +
                            nepaliDayOfWeekName;
-    QString nepalitooltip = nepaliFormat + " " +
-                           tithipaksha;
+    QString nepalitooltip = nepaliFormat + " " + tithipaksha;
 
     QLocale nepaliLocale(QLocale::Nepali);
-
     nepaliFormat.replace(QString::number(nepaliYear), nepaliLocale.toString(nepaliYear));
     nepaliFormat.replace(QString::number(nepaliDay), nepaliLocale.toString(nepaliDay));
-    nepaliFormat.replace(QRegularExpression(","), QString());
+    nepaliFormat.replace(commaRegex, QString());
     nepalitooltip.replace(QString::number(nepaliYear), nepaliLocale.toString(nepaliYear));
     nepalitooltip.replace(QString::number(nepaliDay), nepaliLocale.toString(nepaliDay));
-    nepalitooltip.replace(QRegularExpression(","), QString());
+    nepalitooltip.replace(commaRegex, QString());
 
-    // Set the Nepali formatted date to the button text and tooltip
-    ui->dateButton->setText(nepaliFormat);
-    ui->dateButton->setToolTipDuration(3000);
-    QFont tooltipFont("fontFamily", 9);
-    QToolTip::setFont(tooltipFont);
-    ui->dateButton->setToolTip(nepalitooltip);
-    adjustTextColorBasedOnBackground();
+    // Only update if content changed
+    if (ui->dateButton->text() != nepaliFormat ||
+        ui->dateButton->toolTip() != nepalitooltip) {
+
+        ui->dateButton->setText(nepaliFormat);
+        ui->dateButton->setToolTip(nepalitooltip);
+        ui->dateButton->setToolTipDuration(3000);
+    }
+
     return 0;
 }
 
-// The event filter to handle tooltip display
+// This function now applies text color, font size, and icon size
+void MainWindow::applyTextAndFont() {
+    // Set color and font size via stylesheet
+    QString styleSheet = QString("QPushButton { color: %1; font-size: %2pt; background-color: rgba(0, 0, 0, 0); border: none; outline: none; text-align: left; padding-left: 5px; }")
+                             .arg(textColor.name())
+                             .arg(fontSize);
+    ui->dateButton->setStyleSheet(styleSheet);
+
+    // Update the icon size to be proportional to the font size
+    int iconDimension = fontSize + 15; // Making the icon slightly larger than the text
+    ui->dateButton->setIconSize(QSize(iconDimension, iconDimension));
+}
+
 bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
     if (watched == this || watched == ui->dateButton) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+
         if (event->type() == QEvent::MouseButtonPress) {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
             if (mouseEvent->button() == Qt::LeftButton) {
                 isDragging = true;
                 dragStarted = false;
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                 dragStartPosition = mouseEvent->globalPosition().toPoint() - this->pos();
-#else
+    #else
                 dragStartPosition = mouseEvent->globalPos() - this->pos();
-#endif
-
+    #endif
                 event->accept();
                 return true;
             }
         } else if (event->type() == QEvent::MouseMove) {
             if (isDragging) {
-                QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                 QPoint currentPos = mouseEvent->globalPosition().toPoint();
-#else
+    #else
                 QPoint currentPos = mouseEvent->globalPos();
-#endif
+    #endif
                 int distance = (currentPos - (this->pos() + dragStartPosition)).manhattanLength();
                 if (distance > 5) {
                     dragStarted = true;
                     move(currentPos - dragStartPosition);
-                    adjustTextColorBasedOnBackground();
                     event->accept();
                     return true;
                 }
             } else if (watched == ui->dateButton) {
-                // Show tooltip on hover when not dragging
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                QToolTip::showText(static_cast<QMouseEvent *>(event)->globalPosition().toPoint(), ui->dateButton->toolTip(), ui->dateButton);
-#else
-                QToolTip::showText(static_cast<QMouseEvent *>(event)->globalPos(), ui->dateButton->toolTip(), ui->dateButton);
-#endif
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                QToolTip::showText(mouseEvent->globalPosition().toPoint(), ui->dateButton->toolTip(), ui->dateButton);
+    #else
+                QToolTip::showText(mouseEvent->globalPos(), ui->dateButton->toolTip(), ui->dateButton);
+    #endif
             }
         } else if (event->type() == QEvent::MouseButtonRelease) {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
             if (mouseEvent->button() == Qt::LeftButton) {
                 isDragging = false;
-
-                // Only trigger click if no drag
                 if (!dragStarted && watched == ui->dateButton) {
                     openCalendarWindow();
                 }
-
                 dragStarted = false;
                 event->accept();
                 return true;
@@ -285,98 +259,122 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
     return QMainWindow::eventFilter(watched, event);
 }
 
+void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
+    QMenu menu(tr("Context menu"), this);
+    QString styleSheet = "QMenu { background-color: white; color: black; border: 1px solid gray; border-radius: 5px; }"
+                         "QMenu::item { background-color: transparent; }"
+                         "QMenu::item:selected { background-color: #0892D0; color: white;}";
+    menu.setStyleSheet(styleSheet);
 
+    // Font size selection menu
+    QMenu* fontSizeMenu = menu.addMenu(tr("Font Size"));
+    auto addFontSizeAction = [&](int size) {
+        QAction* action = new QAction(QString::number(size), this);
+        action->setCheckable(true);
+        action->setChecked(fontSize == size);
+        connect(action, &QAction::triggered, this, [this, size]() {
+            fontSize = size;
+            applyTextAndFont();
+        });
+        fontSizeMenu->addAction(action);
+    };
 
-// Helper function to calculate the luminance of a color
-double luminance(QColor color) {
-    double r = color.redF();
-    double g = color.greenF();
-    double b = color.blueF();
-    r = (r <= 0.03928) ? r / 12.92 : std::pow((r + 0.055) / 1.055, 2.4);
-    g = (g <= 0.03928) ? g / 12.92 : std::pow((g + 0.055) / 1.055, 2.4);
-    b = (b <= 0.03928) ? b / 12.92 : std::pow((b + 0.055) / 1.055, 2.4);
+    addFontSizeAction(10);
+    addFontSizeAction(11);
+    addFontSizeAction(12);
+    addFontSizeAction(14);
+    addFontSizeAction(16);
 
-    // Calculates the relative luminance of the color using the formula specified in the sRGB color space.
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    // Text color selection menu
+    QMenu* colorMenu = menu.addMenu(tr("Text Color"));
+    auto addColorAction = [&](const QString& label, const QColor& color) {
+        QAction* action = new QAction(label, this);
+        action->setCheckable(true);
+        action->setChecked(textColor == color);
+        connect(action, &QAction::triggered, this, [this, color]() {
+            textColor = color;
+            applyTextAndFont(); // Use the unified style function
+        });
+        colorMenu->addAction(action);
+    };
+
+    addColorAction(tr("Gray"), Qt::darkGray);
+    addColorAction(tr("White"), Qt::white);
+    addColorAction(tr("Black"), Qt::black);
+
+    QAction *copyAction = new QAction(tr("Copy Nepali Date"), this);
+    connect(copyAction, &QAction::triggered, this, &MainWindow::copyButtonText);
+    menu.addAction(copyAction);
+
+    menu.addSeparator();
+
+    QAction *autostartAction = new QAction(isAutostartEnabled() ? tr("Disable Autostart") : tr("Enable Autostart"), this);
+    connect(autostartAction, &QAction::triggered, this, [this, autostartAction]() {
+        bool currentState = isAutostartEnabled();
+        setAutostart(!currentState);
+        autostartAction->setText(isAutostartEnabled() ? tr("Disable Autostart") : tr("Enable Autostart"));
+    });
+    menu.addAction(autostartAction);
+
+    menu.addSeparator();
+
+    QAction *exitAllAction = new QAction(tr("Exit"), this);
+    connect(exitAllAction, &QAction::triggered, this, &MainWindow::exitAll);
+    menu.addAction(exitAllAction);
+
+    menu.exec(event->globalPos());
 }
 
-// Helper function to calculate the contrast ratio between two luminance values
-double contrastRatio(double lum1, double lum2) {
-    double brighter = std::max(lum1, lum2);
-    double darker = std::min(lum1, lum2);
-    return (brighter + 0.05) / (darker + 0.05);
-}
-
-// Main function to adjust the text color based on the background color
-void MainWindow::adjustTextColorBasedOnBackground() {
-    QPoint globalPos = ui->dateButton->mapToGlobal(QPoint(0, 0));
-    QScreen *screen = QGuiApplication::primaryScreen();
-    QPixmap pixmap = screen->grabWindow(0, globalPos.x(), globalPos.y(),
-                                        ui->dateButton->width(), ui->dateButton->height());
-    QImage image = pixmap.toImage();
-    QImage scaledImage = image.scaled(10, 10, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    QColor averageColor = getAverageColor(scaledImage);
-    double bgLuminance = luminance(averageColor);
-
-    // Get the luminance of black and white colors.
-    double whiteLuminance = luminance(Qt::white);
-    double blackLuminance = luminance(Qt::black);
-
-    // Calculate the contrast ratio between the background color and black/white text.
-    double whiteContrast = contrastRatio(bgLuminance, whiteLuminance);
-    double blackContrast = contrastRatio(bgLuminance, blackLuminance);
-
-    // Choose the text color with the highest contrast ratio.
-    QColor bestTextColor = (blackContrast > whiteContrast) ? Qt::black : Qt::white;
-
-    // Store the previous color for smooth transitions.
-    static QColor previousColor = bestTextColor;
-
-    // Implement a smooth transition mechanism to avoid rapid color changes.
-    const double contrastThreshold = (bgLuminance < 0.5) ? 1.5 : 2.0;  // Adjust this threshold to fine-tune the transition
-    if (contrastRatio(luminance(previousColor), bgLuminance) < contrastThreshold) {
-        previousColor = bestTextColor;
+void MainWindow::openCalendarWindow() {
+    if (!calendarWindow || !calendarWindow->isVisible()) {
+        calendarWindow = new CalendarWindow(this);
+        calendarWindow->setWindowModality(Qt::NonModal);
+        connect(calendarWindow, &CalendarWindow::destroyed, this, [this]() {
+            calendarWindow = nullptr;
+        });
     }
-
-    // Set the text color of the dateButton while preserving its transparency.
-    QString styleSheet = QString("QPushButton { color: %1; background-color: rgba(0, 0, 0, 0); border: none; outline: none; }")
-                             .arg(previousColor.name());
-    ui->dateButton->setStyleSheet(styleSheet);
+    calendarWindow->show();
+    calendarWindow->raise();
+    calendarWindow->activateWindow();
 }
 
-// Function to calculate the average color of an image
-QColor MainWindow::getAverageColor(const QImage &image) {
-    // Initializes variables to store the accumulated red, green, and blue values.
-    qint64 red = 0, green = 0, blue = 0;
+void MainWindow::on_dateButton_clicked() {
+    openCalendarWindow();
+}
 
-    // Calculate the total number of pixels in the image.
-    int pixelCount = image.width() * image.height();
+void MainWindow::copyButtonText() {
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(ui->dateButton->text());
+}
 
-    // Iterate through each pixel in the image.
-    for (int y = 0; y < image.height(); ++y) {
-        for (int x = 0; x < image.width(); ++x) {
-            // Get the color of the current pixel.
-            QColor color(image.pixel(x, y));
-            red += color.red();
-            green += color.green();
-            blue += color.blue();
-        }
+void MainWindow::setupDefaultDate() {
+    QDate today = QDate::currentDate();
+    if (today != lastUpdatedDate) {
+        lastUpdatedDate = today;
+        cnvToNepali(today.month(), today.day(), today.year());
     }
-
-    // Calculates the average red, green, and blue values and returns the resulting average color.
-    return QColor(red / pixelCount, green / pixelCount, blue / pixelCount);
 }
 
-void MainWindow::setupDefaultDate()
-{
-    // Convert the default Gregorian date to Nepali and update UI
-    int mm = 1;
-    int yy = 1;
-    int dd = 1;
-    cnvToNepali(mm, dd, yy);
+void MainWindow::updateDateButton() {
+    QDate today = QDate::currentDate();
+    if (today == lastUpdatedDate) return;
+    lastUpdatedDate = today;
+    cnvToNepali(today.month(), today.day(), today.year());
 }
-void MainWindow::exitAll()
-{
+
+QString MainWindow::getnepalimonth(int m) {
+    static const QString nepaliMonths[] = {
+        "बैशाख", "जेष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन",
+        "कार्तिक", "मंसिर", "पुष", "माघ", "फाल्गुण", "चैत्र"
+    };
+    if (m >= 1 && m <= 12) {
+        return nepaliMonths[m - 1];
+    } else {
+        return QString();
+    }
+}
+
+void MainWindow::exitAll() {
     QList<QWidget*> topLevelWidgets = QApplication::topLevelWidgets();
     for (QWidget* widget : topLevelWidgets) {
         MainWindow* mainWindow = qobject_cast<MainWindow*>(widget);
@@ -384,17 +382,10 @@ void MainWindow::exitAll()
             mainWindow->close();
         }
     }
-
-    // After closing all windows, quit the application
     qApp->quit();
 }
 
-const QString kAppName = "nepdate-widget";
-const QString kAutostartKey = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-const QString kAutostartDirLinux = QDir::homePath() + "/.config/autostart/";
-const QString kDesktopFileLinux = kAutostartDirLinux + "nepdate-widget.desktop";
-
-bool isAutostartEnabled() {
+bool MainWindow::isAutostartEnabled() {
 #ifdef Q_OS_WIN
     QSettings registrySettings(kAutostartKey, QSettings::NativeFormat);
     return registrySettings.contains(kAppName);
@@ -404,130 +395,29 @@ bool isAutostartEnabled() {
 #endif
 }
 
-void createDesktopFile(const QString& path, const QString& execPath) {
-    QFile desktopFile(path);
-    if (!desktopFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open file for writing:" << path;
-        return;
-    }
-
-    QTextStream out(&desktopFile);
-    out << "[Desktop Entry]\n";
-    out << "Type=Application\n";
-    out << "Name=Nepali Calendar widget\n";
-    out << "Exec=" << execPath << "\n";
-    out << "Icon=calendar\n";
-    desktopFile.close();
-}
-
 void MainWindow::setAutostart(bool enabled) {
 #ifdef Q_OS_WIN
     QSettings registrySettings(kAutostartKey, QSettings::NativeFormat);
-
     if (enabled) {
         registrySettings.setValue(kAppName, QDir::toNativeSeparators(QCoreApplication::applicationFilePath()));
     } else {
         registrySettings.remove(kAppName);
     }
-#else // Assuming Q_OS_LINUX or any other Unix-like OS
-    const QString execPath = QCoreApplication::applicationFilePath();
-
+#else
     if (enabled) {
-        // Ensure the desktop file exists in the application directory
-        if (!QFile::exists(kDesktopFileLinux)) {
-            createDesktopFile(kDesktopFileLinux, execPath);
+        QDir().mkpath(kAutostartDirLinux);
+        QFile desktopFile(kDesktopFileLinux);
+        if (desktopFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QTextStream out(&desktopFile);
+            out << "[Desktop Entry]\n";
+            out << "Type=Application\n";
+            out << "Name=Nepali Calendar widget\n";
+            out << "Exec=" << QCoreApplication::applicationFilePath() << "\n";
+            out << "Icon=calendar\n";
+            desktopFile.close();
         }
-        // Copy the desktop file to the autostart directory
-        QFile::copy(kDesktopFileLinux, kAutostartDirLinux + "nepdate-widget.desktop");
     } else {
-        QFile::remove(kAutostartDirLinux + "nepdate-widget.desktop");
+        QFile::remove(kDesktopFileLinux);
     }
 #endif
 }
-
-void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
-    QMenu menu(tr("Context menu"), this);
-    QString styleSheet = "QMenu { background-color: white; color: black; border: 1px solid gray; border-radius: 5px; }"
-                         "QMenu::item { background-color: transparent; }"
-                         "QMenu::item:selected { background-color: #0892D0; color: white;}";
-    menu.setStyleSheet(styleSheet);
-
-    QAction *copyAction = new QAction(tr("Copy Nepali Date"), this);
-    connect(copyAction, &QAction::triggered, this, &MainWindow::copyButtonText);
-    menu.addAction(copyAction);
-
-    menu.addSeparator(); // Add a separator before the autostart action
-
-    QAction *autostartAction = new QAction(
-        isAutostartEnabled() ? tr("Disable Autostart") : tr("Enable Autostart"),
-        this);
-    connect(autostartAction, &QAction::triggered, this, [this, autostartAction]() {
-        bool currentState = isAutostartEnabled();
-        setAutostart(!currentState);
-        autostartAction->setText(isAutostartEnabled() ? tr("Disable Autostart") : tr("Enable Autostart"));
-    });
-    menu.addAction(autostartAction);
-
-    menu.addSeparator(); // Add a separator before the exit action
-
-    QAction *exitAllAction = new QAction(tr("Exit"), this);
-    connect(exitAllAction, &QAction::triggered, this, &MainWindow::exitAll);
-    menu.addAction(exitAllAction);
-
-    menu.setStyleSheet(styleSheet);
-    menu.exec(event->globalPos());
-}
-
-void MainWindow::openCalendarWindow() {
-    if (!calendarWindow || !calendarWindow->isVisible()) {
-        calendarWindow = new CalendarWindow(this);
-        calendarWindow->setWindowModality(Qt::NonModal);
-
-        connect(calendarWindow, &CalendarWindow::destroyed, this, [this]() {
-            calendarWindow = nullptr;
-        });
-        calendarWindow->show();
-    } else {
-        calendarWindow->raise();
-        calendarWindow->activateWindow();
-    }
-}
-
-void MainWindow::on_dateButton_clicked()
-{
-    // Call openCalendarWindow when the dateButton is clicked
-    openCalendarWindow();
-}
-
-
-void MainWindow::copyButtonText() {
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(ui->dateButton->text());
-}
-
-void MainWindow::updateDateButton() {
-    QDate today = QDate::currentDate();
-    if (today != lastUpdatedDate) {
-        lastUpdatedDate = today;
-        cnvToNepali(today.month(), today.day(), today.year());
-        adjustTextColorBasedOnBackground();
-        this->show();
-        this->raise();
-    }
-}
-
-
-QString MainWindow::getnepalimonth(int m) {
-    const QString nepaliMonths[] = {
-        "बैशाख", "जेष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन",
-        "कार्तिक", "मंसिर", "पुष", "माघ", "फाल्गुण", "चैत्र"
-    };
-
-    if (m >= 1 && m <= 12) {
-        return nepaliMonths[m - 1];
-    } else {
-        return QString();
-    }
-}
-
-

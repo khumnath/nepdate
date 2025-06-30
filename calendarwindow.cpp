@@ -31,11 +31,11 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
 
 
     // Apply the custom font
-    int fontId = QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
-    QString fontFamily = "Noto Sans Devnagari";
-    if (fontId != -1) {
-        fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-    }
+        QString fontFamily = "Noto Sans Devanagari";
+        if (!QFontDatabase().families().contains(fontFamily)) {
+            QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
+        }
+
         qApp->setFont(fontFamily);
 
 

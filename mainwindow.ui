@@ -86,12 +86,6 @@ QPushButton:pressed {
        <iconset resource="resources.qrc">
         <normaloff>:/resources/flag.png</normaloff>:/resources/flag.png</iconset>
       </property>
-      <property name="iconSize">
-       <size>
-        <width>17</width>
-        <height>17</height>
-       </size>
-      </property>
       <property name="autoDefault">
        <bool>false</bool>
       </property>
