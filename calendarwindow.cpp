@@ -89,12 +89,22 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
     int bsMonth = converter.getMonth();
     int bsDay = converter.getDay();
     converter.toGregorian(bsYear, bsMonth, bsDay, gYear, gMonth, gDay);
-    double julianDate = gregorianToJulian(gYear, gMonth, gDay);
-    Panchang panchang(julianDate);
+    // Create tm struct for the date
+    std::tm date_tm = {};
+    date_tm.tm_year = gYear - 1900;  // Years since 1900
+    date_tm.tm_mon = gMonth - 1;     // Months since January (0-11)
+    date_tm.tm_mday = gDay;          // Day of the month (1-31)
+
+    // Calculate tithi using the new function
+    TithiResult result = calculateTithi(date_tm);
+
+    // Get Bikram month name
     QString bsMonthName = getBikramMonthName(bsMonth);
-    QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
-    QString paksha = QString::fromStdString(panchang.paksha);
-     QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
+
+    // Format the result string
+    QString tithiName = QString::fromStdString(result.tithiName);
+    QString paksha = QString::fromStdString(result.paksha);
+    QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
 
     // Set current date in BS combo boxes
     ui->yearselectBS->setCurrentText(QString::number(bsYear));
@@ -245,10 +255,18 @@ void CalendarWindow::ontodayButtonclicked() {
     int bsDay = converter.getDay();
     QString bsMonthName = getBikramMonthName(bsMonth);
     converter.toGregorian(bsYear, bsMonth, bsDay, gYear, gMonth, gDay);
-    double julianDate = gregorianToJulian(gYear, gMonth, gDay);
-    Panchang panchang(julianDate);
-    QString tithiName = QString::fromStdString(tithi[(int)panchang.tithi_index]);
-    QString paksha = QString::fromStdString(panchang.paksha);
+    // Create tm struct for the date
+    std::tm date_tm = {};
+    date_tm.tm_year = gYear - 1900;  // Years since 1900
+    date_tm.tm_mon = gMonth - 1;     // Months since January (0-11)
+    date_tm.tm_mday = gDay;          // Day of the month (1-31)
+
+    // Calculate tithi using the new function
+    TithiResult result = calculateTithi(date_tm);
+
+    // Format the result string
+    QString tithiName = QString::fromStdString(result.tithiName);
+    QString paksha = QString::fromStdString(result.paksha);
     QString tithipaksha = QString("%1 %2").arg(paksha).arg(tithiName);
 
     // Update BS combo boxes
@@ -273,8 +291,6 @@ void CalendarWindow::onpreviousMonthButtonclicked() {
         // Wrap around to December
         ui->monthselectBS->setCurrentIndex(11); // December (0-based index)
     }
-
-    // The change will automatically trigger the connected slot for month selection
 }
 
 // Slot for Next Month button
@@ -287,8 +303,6 @@ void CalendarWindow::onnextMonthButtonclicked() {
         // Wrap around to January
         ui->monthselectBS->setCurrentIndex(0); // January (0-based index)
     }
-
-    // The change will automatically trigger the connected slot for month selection
 }
 
 void CalendarWindow::resizeEvent(QResizeEvent* event) {
