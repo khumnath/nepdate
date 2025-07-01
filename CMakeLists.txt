@@ -55,6 +55,10 @@ set(NEPDATE_WIDGET_SOURCES
     main.cpp
     mainwindow.cpp
     calendarwindow.cpp
+    calendarlogic.cpp
+    calendartable.cpp
+    converter.cpp
+    panchanga.cpp
 )
 
 set(NEPDATE_WIDGET_HEADERS
@@ -63,6 +67,9 @@ set(NEPDATE_WIDGET_HEADERS
     DayTithiWidget.h
     panchanga.h
     calendarwindow.h
+    calendarlogic.h
+    calendartable.h
+    converter.h
 )
 
 set(NEPDATE_WIDGET_FORMS
@@ -86,14 +93,21 @@ set(NEPDATE_CALENDAR_SOURCES
     main_calendar.cpp
     calendarwindow.cpp
     mainwindow.cpp
+    calendarlogic.cpp
+    calendartable.cpp
+    converter.cpp
+    panchanga.cpp
 )
 
 set(NEPDATE_CALENDAR_HEADERS
     calendarwindow.h
     DayTithiWidget.h
     bikram.h
-    panchanga.h
     mainwindow.h
+    panchanga.h
+    calendarlogic.h
+    calendartable.h
+    converter.h
 )
 
 set(NEPDATE_CALENDAR_FORMS

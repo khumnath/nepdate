@@ -25,3 +25,14 @@ QMenu::item:selected {
     background-color: #0892D0;
     color: #184805;
 }
+
+QComboBox::item:selected {
+    background-color: rgb(60, 181, 181);
+    color: white;
+}
+
+QComboBox::item:hover {
+    background-color: rgb(60, 181, 181);
+     padding: 4px 4px;
+    color: white;
+}

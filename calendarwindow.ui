@@ -116,6 +116,9 @@
       <property name="focusPolicy">
        <enum>Qt::ClickFocus</enum>
       </property>
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
       <property name="editable">
        <bool>true</bool>
       </property>
@@ -158,6 +161,12 @@
         <pointsize>11</pointsize>
        </font>
       </property>
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="maxVisibleItems">
        <number>12</number>
       </property>
@@ -169,6 +178,9 @@
        <font>
         <pointsize>11</pointsize>
        </font>
+      </property>
+      <property name="acceptDrops">
+       <bool>true</bool>
       </property>
       <property name="maxVisibleItems">
        <number>31</number>
@@ -182,6 +194,9 @@
         <pointsize>11</pointsize>
        </font>
       </property>
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
       <property name="maxVisibleItems">
        <number>32</number>
       </property>
@@ -193,6 +208,9 @@
        <font>
         <pointsize>11</pointsize>
        </font>
+      </property>
+      <property name="acceptDrops">
+       <bool>true</bool>
       </property>
       <property name="maxVisibleItems">
        <number>12</number>

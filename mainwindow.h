@@ -17,7 +17,7 @@
 #include <QLocale>
 #include "calendarwindow.h"
 
-struct NepaliDateStruct { // Renamed the structure to avoid conflict
+struct NepaliDateStruct {
     int yy;
     int mm;
     int dd;
@@ -49,14 +49,15 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     void exitAll();
     bool eventFilter(QObject *watched, QEvent *event) override;
+
 public slots:
     void openCalendarWindow();
 
 private slots:
-
     void copyButtonText();
     void updateDateButton();
     void on_dateButton_clicked();
+    bool isAutostartEnabled();
 
 private:
     void setupDefaultDate();
@@ -64,9 +65,13 @@ private:
     std::string getWeekdayName(int year, int month, int day);
     QString getnepalimonth(int m);
     void setWindowPosition();
-    void adjustTextColorBasedOnBackground();
+    void applyTextColor();  // New method for manual color application
     QColor getAverageColor(const QImage &image);
-     QDate lastUpdatedDate;
+    int fontSize; // NEW: To store the current font size
+        void applyTextAndFont();
+
+    QDate lastUpdatedDate;
+    QColor textColor;  // Added for manual color selection
 
     Ui::MainWindow *ui;
     QTimer *updateTimer;
@@ -77,6 +82,11 @@ private:
     QTimer *dragDelayTimer;
     QPoint windowPosOnPress;
 
+    // Autostart constants
+    static const QString kAppName;
+    static const QString kAutostartKey;
+    static const QString kAutostartDirLinux;
+    static const QString kDesktopFileLinux;
 };
 
 #endif // MAINWINDOW_H

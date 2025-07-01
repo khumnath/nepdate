@@ -10,18 +10,22 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
            calendarwindow.cpp \
-           mainwindow.cpp
+           mainwindow.cpp \
+           calendarlogic.cpp \
+           calendartable.cpp \
+           converter.cpp \
+           panchanga.cpp
 
 HEADERS += mainwindow.h \
+           calendarwindow.h \
+           calendarlogic.h \
+           calendartable.h \
+           converter.h \
            bikram.h \
-           panchanga.h \
            DayTithiWidget.h \
-           calendarwindow.h
+           panchanga.h
 
 FORMS += mainwindow.ui \
          calendarwindow.ui
 RESOURCES += \
             resources.qrc
-
-DISTFILES += \
-    resources/Laila-Regular.ttf
