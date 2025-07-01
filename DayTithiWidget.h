@@ -204,7 +204,7 @@ protected:
         painter.fillRect(rect(), bgColor);
 
         QStyleOption opt;
-        opt.init(this);
+        opt.initFrom(this);
         style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
     }
 
