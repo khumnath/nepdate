@@ -106,8 +106,16 @@ public:
     void setIcon(const QIcon &icon, qreal opacity = 1.0) {
         storedIcon = icon;
         storedIconOpacity = opacity;
-        adjustIconSize();
+    
+        if (icon.isNull()) {
+            iconLabel->clear();
+            iconLabel->setVisible(false);
+        } else {
+            iconLabel->setVisible(true);
+            adjustIconSize();
+        }
     }
+    
 
     void setSelected(bool selected) {
         isSelected = selected;
