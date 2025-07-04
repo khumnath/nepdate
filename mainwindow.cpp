@@ -146,10 +146,6 @@ void MainWindow::setWindowPosition() {
 }
 
 MainWindow::~MainWindow() {
-    QSettings settings("Nepdate", "NepdateWidget");
-    settings.setValue("MainWindow/pos", this->pos());
-    settings.setValue("TextColor", textColor);  // Save text color
-    settings.setValue("FontSize", fontSize);    // Save font size
     delete ui;
 }
 
@@ -205,9 +201,13 @@ void MainWindow::applyTextAndFont() {
                              .arg(fontSize);
     ui->dateButton->setStyleSheet(styleSheet);
 
-    // Update the icon size to be proportional to the font size
-    int iconDimension = fontSize + 8; // Making the icon slightly larger than the text
+    int iconDimension = fontSize + 8;
     ui->dateButton->setIconSize(QSize(iconDimension, iconDimension));
+
+    // Immediately save text color and font size
+    QSettings settings("Nepdate", "NepdateWidget");
+    settings.setValue("TextColor", textColor);
+    settings.setValue("FontSize", fontSize);
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
@@ -252,11 +252,16 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
                 isDragging = false;
                 if (!dragStarted && watched == ui->dateButton) {
                     openCalendarWindow();
+                } else {
+                    // Save position after move
+                    QSettings settings("Nepdate", "NepdateWidget");
+                    settings.setValue("MainWindow/pos", this->pos());
                 }
                 dragStarted = false;
                 event->accept();
                 return true;
             }
+
         } else if (event->type() == QEvent::Leave) {
             QToolTip::hideText();
         }
