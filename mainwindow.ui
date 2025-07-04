@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>414</width>
-    <height>91</height>
+    <width>228</width>
+    <height>50</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -32,8 +32,7 @@
    <string>Responsive Calendar</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="application-x-executable">
-    <normaloff>.</normaloff>.</iconset>
+   <iconset theme="application-x-executable"/>
   </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {
