@@ -96,7 +96,8 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowFlag(Qt::Tool);
 
     // Set tooltip font once at startup
-    QFont tooltipFont("Nirmala UI", 9);
+    QString tooltipFont = "Noto Sans Devanagari";
+    QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
     QToolTip::setFont(tooltipFont);
 
     // Platform-specific code
@@ -201,7 +202,7 @@ void MainWindow::applyTextAndFont() {
     ui->dateButton->setStyleSheet(styleSheet);
 
     // Update the icon size to be proportional to the font size
-    int iconDimension = fontSize + 15; // Making the icon slightly larger than the text
+    int iconDimension = fontSize + 8; // Making the icon slightly larger than the text
     ui->dateButton->setIconSize(QSize(iconDimension, iconDimension));
 }
 

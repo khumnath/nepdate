@@ -1,8 +1,6 @@
-#include "DayTithiWidget.h"
 #include "ui_calendarwindow.h"
 #include "calendarwindow.h"
 #include "bikram.h"
-#include "calendarlogic.h"
 #include "calendartable.h"
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -32,10 +30,7 @@ CalendarWindow::CalendarWindow(QWidget *parent) :
 
     // Apply the custom font
         QString fontFamily = "Noto Sans Devanagari";
-        if (!QFontDatabase().families().contains(fontFamily)) {
-            QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
-        }
-
+        QFontDatabase::addApplicationFont(":/resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf");
         qApp->setFont(fontFamily);
 
 

@@ -26,13 +26,24 @@ QMenu::item:selected {
     color: #184805;
 }
 
-QComboBox::item:selected {
-    background-color: rgb(60, 181, 181);
-    color: white;
+
+QComboBox {
+    border: 1px solid #C4C4C4;
+    border-radius: 5px;
+    padding: 1px 18px 1px 3px;
+    min-width: 6em;
+    background-color: white;
+    color: black;
+    selection-background-color: transparent;
+    selection-color: black;
 }
 
-QComboBox::item:hover {
-    background-color: rgb(60, 181, 181);
-     padding: 4px 4px;
-    color: white;
+QComboBox QAbstractItemView {
+    min-width: 10px !important;
+    border: 1px solid gray;
+    background-color: white;
 }
+
+QComboBox::item:selected { background-color: rgb(60, 181, 181); color: yellow; }
+QComboBox::item { background-color: white; color: black; }
+QComboBox::item:hover { background-color: rgb(60, 181, 181); padding: 4px 4px; color: white; }
