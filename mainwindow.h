@@ -65,14 +65,14 @@ private:
     std::string getWeekdayName(int year, int month, int day);
     QString getnepalimonth(int m);
     void setWindowPosition();
-    void applyTextColor();  // New method for manual color application
+    void showColorDialog();
+    void applyTextColor();
     QColor getAverageColor(const QImage &image);
-    int fontSize; // NEW: To store the current font size
+    int fontSize;
         void applyTextAndFont();
 
     QDate lastUpdatedDate;
-    QColor textColor;  // Added for manual color selection
-
+    QColor textColor;
     Ui::MainWindow *ui;
     QTimer *updateTimer;
     CalendarWindow *calendarWindow;

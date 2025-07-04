@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "qwidgetaction.h"
 #include "ui_mainwindow.h"
 #include <QMouseEvent>
 #include <QTimer>
@@ -16,6 +17,9 @@
 #include <QSettings>
 #include <QString>
 #include <QFontDatabase>
+#include <QColorDialog>
+#include <QMessageBox>
+#include <QSlider>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -69,15 +73,15 @@ MainWindow::MainWindow(QWidget *parent) :
     setMouseTracking(true);
     QString tooltipstyle = R"(
     QToolTip {
-     background-color: white; color: black; border: 1px solid gray; border-radius: 5px;
+      background-color: white; color: black; border: 1px solid gray; border-radius: 5px;
     }
     )";
     setStyleSheet(tooltipstyle);
 
     // Load settings
     QSettings settings("Nepdate", "NepdateWidget");
-    // Load text color setting (default to darkGray)
-    textColor = settings.value("TextColor", QColor(Qt::darkGray)).value<QColor>();
+    // Load text color setting (default to green)
+    textColor = settings.value("TextColor", QColor(Qt::green)).value<QColor>();
     // Load font size setting (default to 11)
     fontSize = settings.value("FontSize", 11).toInt();
     // Apply the loaded color and font size
@@ -280,14 +284,46 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
         fontSizeMenu->addAction(action);
     };
 
+    addFontSizeAction(8);
+    addFontSizeAction(9);
     addFontSizeAction(10);
     addFontSizeAction(11);
     addFontSizeAction(12);
     addFontSizeAction(14);
     addFontSizeAction(16);
+    addFontSizeAction(17);
+    addFontSizeAction(18);
+
+
+    // Slider for font size
+    QSlider* fontSizeSlider = new QSlider(Qt::Horizontal, this);
+    fontSizeSlider->setRange(5, 32);
+    fontSizeSlider->setValue(fontSize);
+    fontSizeSlider->setTickPosition(QSlider::TicksBelow);
+    fontSizeSlider->setTickInterval(1); // Show ticks every 1 points
+
+    // QWidgetAction to embed the slider in the menu
+    QWidgetAction* sliderAction = new QWidgetAction(this);
+    sliderAction->setDefaultWidget(fontSizeSlider);
+    fontSizeMenu->addAction(sliderAction);
+    connect(fontSizeSlider, &QSlider::sliderPressed, this, [&]() {
+        menu.setWindowOpacity(0.4);
+    });
+
+    connect(fontSizeSlider, &QSlider::sliderReleased, this, [&]() {
+        menu.setWindowOpacity(1.0);
+    });
+
+    // Connect slider's valueChanged signal to update font size
+    connect(fontSizeSlider, &QSlider::valueChanged, this, [this](int value) {
+        fontSize = value;
+        applyTextAndFont();
+
+    });
 
     // Text color selection menu
     QMenu* colorMenu = menu.addMenu(tr("Text Color"));
+
     auto addColorAction = [&](const QString& label, const QColor& color) {
         QAction* action = new QAction(label, this);
         action->setCheckable(true);
@@ -299,9 +335,18 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
         colorMenu->addAction(action);
     };
 
+    // Fixed color options
     addColorAction(tr("Gray"), Qt::darkGray);
     addColorAction(tr("White"), Qt::white);
     addColorAction(tr("Black"), Qt::black);
+    addColorAction(tr("Green"), Qt::green);
+    addColorAction(tr("Red"), Qt::red);
+    addColorAction(tr("Yellow"), Qt::yellow);
+
+    // QColorDialog for color selector
+    QAction* selectCustomColorAction = new QAction(tr("Select Custom Color..."), this);
+    connect(selectCustomColorAction, &QAction::triggered, this, &MainWindow::showColorDialog);
+    colorMenu->addAction(selectCustomColorAction);
 
     QAction *copyAction = new QAction(tr("Copy Nepali Date"), this);
     connect(copyAction, &QAction::triggered, this, &MainWindow::copyButtonText);
@@ -325,6 +370,20 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
 
     menu.exec(event->globalPos());
 }
+
+// Function to create and show the color dialog
+void MainWindow::showColorDialog() {
+    QColor initialColor = textColor;
+    QColor selectedColor = QColorDialog::getColor(initialColor, this, tr("Select Color"));
+
+    if (selectedColor.isValid()) {
+        textColor = selectedColor;
+        applyTextAndFont();
+    } else {
+        QMessageBox::information(this, tr("Color Selection"), tr("Color selection cancelled."));
+    }
+}
+
 
 void MainWindow::openCalendarWindow() {
     if (!calendarWindow || !calendarWindow->isVisible()) {
