@@ -17,6 +17,26 @@ QMenu {
     border-radius: 5px;
 }
 
+QMessageBox {
+   background-color: #f0f0f0;
+   color: #333333;
+   font-family: Arial, sans-serif;
+   font-size: 14px;
+}
+QMessageBox QLabel {
+   color: #000000;
+   qproperty-alignment: AlignCenter;
+}
+QMessageBox QPushButton {
+   background-color: #4CAF50;
+   color: black;
+   padding: 5px 10px;
+   border-radius: 3px;
+}
+QMessageBox QPushButton:hover {
+   background-color: #45a049;
+}
+
 QMenu::item {
     background-color: transparent;
 }
