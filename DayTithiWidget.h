@@ -106,8 +106,16 @@ public:
     void setIcon(const QIcon &icon, qreal opacity = 1.0) {
         storedIcon = icon;
         storedIconOpacity = opacity;
-        adjustIconSize();
+    
+        if (icon.isNull()) {
+            iconLabel->clear();
+            iconLabel->setVisible(false);
+        } else {
+            iconLabel->setVisible(true);
+            adjustIconSize();
+        }
     }
+    
 
     void setSelected(bool selected) {
         isSelected = selected;
@@ -252,7 +260,7 @@ private:
         int h = height();
         int minDim = qMin(w, h);
 
-        int dayFontSize = std::max(12, static_cast<int>(minDim * 0.3));
+        int dayFontSize = std::max(12, static_cast<int>(minDim * 0.14));
         int tithiFontSize = std::max(8, static_cast<int>(minDim * 0.05));
         int englishDayFontSize = std::max(8, static_cast<int>(minDim * 0.05));
 
