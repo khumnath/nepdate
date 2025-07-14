@@ -260,7 +260,7 @@ private:
         int h = height();
         int minDim = qMin(w, h);
 
-        int dayFontSize = std::max(12, static_cast<int>(minDim * 0.3));
+        int dayFontSize = std::max(12, static_cast<int>(minDim * 0.14));
         int tithiFontSize = std::max(8, static_cast<int>(minDim * 0.05));
         int englishDayFontSize = std::max(8, static_cast<int>(minDim * 0.05));
 
