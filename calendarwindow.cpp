@@ -322,7 +322,6 @@ void CalendarWindow::centerWidgets() {
 }
 
 void CalendarWindow::adjustCalendarTableSize() {
-    // Adjust calendarTable size
     int tableWidth = ui->calendarTable->viewport()->width();
     int tableHeight = ui->calendarTable->viewport()->height();
 
@@ -330,12 +329,22 @@ void CalendarWindow::adjustCalendarTableSize() {
     int numRows = ui->calendarTable->rowCount();
 
     if (numColumns > 0 && numRows > 0) {
-        int columnWidth = tableWidth / numColumns;
-        int rowHeight = tableHeight / numRows;
-
-        for (int i = 0; i < numColumns; ++i) {
-            ui->calendarTable->setColumnWidth(i, columnWidth);
+        int standardColumnWidth = tableWidth / numColumns;
+        int totalFixedOrContentWidth = 0;
+        int fixedColumns = 6;
+        for (int i = 0; i < fixedColumns && i < numColumns; ++i) {
+            ui->calendarTable->setColumnWidth(i, standardColumnWidth);
+            totalFixedOrContentWidth += standardColumnWidth;
         }
+
+        if (numColumns > fixedColumns) {
+            int lastColumnWidth = tableWidth - totalFixedOrContentWidth;
+            if (lastColumnWidth < 0) lastColumnWidth = 0;
+            ui->calendarTable->setColumnWidth(numColumns - 1, lastColumnWidth);
+        }
+
+
+        int rowHeight = tableHeight / numRows;
         for (int i = 0; i < numRows; ++i) {
             ui->calendarTable->setRowHeight(i, rowHeight);
         }

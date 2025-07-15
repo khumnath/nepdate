@@ -67,3 +67,20 @@ QComboBox QAbstractItemView {
 QComboBox::item:selected { background-color: rgb(60, 181, 181); color: yellow; }
 QComboBox::item { background-color: white; color: black; }
 QComboBox::item:hover { background-color: rgb(60, 181, 181); padding: 4px 4px; color: white; }
+
+QTableWidget {
+    border: 1px solid #606060;
+    gridline-color: #A0A0A0;
+}
+
+QTableWidget::item {
+    border: none;
+    padding: 2px;
+}
+
+QTableWidget::horizontalHeader::section,
+QTableWidget::verticalHeader::section {
+    border: 1px solid #808080;
+    background-color: #E0E0E0;
+    padding: 5px;
+}

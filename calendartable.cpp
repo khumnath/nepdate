@@ -58,9 +58,15 @@ void CalendarTableHelper::updateCalendar(QTableWidget* table, Bikram& converter,
 
         // Calculate tithi for this date
         TithiResult tithiResult = calculateTithi(date_tm);
+        QTableWidgetItem *tableItem = table->item(row, col);
+        if (!tableItem) {
+            tableItem = new QTableWidgetItem();
+            table->setItem(row, col, tableItem);
+        }
 
         // Try to get the existing widget from the cell.
         DayTithiWidget *customWidget = qobject_cast<DayTithiWidget*>(table->cellWidget(row, col));
+         tableItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
         // If no widget exists in this cell, create a new one.
         if (!customWidget) {
@@ -116,25 +122,26 @@ void CalendarTableHelper::updateCalendar(QTableWidget* table, Bikram& converter,
         }
     }
 
-    // Clean up any remaining cells from the previous month.
-    // This is the only deletion needed, for cells that are no longer part of the new month.
-    int totalCells = table->rowCount() * table->columnCount();
-    int lastFilledIndex = row * table->columnCount() + col;
-
-    for (int i = lastFilledIndex; i < totalCells; ++i) {
+    for (int i = row * table->columnCount() + col; i < table->rowCount() * table->columnCount(); ++i) {
         int r = i / table->columnCount();
         int c = i % table->columnCount();
+
         QWidget *widget = table->cellWidget(r, c);
         if (widget) {
             table->removeCellWidget(r, c);
             delete widget;
         }
-        if (table->item(r, c)) {
-             table->setItem(r, c, nullptr); // Let Qt delete the item.
+
+        QTableWidgetItem *tableItem = table->item(r, c);
+        if (!tableItem) {
+            tableItem = new QTableWidgetItem();
+            table->setItem(r, c, tableItem);
         }
+        tableItem->setFlags(Qt::ItemIsEnabled);
+        tableItem->setText("");
+        tableItem->setBackground(QBrush(QColor("#F0F0F0")));
     }
 
-    // 5. Final adjustments
     table->resizeRowsToContents();
     table->resizeColumnsToContents();
     CalendarTableHelper::adjustCellSizes(table);
