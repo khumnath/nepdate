@@ -91,6 +91,7 @@ public:
         dayLabel->setStyleSheet(styleSheet);
         applyResponsiveLayout();
     }
+
     void setSaturdayStyle() {
         dayLabel->setStyleSheet("color: red;");
         applyResponsiveLayout();
@@ -262,6 +263,7 @@ private:
         int minDim = qMin(w, h);
 
         int dayFontSize = std::max(14, static_cast<int>(minDim * 0.27));
+
         int tithiFontSize = std::max(8, static_cast<int>(minDim * 0.05));
         int englishDayFontSize = std::max(8, static_cast<int>(minDim * 0.05));
 
