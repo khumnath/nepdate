@@ -62,7 +62,9 @@ QComboBox QAbstractItemView {
     min-width: 10px !important;
     border: 1px solid gray;
     background-color: white;
+    color: black; /* Issue #41  @wintersnowgod */
 }
+
 
 QComboBox::item:selected { background-color: rgb(60, 181, 181); color: yellow; }
 QComboBox::item { background-color: white; color: black; }
