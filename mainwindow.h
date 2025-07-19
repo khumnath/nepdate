@@ -15,6 +15,7 @@
 #include <QScreen>
 #include <QClipboard>
 #include <QLocale>
+#include <QRegularExpression>
 #include "calendarwindow.h"
 
 struct NepaliDateStruct {
@@ -44,6 +45,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     void setAutostart(bool enabled);
     ~MainWindow();
+    static const QRegularExpression& getCommaRegex();
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;

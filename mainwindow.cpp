@@ -12,7 +12,6 @@
 #include <QLocale>
 #include <QDebug>
 #include <ctime>
-#include <QRegularExpression>
 #include <QDir>
 #include <QSettings>
 #include <QString>
@@ -33,9 +32,6 @@ const QString MainWindow::kAutostartKey = "HKEY_CURRENT_USER\\Software\\Microsof
 const QString MainWindow::kAutostartDirLinux = QDir::homePath() + "/.config/autostart/";
 const QString MainWindow::kDesktopFileLinux = kAutostartDirLinux + "nepdate-widget.desktop";
 
-// Static regex patterns (precompiled once)
-static const QRegularExpression numberRegex(R"(\b\d+\b)");
-static const QRegularExpression commaRegex(",");
 
 std::string MainWindow::getWeekdayName(int year, int month, int day) {
 #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
@@ -149,6 +145,11 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
+const QRegularExpression& MainWindow::getCommaRegex() {
+    static const QRegularExpression regex(",");
+    return regex;
+}
+
 int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     Bikram bsdate;
     bsdate.fromGregorian(yy, mm, dd);
@@ -176,10 +177,10 @@ int MainWindow::cnvToNepali(int mm, int dd, int yy) {
     QLocale nepaliLocale(QLocale::Nepali);
     nepaliFormat.replace(QString::number(nepaliYear), nepaliLocale.toString(nepaliYear));
     nepaliFormat.replace(QString::number(nepaliDay), nepaliLocale.toString(nepaliDay));
-    nepaliFormat.replace(commaRegex, QString());
+    nepaliFormat.replace(getCommaRegex(), QString());
     nepalitooltip.replace(QString::number(nepaliYear), nepaliLocale.toString(nepaliYear));
     nepalitooltip.replace(QString::number(nepaliDay), nepaliLocale.toString(nepaliDay));
-    nepalitooltip.replace(commaRegex, QString());
+    nepalitooltip.replace(getCommaRegex(), QString());
 
     // Only update if content changed
     if (ui->dateButton->text() != nepaliFormat ||

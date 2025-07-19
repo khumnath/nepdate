@@ -77,15 +77,17 @@ public:
         QFont font = dayLabel->font();
         font.setBold(true);
         dayLabel->setFont(font);
-
+        int size = 40;
+        dayLabel->setFixedSize(size, size);
         QString styleSheet = QString(
-            "QLabel {"
-            "   background-color:rgb(91, 240, 156);"
-            "   color: white;"
-            "   border-radius: 50px;"
-            "   qproperty-alignment: AlignCenter;"
-            "}"
-        );
+                                 "QLabel {"
+                                 "   background-color: rgb(91, 240, 156);"
+                                 "   color: white;"
+                                 "   border-radius: %1px;"
+                                 "   qproperty-alignment: AlignCenter;"
+                                 "}"
+                                 ).arg(size / 2);
+
         dayLabel->setStyleSheet(styleSheet);
         applyResponsiveLayout();
     }
@@ -234,7 +236,7 @@ private:
     bool isSelected = false;
 
     void adjustIconSize() {
-        int minSize = qMin(width(), height()) / 4;
+        int minSize = qMin(width(), height()) / 6;
         iconSize = QSize(minSize + 18, minSize + 18);
         iconLabel->setFixedSize(iconSize);
         iconLabel->setScaledContents(true);
@@ -260,7 +262,8 @@ private:
         int h = height();
         int minDim = qMin(w, h);
 
-        int dayFontSize = std::max(12, static_cast<int>(minDim * 0.14));
+        int dayFontSize = std::max(14, static_cast<int>(minDim * 0.27));
+
         int tithiFontSize = std::max(8, static_cast<int>(minDim * 0.05));
         int englishDayFontSize = std::max(8, static_cast<int>(minDim * 0.05));
 
