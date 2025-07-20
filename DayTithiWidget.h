@@ -12,12 +12,17 @@
 #include <QFont>
 #include <QFontDatabase>
 #include <QMouseEvent>
-#include <QMessageBox>
 #include <QStyleOption>
 #include "panchanga.h"
 #include "bikram.h"
 #include <QDate>
 #include "calendarlogic.h"
+#include <QDialog>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QApplication>
+#include <QClipboard>
+#include <QTimer>
 
 class DayTithiWidget : public QWidget {
     Q_OBJECT
@@ -27,7 +32,10 @@ public:
         : QWidget(parent), dayLabelText(day), tithiLabelText(tithi), englishDayLabelText(englishDay) {
 
         setAttribute(Qt::WA_Hover);
-        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        policy.setHorizontalStretch(1);
+        policy.setVerticalStretch(1);
+        setSizePolicy(policy);
         setMinimumSize(60, 60);
 
         QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -184,7 +192,57 @@ protected:
                 .arg(sunrise)
                 .arg(sunset);
 
-            QMessageBox::information(this, tr("Day Details"), details);
+            QDialog *detailsDialog = new QDialog(this);
+            detailsDialog->setWindowTitle(tr("Day Details"));
+            detailsDialog->setMinimumSize(350, 300);
+
+            QVBoxLayout *dialogLayout = new QVBoxLayout(detailsDialog);
+
+            QTextEdit *detailsTextEdit = new QTextEdit(detailsDialog);
+            detailsTextEdit->setPlainText(details);
+            detailsTextEdit->setReadOnly(true);
+            detailsTextEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+            detailsTextEdit->setStyleSheet("color: black; background-color: white;");
+            detailsTextEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            detailsTextEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+            QFontMetrics fm(detailsTextEdit->font());
+            int lineHeight = fm.lineSpacing();
+            int numLines = details.count('\n') + 1;
+            detailsTextEdit->setFixedHeight(lineHeight * numLines + detailsTextEdit->contentsMargins().top() + detailsTextEdit->contentsMargins().bottom() + 10);
+
+            dialogLayout->addWidget(detailsTextEdit);
+
+            QLabel *copiedMessageLabel = new QLabel(detailsDialog);
+            copiedMessageLabel->setAlignment(Qt::AlignCenter);
+            copiedMessageLabel->setStyleSheet("color: green; font-weight: bold;");
+            copiedMessageLabel->hide();
+            dialogLayout->addWidget(copiedMessageLabel);
+
+            QHBoxLayout *buttonLayout = new QHBoxLayout();
+            buttonLayout->addStretch(); // Add stretch before buttons
+
+            QPushButton *copyButton = new QPushButton(tr("Copy"), detailsDialog);
+            copyButton->setStyleSheet("color: white; background: #3EACBA; border: 1px solid #379AA4; background-image: linear-gradient(to top, #48C6D4, #3EACBA); border-radius: 5px; padding: 5px 15px;");
+            connect(copyButton, &QPushButton::clicked, [detailsTextEdit, copiedMessageLabel]() {
+                QApplication::clipboard()->setText(detailsTextEdit->toPlainText());
+                copiedMessageLabel->setText(QObject::tr("Copied to clipboard!"));
+                copiedMessageLabel->show();
+                QTimer::singleShot(2000, copiedMessageLabel, &QLabel::hide);
+            });
+            buttonLayout->addWidget(copyButton);
+
+            QPushButton *okButton = new QPushButton(tr("OK"), detailsDialog);
+            okButton->setStyleSheet( "color: white; background: #3EACBA; border: 1px solid #379AA4; background-image: linear-gradient(to top, #48C6D4, #3EACBA); border-radius: 5px; padding: 5px 15px;");
+            connect(okButton, &QPushButton::clicked, detailsDialog, &QDialog::accept);
+            buttonLayout->addWidget(okButton);
+
+            buttonLayout->addStretch(); // Add stretch after buttons
+
+            dialogLayout->addLayout(buttonLayout);
+
+            detailsDialog->exec();
+            delete detailsDialog;
         }
         QWidget::mousePressEvent(event);
     }
