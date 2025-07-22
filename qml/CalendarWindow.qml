@@ -13,6 +13,9 @@ ApplicationWindow {
     color: "#0c1a2d"
     visible: true
 
+    // This flag ensures the window object is deleted when closed, freeing memory.
+    flags: Qt.WA_DeleteOnClose
+
     // These properties will receive the date from main.qml
     property int initialYear
     property int initialMonth
