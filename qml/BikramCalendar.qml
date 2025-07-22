@@ -10,7 +10,9 @@ Frame {
     property var calculator: new Logic.PancangaCalculator()
     property int currentBsYear: 2081
     property int currentBsMonth: 0 // 0 for Baisakh
-    property var calendarData: ({})
+
+    // Provide default values to prevent the binding error on startup.
+    property var calendarData: ({ totalDays: 30, startDayOfWeek: 0 })
 
     property var todayInfo: calculator.getTodayBsInfo()
 

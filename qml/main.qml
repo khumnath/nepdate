@@ -27,6 +27,42 @@ ApplicationWindow {
         performCalculation();
     }
 
+    // --- Cleanup on Exit ---
+    onClosing: {
+        // If the calendar window is open, close it to ensure proper cleanup.
+        if (calendarWindow) {
+            calendarWindow.close();
+        }
+    }
+
+    // --- Helper function to show the calendar window ---
+    function showCalendarWindow() {
+        // If the window already exists, just bring it to the front.
+        if (calendarWindow) {
+            calendarWindow.raise();
+            calendarWindow.requestActivate();
+            return;
+        }
+
+        // Create the window only if we have valid data and the component is ready.
+        if (lastResults.bsYear && calendarComponent.status === Component.Ready) {
+            calendarWindow = calendarComponent.createObject(root, {
+                "initialYear": lastResults.bsYear,
+                "initialMonth": lastResults.bsMonthIndex
+            });
+
+            // This connection is crucial for memory management. When the window
+            // closes, it clears our reference, allowing the object to be garbage collected.
+            calendarWindow.closing.connect(function() { calendarWindow = null; });
+            calendarWindow.show();
+
+        } else if (calendarComponent.status === Component.Error) {
+            // Log an error if the component failed to load.
+            console.log("Error creating calendar window:", calendarComponent.errorString());
+        }
+    }
+
+
     // --- Reusable Component Definitions ---
     Component {
         id: resultCardComponent
@@ -92,7 +128,7 @@ ApplicationWindow {
 
         ColumnLayout {
             id: contentLayout
-            anchors.fill: parent
+            Layout.fillWidth: true // This replaces 'anchors.fill: parent' to fix the binding loop
             spacing: 15
 
             // --- Header ---
@@ -253,23 +289,7 @@ ApplicationWindow {
                     }
                     Button {
                         text: "View Calendar"
-                        onClicked: {
-                            if (calendarWindow) {
-                                calendarWindow.raise();
-                                calendarWindow.requestActivate();
-                                return;
-                            }
-                            if (lastResults.bsYear && calendarComponent.status === Component.Ready) {
-                                calendarWindow = calendarComponent.createObject(root, {
-                                    "initialYear": lastResults.bsYear,
-                                    "initialMonth": lastResults.bsMonthIndex
-                                });
-                                calendarWindow.closing.connect(function() { calendarWindow = null; });
-                                calendarWindow.show();
-                            } else if (calendarComponent.status === Component.Error) {
-                                console.log("Error creating calendar window:", calendarComponent.errorString());
-                            }
-                        }
+                        onClicked: showCalendarWindow()
                     }
                 }
             }
@@ -324,13 +344,13 @@ ApplicationWindow {
                                     font.pointSize: 14
                                     Layout.alignment: Qt.AlignHCenter
                                 }
-                                ResultItem { id: gregorianDateItem; label: "Gregorian Date" }
+                                ResultItem { id: gregorianDateItem; label: "Gregorian Date"; isHighlight: true }
                                 ResultItem { id: bikramSambatItem; label: "Bikram Sambat"; isHighlight: true }
-                                ResultItem { id: weekdayItem; label: "Weekday" }
+                                ResultItem { id: weekdayItem; label: "Weekday"; isHighlight: true }
                                 ResultItem { id: sunriseItem; label: "Sunrise"; isHighlight: true }
                                 ResultItem { id: sunsetItem; label: "Sunset"; isHighlight: true }
                                 ResultItem { id: sunRashiItem; label: "Sun Rashi"; isHighlight: true }
-                                ResultItem { id: adhikaMasaItem; label: "Adhika/Kshaya Masa" }
+                                ResultItem { id: adhikaMasaItem; label: "Adhika/Kshaya Masa"; isHighlight: true }
                             }
                         }
                         Frame {
@@ -353,10 +373,10 @@ ApplicationWindow {
                                     Layout.alignment: Qt.AlignHCenter
                                 }
                                 ResultItem { id: tithiItem; label: "Tithi"; isHighlight: true }
-                                ResultItem { id: pakshaItem; label: "Paksha" }
+                                ResultItem { id: pakshaItem; label: "Paksha"; isHighlight: true }
                                 ResultItem { id: nakshatraItem; label: "Nakshatra"; isHighlight: true }
                                 ResultItem { id: yogaItem; label: "Yoga"; isHighlight: true }
-                                ResultItem { id: karanaItem; label: "Karana" }
+                                ResultItem { id: karanaItem; label: "Karana"; isHighlight: true }
                                 ResultItem { id: moonRashiItem; label: "Moon Rashi"; isHighlight: true }
                             }
                         }
