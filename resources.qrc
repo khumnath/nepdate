@@ -1,15 +1,11 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/dropdown.png</file>
-        <file>resources/logo.png</file>
-        <file>resources/logo.svg</file>
-        <file>resources/info.png</file>
-        <file>resources/amawasya.png</file>
-        <file>resources/purnima.png</file>
-        <file>resources/style.qss</file>
-        <file>resources/VERSION.txt</file>
-        <file>resources/flag.png</file>
-        <file>resources/NotoSans-font-LICENCE</file>
-        <file>resources/NotoSansDevanagari-VariableFont_wdth,wght.ttf</file>
+        <file>qml/main.qml</file>
+        <file>qml/PancangaCalculator.js</file>
+        <file>qml/ResultCard.qml</file>
+        <file>qml/ResultItem.qml</file>
+        <file>qml/BikramCalendar.qml</file>
+        <file>qml/DayCell.qml</file>
+        <file>qml/CalendarWindow.qml</file>
     </qresource>
 </RCC>

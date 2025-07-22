@@ -1,6 +1,9 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - qml
 
 jobs:
   build:
@@ -30,5 +33,5 @@ jobs:
       run: |
         mkdir build
         cd build
-        qmake ../nepdate.pro
+        qmake ../bikram-utils.pro
         make
