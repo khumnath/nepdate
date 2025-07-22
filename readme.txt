@@ -15,11 +15,18 @@ sudo pacman -S base-devel qt6-base qt6-declarative
 
 2. Compilation Steps
 Once the dependencies are installed, follow these steps to compile the project:
+clone repo :  https://github.com/khumnath/nepdate
 
 Navigate to the project directory:
 Open a terminal and change to the root directory of the project where your .pro file is located.
 
-cd /path/to/your/PancangaCalculator
+cd nepdate
+mkdir build
+cmake ..
+make
+  to run  from build dir : ./PancangaCalculator
+
+// other ways bellow
 
 Generate the Makefile:
 Run qmake to process the project file (.pro) and generate a Makefile specific to your system.
