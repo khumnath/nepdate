@@ -1,3 +1,6 @@
+git clone -b qml https://github.com/khumnath/nepdate.git
+
+
 For Debian / Ubuntu
 First, install the essential build tools and Qt 6 development packages:
 
