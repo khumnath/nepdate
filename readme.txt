@@ -9,7 +9,7 @@ sudo apt install build-essential \
                  qml6-module-qtquick-controls \
                  qml6-module-qtquick-layouts \
                  qml6-module-qtquick-controls-material \
-                 qml6-module-qt-labs-settings
+                 qml6-module-qtcore
 
 For Arch Linux
 Install the base-devel group (if you haven't already) and the required Qt 6 packages:
