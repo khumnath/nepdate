@@ -33,5 +33,5 @@ jobs:
       run: |
         mkdir build
         cd build
-        qmake ../bikram-utils.pro
+        qmake ../bikram-calendar.pro
         make
