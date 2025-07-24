@@ -1,11 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/main.qml</file>
-        <file>qml/PancangaCalculator.js</file>
-        <file>qml/ResultCard.qml</file>
-        <file>qml/ResultItem.qml</file>
-        <file>qml/BikramCalendar.qml</file>
-        <file>qml/DayCell.qml</file>
-        <file>qml/CalendarWindow.qml</file>
+        <file>qml/PanchangaCalculator.js</file>
     </qresource>
 </RCC>
