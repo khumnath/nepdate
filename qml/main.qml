@@ -158,14 +158,14 @@ ApplicationWindow {
             prevMonthIndex = 11;
             prevYear--;
         }
-        prevMonthName = (prevYear >= 2000) ? Panchanga.solarMonths[prevMonthIndex] : "";
+        prevMonthName = Panchanga.solarMonths[prevMonthIndex] || "";
         var nextMonthIndex = monthIndex + 1;
         var nextYear = year;
         if (nextMonthIndex > 11) {
             nextMonthIndex = 0;
             nextYear++;
         }
-        nextMonthName = (nextYear <= 2100) ? Panchanga.solarMonths[nextMonthIndex] : "";
+        nextMonthName = Panchanga.solarMonths[nextMonthIndex] || "";
         console.log("✅ Rendered:", year, info.monthName, "| Days:", daysInMonth, "| Start weekday:", startDay)
     }
 
@@ -189,9 +189,7 @@ ApplicationWindow {
             newMonth = 11;
             newYear--;
         }
-        if (newYear >= 2000 && newYear <= 2100) {
-            renderCalendarByBs(newYear, newMonth);
-        }
+        renderCalendarByBs(newYear, newMonth);
     }
 
     function clearPanchangaDetails() {
@@ -330,10 +328,19 @@ ApplicationWindow {
                 font.pixelSize: 13
                 onClicked: navigateMonth(-1)
                 visible: tabBar.currentIndex === 0 && prevMonthName
-                flat: true
-                background: Rectangle { color: "transparent" }
+                padding: 8
+                background: Rectangle {
+                    radius: 8
+                    color: theme.tertiaryBg
+                    border.color: theme.borderColor
+                    border.width: 1
+                }
                 contentItem: Text {
-                    text: parent.text; font: parent.font; color: theme.secondaryText
+                    text: parent.text
+                    font: parent.font
+                    color: theme.primaryText
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
             }
 
@@ -404,10 +411,19 @@ ApplicationWindow {
                 font.pixelSize: 13
                 onClicked: navigateMonth(1)
                 visible: tabBar.currentIndex === 0 && nextMonthName
-                flat: true
-                background: Rectangle { color: "transparent" }
+                padding: 8
+                background: Rectangle {
+                    radius: 8
+                    color: theme.tertiaryBg
+                    border.color: theme.borderColor
+                    border.width: 1
+                }
                 contentItem: Text {
-                    text: parent.text; font: parent.font; color: theme.secondaryText
+                    text: parent.text
+                    font: parent.font
+                    color: theme.primaryText
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
             }
         }
@@ -437,7 +453,6 @@ ApplicationWindow {
                         text: currentBsYear.toString()
                         color: theme.primaryText
                         inputMethodHints: Qt.ImhDigitsOnly
-                        validator: IntValidator { bottom: 2000; top: 2100 }
                         onAccepted: renderCalendarByBs(parseInt(text), bsMonthSelect.currentIndex)
                         font.pixelSize: 14
                         Layout.fillWidth: true
@@ -501,7 +516,6 @@ ApplicationWindow {
                         text: todayDate.getFullYear().toString()
                         color: theme.primaryText
                         inputMethodHints: Qt.ImhDigitsOnly
-                        validator: IntValidator { bottom: 1900; top: 2100 }
                         font.pixelSize: 14; Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         horizontalAlignment: TextInput.AlignHCenter
