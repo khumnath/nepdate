@@ -8,10 +8,11 @@ import QtCore
 // This is the main window for the small desktop widget.
 ApplicationWindow {
     id: widgetWindow
+    title: "नेपाली क्यालेण्डर"
     visible: false
     width: dateButton.implicitWidth + 20
     height: dateButton.implicitHeight + 10
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.SplashScreen | Qt.Window | Qt.BypassWindowManagerHint | Qt.WindowDoesNotAcceptFocus |Qt.Notification
     color: "transparent"
 
     // --- Settings Component ---
@@ -179,7 +180,7 @@ ApplicationWindow {
             calendarComponent = Qt.createComponent("main.qml");
         }
         if (calendarComponent.status === Component.Ready) {
-            calendarWindow = calendarComponent.createObject(widgetWindow);
+            calendarWindow = calendarComponent.createObject(null);
             if (calendarWindow) {
                calendarWindow.closing.connect(() => {
                     calendarWindow.destroy();

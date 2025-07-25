@@ -14,6 +14,8 @@ ApplicationWindow {
     color: theme.primaryBg
     Material.theme: theme.isDark ? Material.Dark : Material.Light
     Material.accent: theme.accent
+    flags: Qt.Window
+
 
     Settings {
         id: settings
