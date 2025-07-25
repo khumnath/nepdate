@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     QUrl url;
-    url = QUrl(QStringLiteral("qrc:/qml/main.qml"));
+    url = QUrl(QStringLiteral("qrc:/qml/widget.qml"));
     engine.load(url);
 
     return app.exec();

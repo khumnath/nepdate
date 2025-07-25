@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>qml/main.qml</file>
         <file>qml/PanchangaCalculator.js</file>
+        <file>qml/widget.qml</file>
+        <file>qml/Settings.qml</file>
+        <file>qml/Tooltip.qml</file>
     </qresource>
 </RCC>
