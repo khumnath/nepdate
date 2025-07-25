@@ -94,12 +94,23 @@ ApplicationWindow {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
-        property point lastMousePos
+
+        property int dragStartX: 0
+        property int dragStartY: 0
+        property int windowStartX: 0
+        property int windowStartY: 0
         property bool wasDragged: false
 
         Timer {
+            id: resetDragTimer
+            interval: 300
+            repeat: false
+            onTriggered: dragArea.wasDragged = false
+        }
+
+        Timer {
             id: tooltipTimer
-            interval: 500 // A slight delay before showing the tooltip
+            interval: 500
             onTriggered: showTooltip()
         }
 
@@ -108,39 +119,53 @@ ApplicationWindow {
             tooltipTimer.stop()
             hideTooltip()
         }
-        onPositionChanged: function(mouse) {
-            tooltipTimer.restart(); // Restart timer if mouse moves while inside
-            if (mouse.buttons & Qt.LeftButton) {
-                const delta = Qt.point(mouse.x - lastMousePos.x, mouse.y - lastMousePos.y);
-                widgetWindow.x += delta.x;
-                widgetWindow.y += delta.y;
-                wasDragged = true;
-            }
-        }
+
+        Item { id: globalMapper; anchors.fill: parent; visible: false }
+
         onPressed: function(mouse) {
-            tooltipTimer.stop()
-            hideTooltip()
             if (mouse.button === Qt.LeftButton) {
-                lastMousePos = Qt.point(mouse.x, mouse.y);
-                wasDragged = false;
+                if (Qt.platform.os === "wayland") {
+                    widgetWindow.startSystemMove()
+                    wasDragged = true
+                } else {
+                    var globalPos = globalMapper.mapToGlobal(Qt.point(mouse.x, mouse.y))
+                    dragStartX = globalPos.x
+                    dragStartY = globalPos.y
+                    windowStartX = widgetWindow.x
+                    windowStartY = widgetWindow.y
+                    wasDragged = false
+                }
             }
         }
+
+        onPositionChanged: function(mouse) {
+            if (Qt.platform.os !== "wayland" && (mouse.buttons & Qt.LeftButton)) {
+                var globalPos = globalMapper.mapToGlobal(Qt.point(mouse.x, mouse.y))
+                widgetWindow.x = windowStartX + (globalPos.x - dragStartX)
+                widgetWindow.y = windowStartY + (globalPos.y - dragStartY)
+                wasDragged = true
+                resetDragTimer.stop()   // Stop any previous timer
+            }
+        }
+
         onReleased: function(mouse) {
             if (mouse.button === Qt.LeftButton && wasDragged) {
-                appSettings.setValue("widgetPositionX", parseInt(widgetWindow.x));
-                appSettings.setValue("widgetPositionY", parseInt(widgetWindow.y));
+                appSettings.setValue("widgetPositionX", widgetWindow.x)
+                appSettings.setValue("widgetPositionY", widgetWindow.y)
+                resetDragTimer.start()  // Start timer to reset wasDragged after delay
             }
         }
-        onClicked: function(mouse) {
-            if (wasDragged) return; // Do not trigger click after a drag
 
+        onClicked: function(mouse) {
+            if (wasDragged) return;  // ignore clicks immediately after drag
             if (mouse.button === Qt.LeftButton) {
-                openCalendar();
+                openCalendar()
             } else if (mouse.button === Qt.RightButton) {
-                openSettingsWindow();
+                openSettingsWindow()
             }
         }
     }
+
 
     // --- Custom Tooltip Functions ---
     function showTooltip() {
@@ -294,11 +319,8 @@ ApplicationWindow {
     Component.onCompleted: {
         var savedFontSize = appSettings.value("fontSize", 14);
         updateFontSize(savedFontSize);
-
         var savedColor = appSettings.value("fontColor", "magenta");
         fontColor = savedColor;
-
-        // Ensure boolean conversion is robust
         var savedShowIcon = appSettings.value("showIcon", true);
         showIcon = (savedShowIcon === "true" || savedShowIcon === true);
 

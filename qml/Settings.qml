@@ -8,7 +8,7 @@ ApplicationWindow {
     id: settingsWindow
 
     // Set width and height based on content's implicit size plus margins
-    width: settingsLayout.implicitWidth + 2 * settingsLayoutLeftRightMargin
+    width: settingsLayout.implicitWidth + 10 * settingsLayoutLeftRightMargin
     height: settingsLayout.implicitHeight + 2 * settingsLayoutTopBottomMargin
 
     title: "Settings"
