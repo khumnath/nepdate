@@ -250,36 +250,49 @@ ApplicationWindow {
     }
     // --- Use a one-shot Timer for reliable initial positioning ---
     Timer {
-        id: positioningTimer
-        interval: 50
-        repeat: false
-        onTriggered: {
-            // First make window visible so size calculations work correctly
-            widgetWindow.visible = true;
+           id: positioningTimer
+           interval: 50
+           repeat: false
+           onTriggered: {
+               widgetWindow.visible = true;
+               Qt.callLater(function() {
+                   var savedX = appSettings.value("widgetPositionX", -1);
+                   var savedY = appSettings.value("widgetPositionY", -1);
 
-            // Small delay to ensure rendering is complete before positioning
-            Qt.callLater(function() {
-                var savedX = appSettings.value("widgetPositionX", -1);
-                var savedY = appSettings.value("widgetPositionY", -1);
+                   if (savedX !== -1 && savedY !== -1) {
+                       widgetWindow.x = parseInt(savedX);
+                       widgetWindow.y = parseInt(savedY);
+                   } else {
+                       // Check if default position is safe before applying it ---
+                       var defaultX = 969;
+                       var defaultY = 978;
+                       if (widgetWindow.screen &&
+                           (defaultX < widgetWindow.screen.virtualX ||
+                            defaultX > (widgetWindow.screen.virtualX + widgetWindow.screen.virtualWidth - widgetWindow.width) ||
+                            defaultY < widgetWindow.screen.virtualY ||
+                            defaultY > (widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight - widgetWindow.height)))
+                       {
+                           // If default is off-screen then center it.
+                           widgetWindow.x = widgetWindow.screen.virtualX + (widgetWindow.screen.virtualWidth - widgetWindow.width) / 2;
+                           widgetWindow.y = widgetWindow.screen.virtualY + (widgetWindow.screen.virtualHeight - widgetWindow.height) / 2;
+                       } else {
+                           //
+                           //If default is on-screen, use it.
+                           widgetWindow.x = defaultX;
+                           widgetWindow.y = defaultY;
+                       }
+                   }
+               });
+           }
+       }
 
-                if (savedX !== -1 && savedY !== -1) {
-                    widgetWindow.x = parseInt(savedX);
-                    widgetWindow.y = parseInt(savedY);
-                } else {
-                    // Default to a specified position if no saved position
-                    widgetWindow.x = 969;
-                    widgetWindow.y = 979;
-                }
-            });
-        }
-    }
 
     // --- Load settings on startup ---
     Component.onCompleted: {
         var savedFontSize = appSettings.value("fontSize", 14);
         updateFontSize(savedFontSize);
 
-        var savedColor = appSettings.value("fontColor", "green");
+        var savedColor = appSettings.value("fontColor", "magenta");
         fontColor = savedColor;
 
         updateDate();
