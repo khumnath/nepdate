@@ -1,22 +1,34 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
+import QtCore
 
 ApplicationWindow {
     id: settingsWindow
-    width: 280
-    height: 415
-    title: "Widget Settings"
+
+    // Set width and height based on content's implicit size plus margins
+    width: settingsLayout.implicitWidth + 2 * settingsLayoutLeftRightMargin
+    height: settingsLayout.implicitHeight + 2 * settingsLayoutTopBottomMargin
+
+    title: "Settings"
     flags: Qt.Dialog
     color: "#333"
+
+    // Define margins used in the layout for calculation
+    readonly property int settingsLayoutLeftRightMargin: 10
+    readonly property int settingsLayoutTopBottomMargin: 10
 
     property var mainWindow: null
 
     // --- Signals and Properties ---
     property int initialFontSize: 11
+    property bool showIcon: true // Default
+    property string originalCopyButtonText: "Copy Date to Clipboard"
     signal fontSizeChanged(int newSize)
     signal fontColorChanged(string newColorName)
     signal exitRequested()
+    signal iconVisibilityChanged(bool visible)
 
     // Hidden TextEdit for clipboard operations
     TextEdit {
@@ -27,8 +39,9 @@ ApplicationWindow {
 
     // --- Main Layout ---
     ColumnLayout {
+        id: settingsLayout
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: settingsLayoutLeftRightMargin
         spacing: 10
 
         Label {
@@ -43,10 +56,7 @@ ApplicationWindow {
             from: 8
             to: 24
             value: initialFontSize
-
-            onValueChanged: {
-                fontSizeChanged(value)
-            }
+            onValueChanged: fontSizeChanged(value)
         }
 
         Label {
@@ -100,9 +110,28 @@ ApplicationWindow {
 
         Item { Layout.fillHeight: true }
 
+        Label {
+            text: "Show Icon"
+            color: "lightgreen"
+            font.pointSize: 12
+            Layout.alignment: Qt.AlignHCenter
+        }
+
+        CheckBox {
+            id: iconCheck
+            text: "Enable Icon"
+            checked: showIcon
+            Layout.alignment: Qt.AlignHCenter
+
+            onCheckedChanged: {
+                showIcon = checked;
+                iconVisibilityChanged(checked);
+            }
+        }
+
         Button {
             id: copyButton
-            text: "Copy Date to Clipboard"
+            text: originalCopyButtonText
             Layout.fillWidth: true
             onClicked: {
                 if (mainWindow && mainWindow.displayedDate) {
@@ -111,6 +140,25 @@ ApplicationWindow {
                     showCopyMessage("No date available");
                 }
             }
+            background: Rectangle { color: "#555"; radius: 3; }
+            contentItem: Text {
+                text: parent.text; color: "lightgreen"; font.pointSize: 12
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
+
+        // --- Autostart Button ---
+        Button {
+            id: autostartButton
+            Layout.fillWidth: true
+            text: autostartManager.isAutostartEnabled() ? "Disable Autostart" : "Enable Autostart"
+
+            onClicked: {
+                autostartManager.setAutostart(!autostartManager.isAutostartEnabled());
+                autostartButton.text = autostartManager.isAutostartEnabled() ? "Disable Autostart" : "Enable Autostart";
+            }
+
             background: Rectangle { color: "#555"; radius: 3; }
             contentItem: Text {
                 text: parent.text; color: "lightgreen"; font.pointSize: 12
@@ -144,34 +192,41 @@ ApplicationWindow {
         }
     }
 
-    // Function to copy date to clipboard using hidden TextEdit
+    // --- Declarative Timer for Copy Message ---
+    Timer {
+        id: resetTimer
+        interval: 1500
+        repeat: false
+        onTriggered: {
+            if (copyButton) {
+                copyButton.text = originalCopyButtonText;
+            }
+        }
+    }
+
+    // Function to copy date to clipboard
     function copyDateToClipboard(dateText) {
         try {
             hiddenTextEdit.text = dateText;
             hiddenTextEdit.selectAll();
             hiddenTextEdit.copy();
             showCopyMessage("Copied!");
-            console.log("Successfully copied date to clipboard: " + dateText);
         } catch (error) {
             console.log("Error copying to clipboard: " + error.message);
             showCopyMessage("Copy failed");
         }
     }
 
-    // Show message on copy button using Qt Timer
+    // Show message on copy button using the declarative timer
     function showCopyMessage(message) {
-        var originalText = copyButton.text;
+        resetTimer.stop(); // Stop previous timer if running
         copyButton.text = message;
-
-        var resetTimer = Qt.createQmlObject("import QtQuick 2.15; Timer {}", settingsWindow);
-        resetTimer.interval = 1500;
-        resetTimer.repeat = false;
-        resetTimer.triggered.connect(function() {
-            if (copyButton) {
-                copyButton.text = originalText;
-            }
-            resetTimer.destroy();
-        });
         resetTimer.start();
+    }
+
+    // --- Window Closing Handler ---
+    onClosing: {
+        resetTimer.stop();
+        destroy();
     }
 }

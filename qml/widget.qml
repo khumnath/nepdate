@@ -2,20 +2,15 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
-import "PanchangaCalculator.js" as Panchanga
+import "qrc:PanchangaCalculator.js" as Panchanga
 import QtCore
 
 // This is the main window for the small desktop widget.
 ApplicationWindow {
     id: widgetWindow
-
-    // Start invisible to prevent flicker during initialization
     visible: false
-
-    // --- Bind the window size directly to the button's content size ---
     width: dateButton.implicitWidth + 20
     height: dateButton.implicitHeight + 10
-
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
     color: "transparent"
 
@@ -30,12 +25,13 @@ ApplicationWindow {
     property color fontColor: "green"
     property real latitude: 27.6000
     property real longitude: 82.9000
+    property bool showIcon: true
 
+    // --- Component and Window Properties ---
     property var calendarComponent: null
     property var calendarWindow: null
     property var settingsComponent: null
     property var settingsWindow: null
-    // --- Properties for the custom tooltip ---
     property var tooltipComponent: null
     property var tooltipWindow: null
 
@@ -53,11 +49,9 @@ ApplicationWindow {
     function updateDate() {
         const now = new Date();
         const result = Panchanga.calculate(now, latitude, longitude);
-
         const nepaliYear = Panchanga.toDevanagari(result.bsYear);
         const nepaliDay = Panchanga.toDevanagari(result.bsDay);
         const nepaliMonthName = Panchanga.solarMonths[result.bsMonthIndex];
-
         const nepaliDate = `${nepaliYear} ${nepaliMonthName} ${nepaliDay} गते`;
         const nepaliWeekday = result.weekday;
         displayedDate = `${nepaliDate} ${nepaliWeekday}`;
@@ -69,14 +63,27 @@ ApplicationWindow {
         id: dateButton
         anchors.centerIn: parent
         text: displayedDate
-
         background: Rectangle { color: "transparent" }
-        contentItem: Text {
-            text: parent.text
-            color: fontColor
-            font.pointSize: fontSize
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+        contentItem: Row {
+            spacing: 3
+            anchors.centerIn: parent
+            Image {
+                id: dateIcon
+                visible: showIcon
+                source: "qrc:/resources/flag.png"
+                width: dateText.font.pointSize * 1.2
+                height: dateText.font.pointSize * 1.2
+                fillMode: Image.PreserveAspectFit
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Text {
+                id: dateText
+                text: displayedDate
+                color: fontColor
+                font.pointSize: fontSize
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
         }
     }
 
@@ -87,12 +94,11 @@ ApplicationWindow {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
         property point lastMousePos
-        property bool wasDragged: false // Flag to distinguish click from drag
+        property bool wasDragged: false
 
-        // Timer to control when the tooltip appears
         Timer {
             id: tooltipTimer
-            interval: 0
+            interval: 500 // A slight delay before showing the tooltip
             onTriggered: showTooltip()
         }
 
@@ -101,9 +107,8 @@ ApplicationWindow {
             tooltipTimer.stop()
             hideTooltip()
         }
-
         onPositionChanged: function(mouse) {
-            tooltipTimer.restart();
+            tooltipTimer.restart(); // Restart timer if mouse moves while inside
             if (mouse.buttons & Qt.LeftButton) {
                 const delta = Qt.point(mouse.x - lastMousePos.x, mouse.y - lastMousePos.y);
                 widgetWindow.x += delta.x;
@@ -111,7 +116,6 @@ ApplicationWindow {
                 wasDragged = true;
             }
         }
-
         onPressed: function(mouse) {
             tooltipTimer.stop()
             hideTooltip()
@@ -120,15 +124,16 @@ ApplicationWindow {
                 wasDragged = false;
             }
         }
-
         onReleased: function(mouse) {
-            if (mouse.button === Qt.LeftButton) {
+            if (mouse.button === Qt.LeftButton && wasDragged) {
                 appSettings.setValue("widgetPositionX", parseInt(widgetWindow.x));
                 appSettings.setValue("widgetPositionY", parseInt(widgetWindow.y));
             }
         }
         onClicked: function(mouse) {
-            if (mouse.button === Qt.LeftButton && !wasDragged) {
+            if (wasDragged) return; // Do not trigger click after a drag
+
+            if (mouse.button === Qt.LeftButton) {
                 openCalendar();
             } else if (mouse.button === Qt.RightButton) {
                 openSettingsWindow();
@@ -138,26 +143,27 @@ ApplicationWindow {
 
     // --- Custom Tooltip Functions ---
     function showTooltip() {
+        if (tooltipWindow) return; // Don't create if one already exists
+
         if (!tooltipComponent) {
             tooltipComponent = Qt.createComponent("Tooltip.qml");
         }
+
         if (tooltipComponent.status === Component.Ready) {
-            if (!tooltipWindow) {
-                tooltipWindow = tooltipComponent.createObject(null); // Create as top-level
-                 if (tooltipWindow) {
-                     tooltipWindow.closing.connect(function() { tooltipWindow = null; });
-                 }
-            }
+            tooltipWindow = tooltipComponent.createObject(null); // Create as top-level
             if (tooltipWindow) {
                 tooltipWindow.text = tooltipDate;
                 tooltipWindow.showAt(widgetWindow.x, widgetWindow.y, widgetWindow.width, widgetWindow.height);
             }
+        } else if (tooltipComponent.status === Component.Error) {
+             console.error("Error loading tooltip component:", tooltipComponent.errorString());
         }
     }
 
     function hideTooltip() {
         if (tooltipWindow) {
-            tooltipWindow.close();
+            tooltipWindow.destroy();
+            tooltipWindow = null;
         }
     }
 
@@ -175,7 +181,10 @@ ApplicationWindow {
         if (calendarComponent.status === Component.Ready) {
             calendarWindow = calendarComponent.createObject(widgetWindow);
             if (calendarWindow) {
-                calendarWindow.closing.connect(() => { calendarWindow = null; });
+               calendarWindow.closing.connect(() => {
+                    calendarWindow.destroy();
+                    calendarWindow = null;
+                });
                 calendarWindow.show();
             } else { console.error("Failed to create calendar window."); }
         } else { console.error("Error loading component:", calendarComponent.errorString()); }
@@ -183,8 +192,10 @@ ApplicationWindow {
 
     function updateFontSize(newSize) {
         var size = parseInt(newSize);
-        fontSize = size;
-        dateButton.contentItem.font.pointSize = size;
+        if (!isNaN(size)) {
+            fontSize = size;
+            dateText.font.pointSize = size;
+        }
     }
 
     // --- Function to launch the settings window ---
@@ -200,10 +211,17 @@ ApplicationWindow {
         }
         if (settingsComponent.status === Component.Ready) {
             settingsWindow = settingsComponent.createObject(widgetWindow, {
-                "initialFontSize": fontSize
+                "initialFontSize": fontSize,
+                "showIcon": showIcon
             });
+
             if (settingsWindow) {
                 settingsWindow.mainWindow = widgetWindow;
+
+                settingsWindow.iconVisibilityChanged.connect(function(visible) {
+                    showIcon = visible;
+                    appSettings.setValue("showIcon", visible);
+                });
                 settingsWindow.fontSizeChanged.connect(function(newSize) {
                     updateFontSize(newSize);
                     appSettings.setValue("fontSize", parseInt(newSize));
@@ -215,31 +233,30 @@ ApplicationWindow {
                 settingsWindow.exitRequested.connect(function() {
                     Qt.quit();
                 });
-
-                settingsWindow.closing.connect(() => { settingsWindow = null; });
+                settingsWindow.closing.connect(() => {
+                    settingsWindow.destroy();
+                    settingsWindow = null;
+                });
 
                 // --- Smart Positioning Logic ---
                 var idealX = widgetWindow.x + widgetWindow.width + 5;
                 var idealY = widgetWindow.y;
-
-                if (widgetWindow.screen && (idealX + settingsWindow.width) > (widgetWindow.screen.virtualX + widgetWindow.screen.virtualWidth)) {
-                    idealX = widgetWindow.x - settingsWindow.width - 5;
+                 if (widgetWindow.screen) {
+                    if ((idealX + settingsWindow.width) > (widgetWindow.screen.virtualX + widgetWindow.screen.virtualWidth)) {
+                        idealX = widgetWindow.x - settingsWindow.width - 5;
+                    }
+                    if (idealX < widgetWindow.screen.virtualX) {
+                        idealX = widgetWindow.screen.virtualX + 5;
+                    }
+                    if ((idealY + settingsWindow.height) > (widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight)) {
+                        idealY = widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight - settingsWindow.height - 5;
+                    }
+                    if (idealY < widgetWindow.screen.virtualY) {
+                        idealY = widgetWindow.screen.virtualY + 5;
+                    }
                 }
-
-                if (widgetWindow.screen && idealX < widgetWindow.screen.virtualX) {
-                    idealX = widgetWindow.screen.virtualX + 5;
-                }
-
-                if (widgetWindow.screen && (idealY + settingsWindow.height) > (widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight)) {
-                    idealY = widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight - settingsWindow.height - 5;
-                }
-                if (widgetWindow.screen && idealY < widgetWindow.screen.virtualY) {
-                    idealY = widgetWindow.screen.virtualY + 5;
-                }
-
                 settingsWindow.x = idealX;
                 settingsWindow.y = idealY;
-
                 settingsWindow.show();
             } else {
                 console.error("Failed to create settings window.");
@@ -248,44 +265,29 @@ ApplicationWindow {
             console.error("Error loading settings component:", settingsComponent.errorString());
         }
     }
+
     // --- Use a one-shot Timer for reliable initial positioning ---
     Timer {
-           id: positioningTimer
-           interval: 50
-           repeat: false
-           onTriggered: {
-               widgetWindow.visible = true;
-               Qt.callLater(function() {
-                   var savedX = appSettings.value("widgetPositionX", -1);
-                   var savedY = appSettings.value("widgetPositionY", -1);
+        id: positioningTimer
+        interval: 50
+        repeat: false
+        onTriggered: {
+            widgetWindow.visible = true;
+            Qt.callLater(function() {
+                var savedX = appSettings.value("widgetPositionX", -1);
+                var savedY = appSettings.value("widgetPositionY", -1);
 
-                   if (savedX !== -1 && savedY !== -1) {
-                       widgetWindow.x = parseInt(savedX);
-                       widgetWindow.y = parseInt(savedY);
-                   } else {
-                       // Check if default position is safe before applying it ---
-                       var defaultX = 969;
-                       var defaultY = 978;
-                       if (widgetWindow.screen &&
-                           (defaultX < widgetWindow.screen.virtualX ||
-                            defaultX > (widgetWindow.screen.virtualX + widgetWindow.screen.virtualWidth - widgetWindow.width) ||
-                            defaultY < widgetWindow.screen.virtualY ||
-                            defaultY > (widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight - widgetWindow.height)))
-                       {
-                           // If default is off-screen then center it.
-                           widgetWindow.x = widgetWindow.screen.virtualX + (widgetWindow.screen.virtualWidth - widgetWindow.width) / 2;
-                           widgetWindow.y = widgetWindow.screen.virtualY + (widgetWindow.screen.virtualHeight - widgetWindow.height) / 2;
-                       } else {
-                           //
-                           //If default is on-screen, use it.
-                           widgetWindow.x = defaultX;
-                           widgetWindow.y = defaultY;
-                       }
-                   }
-               });
-           }
-       }
-
+                if (savedX !== -1 && savedY !== -1) {
+                    widgetWindow.x = parseInt(savedX);
+                    widgetWindow.y = parseInt(savedY);
+                } else if (widgetWindow.screen) {
+                    // Center on the primary screen if no position is saved
+                    widgetWindow.x = widgetWindow.screen.virtualX + (widgetWindow.screen.virtualWidth - widgetWindow.width) / 2;
+                    widgetWindow.y = widgetWindow.screen.virtualY + (widgetWindow.screen.virtualHeight - widgetWindow.height) / 2;
+                }
+            });
+        }
+    }
 
     // --- Load settings on startup ---
     Component.onCompleted: {
@@ -294,6 +296,10 @@ ApplicationWindow {
 
         var savedColor = appSettings.value("fontColor", "magenta");
         fontColor = savedColor;
+
+        // Ensure boolean conversion is robust
+        var savedShowIcon = appSettings.value("showIcon", true);
+        showIcon = (savedShowIcon === "true" || savedShowIcon === true);
 
         updateDate();
         positioningTimer.start();

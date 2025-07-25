@@ -1,9 +1,11 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/main.qml</file>
-        <file>qml/PanchangaCalculator.js</file>
         <file>qml/widget.qml</file>
         <file>qml/Settings.qml</file>
         <file>qml/Tooltip.qml</file>
+        <file>resources/flag.png</file>
+        <file>resources/PanchangaCalculator.js</file>
+        <file alias="PanchangaCalculator.js">resources/PanchangaCalculator.js</file>
     </qresource>
 </RCC>

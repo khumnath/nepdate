@@ -1,22 +1,18 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Window 2.15
 
-// This is a separate, frameless window that acts as a custom tooltip.
 ApplicationWindow {
     id: tooltipWindow
 
-    // --- Window Properties ---
     visible: false
     width: tooltipText.implicitWidth + 20
     height: tooltipText.implicitHeight + 10
-
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.BypassWindowManagerHint
     color: "transparent"
 
-    // --- Public Properties ---
     property string text: ""
 
-    // --- UI ---
     Rectangle {
         anchors.fill: parent
         color: "#333"
@@ -28,21 +24,33 @@ ApplicationWindow {
             text: tooltipWindow.text
             color: "white"
             anchors.centerIn: parent
+            wrapMode: Text.WordWrap
         }
     }
 
-    // --- Public Functions ---
     function showAt(widgetX, widgetY, widgetWidth, widgetHeight) {
-        tooltipWindow.x = widgetX + (widgetWidth / 2) - (tooltipWindow.width / 2);
+        var idealX = widgetX + (widgetWidth / 2) - (tooltipWindow.width / 2);
+        var idealY = widgetY - tooltipWindow.height - 5; // 5px margin
 
-        var topPosition = widgetY - tooltipWindow.height - 5;
-
-        if (topPosition < 0) {
-            tooltipWindow.y = widgetY + widgetHeight + 5;
-        } else {
-            tooltipWindow.y = topPosition;
+        if (tooltipWindow.screen) {
+            const screen = tooltipWindow.screen;
+            const screenMargin = 5;
+            if (idealY < screen.virtualY) {
+                idealY = widgetY + widgetHeight + screenMargin;
+            }
+            if ((idealY + tooltipWindow.height) > (screen.virtualY + screen.virtualHeight)) {
+                idealY = screen.virtualY + screen.virtualHeight - tooltipWindow.height - screenMargin;
+            }
+            if ((idealX + tooltipWindow.width) > (screen.virtualX + screen.virtualWidth)) {
+                idealX = screen.virtualX + screen.virtualWidth - tooltipWindow.width - screenMargin;
+            }
+            if (idealX < screen.virtualX) {
+                idealX = screen.virtualX + screenMargin;
+            }
         }
 
+        tooltipWindow.x = idealX;
+        tooltipWindow.y = idealY;
         tooltipWindow.visible = true;
     }
 }

@@ -3,7 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls.Material 2.15
 import QtCore
-import "PanchangaCalculator.js" as Panchanga
+import "qrc:PanchangaCalculator.js" as Panchanga
 
 ApplicationWindow {
     id: window
@@ -70,6 +70,7 @@ ApplicationWindow {
         calendarModel = [];
         clearPanchangaDetails();
         console.log("Cleanup complete. Exiting.");
+        destroy();
     }
 
     Component.onCompleted: {
