@@ -12,7 +12,8 @@ ApplicationWindow {
     visible: false
     width: dateButton.implicitWidth + 20
     height: dateButton.implicitHeight + 10
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.SplashScreen | Qt.Window | Qt.BypassWindowManagerHint | Qt.WindowDoesNotAcceptFocus |Qt.Notification
+    // Initial flags, StayOnTopHint will be managed dynamically
+   flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification | Qt.BypassWindowManagerHint
     color: "transparent"
 
     // --- Settings Component ---
@@ -27,6 +28,12 @@ ApplicationWindow {
     property real latitude: 27.6000
     property real longitude: 82.9000
     property bool showIcon: true
+    property bool screenontop: true
+
+    // When the screenontop property changes, update the window flag
+    onScreenontopChanged: {
+        updateStayOnTopFlag(screenontop);
+    }
 
     // --- Component and Window Properties ---
     property var calendarComponent: null
@@ -67,7 +74,7 @@ ApplicationWindow {
         background: Rectangle { color: "transparent" }
         contentItem: Row {
             spacing: 3
-            anchors.centerIn: parent
+            anchors.verticalCenter: parent.verticalCenter
             Image {
                 id: dateIcon
                 visible: showIcon
@@ -77,13 +84,14 @@ ApplicationWindow {
                 fillMode: Image.PreserveAspectFit
                 anchors.verticalCenter: parent.verticalCenter
             }
+
             Text {
                 id: dateText
                 text: displayedDate
                 color: fontColor
                 font.pointSize: fontSize
-                horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+                anchors.verticalCenter: parent.verticalCenter
             }
         }
     }
@@ -144,7 +152,7 @@ ApplicationWindow {
                 widgetWindow.x = windowStartX + (globalPos.x - dragStartX)
                 widgetWindow.y = windowStartY + (globalPos.y - dragStartY)
                 wasDragged = true
-                resetDragTimer.stop()   // Stop any previous timer
+                resetDragTimer.stop()
             }
         }
 
@@ -152,12 +160,12 @@ ApplicationWindow {
             if (mouse.button === Qt.LeftButton && wasDragged) {
                 appSettings.setValue("widgetPositionX", widgetWindow.x)
                 appSettings.setValue("widgetPositionY", widgetWindow.y)
-                resetDragTimer.start()  // Start timer to reset wasDragged after delay
+                resetDragTimer.start()
             }
         }
 
         onClicked: function(mouse) {
-            if (wasDragged) return;  // ignore clicks immediately after drag
+            if (wasDragged) return;
             if (mouse.button === Qt.LeftButton) {
                 openCalendar()
             } else if (mouse.button === Qt.RightButton) {
@@ -169,14 +177,14 @@ ApplicationWindow {
 
     // --- Custom Tooltip Functions ---
     function showTooltip() {
-        if (tooltipWindow) return; // Don't create if one already exists
+        if (tooltipWindow) return;
 
         if (!tooltipComponent) {
             tooltipComponent = Qt.createComponent("Tooltip.qml");
         }
 
         if (tooltipComponent.status === Component.Ready) {
-            tooltipWindow = tooltipComponent.createObject(null); // Create as top-level
+            tooltipWindow = tooltipComponent.createObject(null);
             if (tooltipWindow) {
                 tooltipWindow.text = tooltipDate;
                 tooltipWindow.showAt(widgetWindow.x, widgetWindow.y, widgetWindow.width, widgetWindow.height);
@@ -224,6 +232,30 @@ ApplicationWindow {
         }
     }
 
+    // --- Function to update the window's stay on top flag ---
+    function updateStayOnTopFlag(isOnTop) {
+        const wasVisible = widgetWindow.visible;
+        if (wasVisible) {
+            widgetWindow.visible = false;
+        }
+
+        Qt.callLater(function() {
+            if (isOnTop) {
+                // Add the flags
+                widgetWindow.flags |= (Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint| Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification | Qt.Tool);
+            } else {
+                // Remove the flags
+                //widgetWindow.flags |= (Qt.FramelessWindowHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification);
+                widgetWindow.flags &= ~(Qt.WindowStaysOnTopHint | Qt.BypassWindowManagerHint | Qt.Tool);
+            }
+
+            // Make window visible again if it was visible before the flag change.
+            if (wasVisible) {
+                widgetWindow.visible = true;
+            }
+        });
+    }
+
     // --- Function to launch the settings window ---
     function openSettingsWindow() {
         if (settingsWindow) {
@@ -232,57 +264,144 @@ ApplicationWindow {
             settingsWindow.requestActivate();
             return;
         }
+
         if (!settingsComponent) {
             settingsComponent = Qt.createComponent("Settings.qml");
         }
+
         if (settingsComponent.status === Component.Ready) {
             settingsWindow = settingsComponent.createObject(widgetWindow, {
                 "initialFontSize": fontSize,
-                "showIcon": showIcon
+                "showIcon": showIcon,
+                "screenontop": screenontop
             });
 
             if (settingsWindow) {
                 settingsWindow.mainWindow = widgetWindow;
 
+                // Signal bindings
+                settingsWindow.screenontopset.connect(function(ontop) {
+                    screenontop = ontop;
+                    appSettings.setValue("screenontop", ontop);
+                });
+
                 settingsWindow.iconVisibilityChanged.connect(function(visible) {
                     showIcon = visible;
                     appSettings.setValue("showIcon", visible);
                 });
+
                 settingsWindow.fontSizeChanged.connect(function(newSize) {
                     updateFontSize(newSize);
                     appSettings.setValue("fontSize", parseInt(newSize));
                 });
+
                 settingsWindow.fontColorChanged.connect(function(newColorName) {
                     fontColor = newColorName;
                     appSettings.setValue("fontColor", newColorName);
                 });
+
                 settingsWindow.exitRequested.connect(function() {
                     Qt.quit();
                 });
+
                 settingsWindow.closing.connect(() => {
                     settingsWindow.destroy();
                     settingsWindow = null;
                 });
 
-                // --- Smart Positioning Logic ---
-                var idealX = widgetWindow.x + widgetWindow.width + 5;
-                var idealY = widgetWindow.y;
-                 if (widgetWindow.screen) {
-                    if ((idealX + settingsWindow.width) > (widgetWindow.screen.virtualX + widgetWindow.screen.virtualWidth)) {
-                        idealX = widgetWindow.x - settingsWindow.width - 5;
+                // --- Smart Positioning ---
+                if (widgetWindow.screen) {
+                    const screen = widgetWindow.screen;
+                    const screenLeft = screen.virtualX;
+                    const screenTop = screen.virtualY;
+
+                    // Use screen.width and screen.height instead of virtualWidth/virtualHeight
+                    const screenRight = screenLeft + screen.width;
+                    const screenBottom = screenTop + screen.height;
+
+                    const padding = 0;
+                    let idealX, idealY;
+
+                    // Fallback size in case width/height are not yet finalized
+                    const fallbackWidth = 200;
+                    const fallbackHeight = 150;
+
+                    const settingsWidth = settingsWindow.width || fallbackWidth;
+                    const settingsHeight = settingsWindow.height || fallbackHeight;
+
+                    if (!screen || !screen.width || !screen.height) {
+                            // No screen info → position at widget with fallback sizes
+                            settingsWindow.x = widgetWindow.x;
+                            settingsWindow.y = widgetWindow.y;
+                            settingsWindow.width = settingsWidth;
+                            settingsWindow.height = settingsHeight;
+                           // console.log("No screen info → fallback position at widget location:", settingsWindow.x, settingsWindow.y);
+                            return;
+                        }
+
+                   // console.log("qml: widgetWindow:", widgetWindow.x, widgetWindow.y, widgetWindow.width, widgetWindow.height);
+                   // console.log("qml: settingsWindow size:", settingsWidth, settingsHeight);
+                   // console.log("qml: screen bounds:", screenLeft, screenTop, screenRight, screenBottom);
+
+                    // Horizontal positioning
+                    const widgetCenterX = widgetWindow.x + widgetWindow.width / 2;
+                    const screenCenterX = screenLeft + screen.width / 2;
+
+                    if (widgetCenterX >= screenCenterX) {
+                        // Right half → try placing left
+                        idealX = widgetWindow.x - settingsWidth - padding;
+                        console.log("qml: Placing on left of widget:", idealX);
+                        if (idealX < screenLeft + padding) {
+                            idealX = widgetWindow.x + widgetWindow.width + padding;
+                           // console.log("qml: Left too tight → fallback to right:", idealX);
+                        }
+                    } else {
+                        // Left half → try placing right
+                        idealX = widgetWindow.x + widgetWindow.width + padding;
+                        console.log("qml: Placing on right of widget:", idealX);
+                        if (idealX + settingsWidth > screenRight - padding) {
+                            idealX = widgetWindow.x - settingsWidth - padding;
+                           // console.log("qml: Right too tight → fallback to left:", idealX);
+                        }
                     }
-                    if (idealX < widgetWindow.screen.virtualX) {
-                        idealX = widgetWindow.screen.virtualX + 5;
+
+                    // Vertical positioning
+                    const widgetCenterY = widgetWindow.y + widgetWindow.height / 2;
+                    const screenCenterY = screenTop + screen.height / 2;
+
+                    if (widgetCenterY >= screenCenterY) {
+                        // Bottom half → try above
+                        idealY = widgetWindow.y - settingsHeight - padding;
+                        console.log("qml: Placing above widget:", idealY);
+                        if (idealY < screenTop + padding) {
+                            idealY = widgetWindow.y + widgetWindow.height + padding;
+                           // console.log("qml: Top too tight → fallback to below:", idealY);
+                        }
+                    } else {
+                        // Top half → try below
+                        idealY = widgetWindow.y + widgetWindow.height + padding;
+                        console.log("qml: Placing below widget:", idealY);
+                        if (idealY + settingsHeight > screenBottom - padding) {
+                            idealY = widgetWindow.y - settingsHeight - padding;
+                           // console.log("qml: Bottom too tight → fallback to above:", idealY);
+                        }
                     }
-                    if ((idealY + settingsWindow.height) > (widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight)) {
-                        idealY = widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight - settingsWindow.height - 5;
-                    }
-                    if (idealY < widgetWindow.screen.virtualY) {
-                        idealY = widgetWindow.screen.virtualY + 5;
-                    }
+
+                    // Clamp to screen bounds
+                    idealX = Math.max(screenLeft + padding, Math.min(idealX, screenRight - settingsWidth - padding));
+                    idealY = Math.max(screenTop + padding, Math.min(idealY, screenBottom - settingsHeight - padding));
+
+                   // console.log("qml: Final clamped position:", idealX, idealY);
+
+                    settingsWindow.x = idealX;
+                    settingsWindow.y = idealY;
+                } else {
+                    // Fallback if screen is not available
+                    settingsWindow.x = widgetWindow.x + widgetWindow.width + 5;
+                    settingsWindow.y = widgetWindow.y;
+                   // console.log("qml: No screen available → fallback position:", settingsWindow.x, settingsWindow.y);
                 }
-                settingsWindow.x = idealX;
-                settingsWindow.y = idealY;
+
                 settingsWindow.show();
             } else {
                 console.error("Failed to create settings window.");
@@ -291,6 +410,8 @@ ApplicationWindow {
             console.error("Error loading settings component:", settingsComponent.errorString());
         }
     }
+
+
 
     // --- Use a one-shot Timer for reliable initial positioning ---
     Timer {
@@ -315,16 +436,69 @@ ApplicationWindow {
         }
     }
 
-    // --- Load settings on startup ---
-    Component.onCompleted: {
-        var savedFontSize = appSettings.value("fontSize", 14);
-        updateFontSize(savedFontSize);
-        var savedColor = appSettings.value("fontColor", "magenta");
-        fontColor = savedColor;
-        var savedShowIcon = appSettings.value("showIcon", true);
-        showIcon = (savedShowIcon === "true" || savedShowIcon === true);
+    // --- Settings Validation and Loading ---
+        function resetAndSaveDefaultSettings() {
+            console.log("Resetting all settings to their default values.");
+            const defaultFontSize = 14;
+            const defaultFontColor = "magenta";
+            const defaultShowIcon = true;
+            const defaultScreenOnTop = true;
 
-        updateDate();
-        positioningTimer.start();
+            // Apply defaults to the application
+            updateFontSize(defaultFontSize);
+            fontColor = defaultFontColor;
+            showIcon = defaultShowIcon;
+            screenontop = defaultScreenOnTop;
+
+            // Save defaults to the settings file, overwriting the invalid ones
+            appSettings.setValue("fontSize", defaultFontSize);
+            appSettings.setValue("fontColor", defaultFontColor);
+            appSettings.setValue("showIcon", defaultShowIcon);
+            appSettings.setValue("screenontop", defaultScreenOnTop);
+        }
+
+        function loadAndValidateSettings() {
+            let settingsValid = true;
+
+            // Use .value() without a default to check for existence and type
+            const savedFontSize = appSettings.value("fontSize");
+            if (savedFontSize === undefined || isNaN(parseInt(savedFontSize, 10)) || parseInt(savedFontSize, 10) < 8 || parseInt(savedFontSize, 10) > 30) {
+                settingsValid = false;
+            }
+
+            const savedColor = appSettings.value("fontColor");
+            if (settingsValid && (savedColor === undefined || typeof savedColor.toString() !== 'string' || savedColor.toString().length === 0)) {
+                settingsValid = false;
+            }
+
+            const savedShowIcon = appSettings.value("showIcon");
+            if (settingsValid && (savedShowIcon === undefined || (savedShowIcon.toString() !== "true" && savedShowIcon.toString() !== "false"))) {
+                settingsValid = false;
+            }
+
+            const savedScreenOnTop = appSettings.value("screenontop");
+            if (settingsValid && (savedScreenOnTop === undefined || (savedScreenOnTop.toString() !== "true" && savedScreenOnTop.toString() !== "false"))) {
+                settingsValid = false;
+            }
+
+            if (settingsValid) {
+                console.log("Settings are valid. Loading them.");
+                // Safely read the values with defaults as a fallback
+                updateFontSize(appSettings.value("fontSize", 14));
+                fontColor = appSettings.value("fontColor", "magenta");
+                showIcon = appSettings.value("showIcon", true).toString() === "true";
+                screenontop = appSettings.value("screenontop", true).toString() === "true";
+            } else {
+                resetAndSaveDefaultSettings();
+            }
+
+            updateDate();
+            positioningTimer.start();
+        }
+
+
+        // --- Load settings on startup ---
+        Component.onCompleted: {
+            loadAndValidateSettings();
+        }
     }
-}

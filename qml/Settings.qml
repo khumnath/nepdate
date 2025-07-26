@@ -23,12 +23,14 @@ ApplicationWindow {
 
     // --- Signals and Properties ---
     property int initialFontSize: 11
-    property bool showIcon: true // Default
+    property bool showIcon: true
+    property bool screenontop: true
     property string originalCopyButtonText: "Copy Date to Clipboard"
     signal fontSizeChanged(int newSize)
     signal fontColorChanged(string newColorName)
     signal exitRequested()
     signal iconVisibilityChanged(bool visible)
+    signal screenontopset(bool ontop)
 
     // Hidden TextEdit for clipboard operations
     TextEdit {
@@ -128,6 +130,26 @@ ApplicationWindow {
                 iconVisibilityChanged(checked);
             }
         }
+
+        Label {
+            text: "Stay widget on top"
+            color: "lightgreen"
+            font.pointSize: 12
+            Layout.alignment: Qt.AlignHCenter
+        }
+
+        CheckBox {
+            id: screentopCheck
+            text: "Enable stay on screen top"
+            checked: screenontop
+            Layout.alignment: Qt.AlignHCenter
+
+            onCheckedChanged: {
+                screenontop = checked;
+                screenontopset(checked);
+            }
+        }
+
 
         Button {
             id: copyButton
