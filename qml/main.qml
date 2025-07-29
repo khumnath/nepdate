@@ -153,7 +153,7 @@ ApplicationWindow {
             })
         }
         calendarModel = model
-        currentBsLabelStr = year + " " + info.monthName
+        currentBsLabelStr = toDevanagari(year) + " " + info.monthName
         currentAdLabelStr = getGregorianRange(year, monthIndex)
         var prevMonthIndex = monthIndex - 1;
         var prevYear = year;
@@ -170,6 +170,21 @@ ApplicationWindow {
         }
         nextMonthName = Panchanga.solarMonths[nextMonthIndex] || "";
         // console.log("✅ Rendered:", year, info.monthName, "| Days:", daysInMonth, "| Start weekday:", startDay)
+    }
+
+    function fromDevanagari(devanagariStr) {
+        // Return an empty string if the input isn't a string to avoid errors.
+        if (typeof devanagariStr !== 'string') {
+            return "";
+        }
+
+        const digitMap = {
+            '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
+            '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'
+        };
+
+        // Find all Devanagari digits globally (/g) and replace them using the map.
+        return devanagariStr.replace(/[०-९]/g, (match) => digitMap[match]);
     }
 
     function renderCalendarByAd(year, monthIndex) {
@@ -205,7 +220,7 @@ ApplicationWindow {
         clearPanchangaDetails();
         modalTitle.text = panchanga.gregorianDate;
         panchangaDetails.data = [
-            createDetailRow("बिक्रम संवत", panchanga.bsYear + " " + panchanga.monthName + " " + panchanga.bsDay),
+            createDetailRow("बिक्रम संवत", toDevanagari(panchanga.bsYear) + " " + panchanga.monthName + " " + toDevanagari(panchanga.bsDay)),
             createDetailRow("वार", panchanga.weekday),
             createDetailRow("तिथि", panchanga.tithi + " (" + panchanga.paksha + ")"),
             createDetailRow("नक्षत्र", panchanga.nakshatra),
@@ -477,43 +492,76 @@ ApplicationWindow {
 
                     TextField {
                         id: bsYearInput
-                        text: currentBsYear.toString()
-                        color: theme.primaryText
-                        inputMethodHints: Qt.ImhDigitsOnly
-                        onAccepted: renderCalendarByBs(parseInt(text), bsMonthSelect.currentIndex)
-                        font.pixelSize: 14
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         horizontalAlignment: TextInput.AlignHCenter
-                        background: Rectangle { radius: 8; border.color: theme.borderColor; border.width: 1; color: theme.inputBg }
+                        font.pixelSize: 14
+                        color: theme.primaryText
+                        inputMethodHints: Qt.ImhDigitsOnly
                         padding: 6
+                        background: Rectangle {
+                            radius: 8
+                            border.color: theme.borderColor
+                            border.width: 1
+                            color: theme.inputBg
+                        }
+
+                        property string internalAsciiValue: currentBsYear.toString()
+
+                        onInternalAsciiValueChanged: {
+                            const newDevanagariText = toDevanagari(internalAsciiValue)
+                            if (text !== newDevanagariText) {
+                                text = newDevanagariText
+                            }
+                        }
+
+                        onTextEdited: {
+                            const asciiValue = fromDevanagari(text)
+                            const sanitizedAscii = asciiValue.replace(/[^\d]/g, "")
+                            if (internalAsciiValue !== sanitizedAscii) {
+                                internalAsciiValue = sanitizedAscii
+                                // Position cursor at the end for a better editing experience
+                                cursorPosition = text.length
+                            }
+                        }
+
+                        onAccepted: {
+                            const parsedValue = parseInt(internalAsciiValue) || currentBsYear
+                            renderCalendarByBs(parsedValue, bsMonthSelect.currentIndex)
+                        }
                     }
 
                     ComboBox {
                         id: bsMonthSelect
-                        model: Panchanga.solarMonths || ["बैशाख", "जेठ", "असार", "साउन", "भदौ", "असोज", "कात्तिक", "मंसिर", "पुस", "माघ", "फाल्गुन", "चैत"]
+                        model: Panchanga.solarMonths || []
                         currentIndex: currentBsMonthIndex
-                        onActivated: renderCalendarByBs(parseInt(bsYearInput.text), currentIndex)
-                        font.pixelSize: 14
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
+                        font.pixelSize: 14
                         padding: 6
-                        background: Rectangle { radius: 8; border.color: theme.borderColor; border.width: 1; color: theme.inputBg }
+                        background: Rectangle {
+                            radius: 8
+                            border.color: theme.borderColor
+                            border.width: 1
+                            color: theme.inputBg
+                        }
                         contentItem: Text {
-                            text: bsMonthSelect.currentText; color: theme.primaryText; font.pixelSize: 14
-                            verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight
-                            anchors.verticalCenter: parent.verticalCenter; anchors.leftMargin: 0
+                            text: bsMonthSelect.currentText
+                            color: theme.primaryText
+                            font.pixelSize: 14
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.leftMargin: 0
                         }
                         popup.background: Rectangle { color: theme.secondaryBg; border.color: theme.borderColor; radius: 8 }
                         delegate: ItemDelegate {
                             width: parent.width
                             hoverEnabled: true
                             height: 35
-
                             background: Rectangle {
                                 color: highlighted || hovered ? theme.tertiaryBg : "transparent"
                             }
-
                             contentItem: Rectangle {
                                 color: "transparent"
                                 anchors.fill: parent
@@ -529,6 +577,10 @@ ApplicationWindow {
                             }
                         }
 
+                        onActivated: {
+                            const year = parseInt(bsYearInput.internalAsciiValue) || currentBsYear;
+                            renderCalendarByBs(year, currentIndex);
+                        }
                     }
                 }
 
@@ -641,10 +693,17 @@ ApplicationWindow {
                         border.color: modelData.isToday ? theme.todayBorder : (modelData.isSaturday ? theme.saturdayBorder : theme.borderColor)
                         border.width: modelData.isToday ? 2 : 1
 
+                        //FontLoader {
+                        //    id: laila
+                        //    source: "https://fonts.gstatic.com/s/laila/v20/LYjMdG_8nE8jDLRagCY.woff2"
+                        //}
+
                         Label {
                             text: toDevanagari(modelData.bsDay || 0)
-                            font.pixelSize: 26
+                          //font.family: lailalfont
                             font.bold: true
+                            font.pixelSize: 26
+
                             color: {
                                 if (modelData.isToday) return theme.accentText;
                                 if (modelData.isSaturday) return theme.saturdayText;
@@ -747,7 +806,6 @@ ApplicationWindow {
             width: detailModal.width
             height: detailModal.height
 
-            // Header remains the same
             Rectangle {
                 id: modalHeader
                 width: parent.width
@@ -765,7 +823,6 @@ ApplicationWindow {
                 }
             }
 
-            // Footer remains the same
             Rectangle {
                 id: modalFooter
                 width: parent.width
@@ -820,7 +877,7 @@ ApplicationWindow {
                     // Button to SHOW debug info (visible by default)
                     Button {
                         id: showDebugButton
-                        visible: !window.debugVisible // Only visible when debug is OFF
+                        visible: !window.debugVisible
                         text: "डिबग जानकारी देखाउनुहोस्"
                         Layout.fillWidth: true
                         height: 40

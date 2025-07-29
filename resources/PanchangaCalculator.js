@@ -308,7 +308,7 @@ function calculate(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
         bsMonthIndex: bsInfo.monthIndex,
         bsDay: bsInfo.day,
         monthName: bsInfo.monthName,
-        weekday: weekdays[date.getUTCDay()],
+        weekday: weekdays[date.getDay()],
         sunrise: sunriseSunset.sunrise,
         sunset: sunriseSunset.sunset,
         tithi: tithiName,
@@ -352,12 +352,9 @@ function generateDebugInfo(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
     var debugOutput = `
     Debug Information (Surya Siddhanta):
     gregorianDate: ${Qt.formatDateTime(date, "dddd, MMMM d, yyyy")}
-    bikramSambat: ${bsInfo.year} ${bsInfo.monthName} ${bsInfo.day}
-    bsYear: ${bsInfo.year}
+    bikramSambat: ${toDevanagari(bsInfo.year)} ${bsInfo.monthName} ${toDevanagari(bsInfo.day)}
     bsMonthIndex: ${bsInfo.monthIndex}
-    bsDay: ${bsInfo.day}
-    monthName: ${bsInfo.monthName}
-    weekday: ${weekdays[date.getUTCDay()]}
+    weekday(local): ${weekdays[date.getDay()]}
     sunrise: ${sunriseSunset.sunrise}
     sunset: ${sunriseSunset.sunset}
     tithi: ${tithiName} | index: ${tithiDay}
