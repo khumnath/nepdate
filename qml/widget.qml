@@ -196,6 +196,7 @@ ApplicationWindow {
 
     function hideTooltip() {
         if (tooltipWindow) {
+           Panchanga.clearCache();
             tooltipWindow.destroy();
             tooltipWindow = null;
         }
@@ -216,6 +217,7 @@ ApplicationWindow {
             calendarWindow = calendarComponent.createObject(null);
             if (calendarWindow) {
                calendarWindow.closing.connect(() => {
+                    Panchanga.clearCache();
                     calendarWindow.destroy();
                     calendarWindow = null;
                 });
@@ -245,7 +247,6 @@ ApplicationWindow {
                 widgetWindow.flags |= (Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint| Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification | Qt.Tool);
             } else {
                 // Remove the flags
-                //widgetWindow.flags |= (Qt.FramelessWindowHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification);
                 widgetWindow.flags &= ~(Qt.WindowStaysOnTopHint | Qt.BypassWindowManagerHint | Qt.Tool);
             }
 
@@ -339,10 +340,6 @@ ApplicationWindow {
                             return;
                         }
 
-                   // console.log("qml: widgetWindow:", widgetWindow.x, widgetWindow.y, widgetWindow.width, widgetWindow.height);
-                   // console.log("qml: settingsWindow size:", settingsWidth, settingsHeight);
-                   // console.log("qml: screen bounds:", screenLeft, screenTop, screenRight, screenBottom);
-
                     // Horizontal positioning
                     const widgetCenterX = widgetWindow.x + widgetWindow.width / 2;
                     const screenCenterX = screenLeft + screen.width / 2;
@@ -350,7 +347,7 @@ ApplicationWindow {
                     if (widgetCenterX >= screenCenterX) {
                         // Right half → try placing left
                         idealX = widgetWindow.x - settingsWidth - padding;
-                        console.log("qml: Placing on left of widget:", idealX);
+                        // console.log("qml: Placing on left of widget:", idealX);
                         if (idealX < screenLeft + padding) {
                             idealX = widgetWindow.x + widgetWindow.width + padding;
                            // console.log("qml: Left too tight → fallback to right:", idealX);
@@ -358,7 +355,7 @@ ApplicationWindow {
                     } else {
                         // Left half → try placing right
                         idealX = widgetWindow.x + widgetWindow.width + padding;
-                        console.log("qml: Placing on right of widget:", idealX);
+                       // console.log("qml: Placing on right of widget:", idealX);
                         if (idealX + settingsWidth > screenRight - padding) {
                             idealX = widgetWindow.x - settingsWidth - padding;
                            // console.log("qml: Right too tight → fallback to left:", idealX);
@@ -372,7 +369,7 @@ ApplicationWindow {
                     if (widgetCenterY >= screenCenterY) {
                         // Bottom half → try above
                         idealY = widgetWindow.y - settingsHeight - padding;
-                        console.log("qml: Placing above widget:", idealY);
+                        // console.log("qml: Placing above widget:", idealY);
                         if (idealY < screenTop + padding) {
                             idealY = widgetWindow.y + widgetWindow.height + padding;
                            // console.log("qml: Top too tight → fallback to below:", idealY);
@@ -380,7 +377,7 @@ ApplicationWindow {
                     } else {
                         // Top half → try below
                         idealY = widgetWindow.y + widgetWindow.height + padding;
-                        console.log("qml: Placing below widget:", idealY);
+                        // console.log("qml: Placing below widget:", idealY);
                         if (idealY + settingsHeight > screenBottom - padding) {
                             idealY = widgetWindow.y - settingsHeight - padding;
                            // console.log("qml: Bottom too tight → fallback to above:", idealY);
@@ -438,7 +435,7 @@ ApplicationWindow {
 
     // --- Settings Validation and Loading ---
         function resetAndSaveDefaultSettings() {
-            console.log("Resetting all settings to their default values.");
+           // console.log("Resetting all settings to their default values.");
             const defaultFontSize = 14;
             const defaultFontColor = "magenta";
             const defaultShowIcon = true;
@@ -482,7 +479,7 @@ ApplicationWindow {
             }
 
             if (settingsValid) {
-                console.log("Settings are valid. Loading them.");
+               // console.log("Settings are valid. Loading them.");
                 // Safely read the values with defaults as a fallback
                 updateFontSize(appSettings.value("fontSize", 14));
                 fontColor = appSettings.value("fontColor", "magenta");

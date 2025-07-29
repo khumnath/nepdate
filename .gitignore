@@ -40,3 +40,6 @@ compile_commands.json
 # Node js related files
 *dist*
 *node_modules*
+
+# others
+*.txt

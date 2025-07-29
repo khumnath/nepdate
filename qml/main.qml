@@ -31,9 +31,9 @@ ApplicationWindow {
         property alias width: window.width
         property alias height: window.height
     }
-
     property bool isDarkMode: false
-
+    property bool debugVisible: false
+    property string currentDebugInfo: ""
     QtObject {
         id: theme
         readonly property bool isDark: window.isDarkMode
@@ -66,12 +66,12 @@ ApplicationWindow {
     }
 
     onClosing: {
-        console.log("Closing application, cleaning up resources...");
+       //  console.log("Closing application, cleaning up resources...");
         windowSettings.sync();
         settings.sync();
         calendarModel = [];
         clearPanchangaDetails();
-        console.log("Cleanup complete. Exiting.");
+        // console.log("Cleanup complete. Exiting.");
         destroy();
     }
 
@@ -169,7 +169,7 @@ ApplicationWindow {
             nextYear++;
         }
         nextMonthName = Panchanga.solarMonths[nextMonthIndex] || "";
-        console.log("✅ Rendered:", year, info.monthName, "| Days:", daysInMonth, "| Start weekday:", startDay)
+        // console.log("✅ Rendered:", year, info.monthName, "| Days:", daysInMonth, "| Start weekday:", startDay)
     }
 
     function renderCalendarByAd(year, monthIndex) {
@@ -216,8 +216,32 @@ ApplicationWindow {
             createDetailRow("उदयास्त", "सूर्योदय " + panchanga.sunrise + " | सूर्यास्त " + panchanga.sunset),
             createDetailRow("अधिक/क्षय मास", panchanga.adhikaMasa)
         ];
+
+        // Generate debug info for the selected date
+        try {
+            // Extract date components from gregorianDate string
+            var dateParts = panchanga.gregorianDate.split(" ");
+            var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            var monthIndex = monthNames.indexOf(dateParts[1]);
+            var day = parseInt(dateParts[2]);
+            var year = parseInt(dateParts[3]);
+
+            if (monthIndex !== -1) {
+                var debugDate = new Date(Date.UTC(year, monthIndex, day));
+                var debugInfo = Panchanga.generateDebugInfo(debugDate);
+                window.currentDebugInfo = debugInfo.debug || "Debug information not available";
+            } else {
+                window.currentDebugInfo = "Debug Information:\n    Error: Could not parse date for debug information";
+            }
+        } catch (e) {
+            console.error("Error generating debug info:", e);
+            window.currentDebugInfo = "Debug Information:\n    Error: " + e.message;
+        }
+
+        window.debugVisible = false;
         detailModal.open();
     }
+
 
     function createDetailRow(label, value) {
         var rowItem = Qt.createQmlObject('import QtQuick.Layouts 1.15; RowLayout { spacing: 10; Layout.fillWidth: true }', panchangaDetails);
@@ -667,28 +691,34 @@ ApplicationWindow {
         }
 
         Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 50
-            color: theme.tertiaryBg; border.color: theme.borderColor; border.width: 1
+            Layout.fillWidth: true
+            Layout.preferredHeight: 50
+            color: theme.tertiaryBg
+            border.color: theme.borderColor
+            border.width: 1
 
-            RowLayout {
+            ColumnLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 20
-                anchors.rightMargin: 20
+                anchors.margins: 10
+                spacing: 2
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
                 Label {
-                    text: "पञ्चाङ्ग  सूर्य सिद्धान्तमा आधारित | स्थान: काठमाडौँ"
+                    text: "पञ्चाङ्ग  सूर्य सिद्धान्तमा आधारित | स्थान: काठमाण्डौ |  समय: नेपाल मानक समय क्षेत्र। "
                     font.pixelSize: 12
                     color: theme.secondaryText
-                    Layout.alignment: Qt.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    Layout.alignment: Qt.AlignHCenter
+                    wrapMode: Text.WordWrap
                 }
-
-                Item { Layout.fillWidth: true }
 
                 Label {
                     textFormat: Text.RichText
-                    text: "<a href='https://opensource.org/licenses/GPL-3.0' style='color:" + theme.accentText + "; text-decoration:none;'>License: GPL-3.0</a> or later. ||  <a href='https://github.com/khumnath/nepdate/tree/qml' style='color:" + theme.accentText + "; text-decoration:none;'>Source Code</a>"
+                    text: "<a href='https://opensource.org/licenses/GPL-3.0' style='color:" + theme.accentText + "; text-decoration:none;'>License: GPL-3.0</a> or later. || <a href='https://github.com/khumnath/nepdate/tree/qml' style='color:" + theme.accentText + "; text-decoration:none;'>Source Code</a>"
                     font.pixelSize: 12
-                    Layout.alignment: Qt.AlignVCenter
+                    Layout.alignment: Qt.AlignHCenter
+                    horizontalAlignment: Text.AlignHCenter
+
                     onLinkActivated: Qt.openUrlExternally(link)
                 }
             }
@@ -698,7 +728,7 @@ ApplicationWindow {
     Dialog {
         id: detailModal
         width: Math.min(parent.width * 0.9, 600)
-        height: Math.min(parent.height * 0.8, 500)
+        height: Math.min(parent.height * 0.8, 550)
         modal: true
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         x: (parent.width - width) / 2
@@ -717,26 +747,25 @@ ApplicationWindow {
             width: detailModal.width
             height: detailModal.height
 
-            Label {
-                id: modalTitle
-                text: "दिनको विवरण"
-                font.pixelSize: 20
-                font.bold: true
-                color: theme.modalHeaderText
-                anchors.top: parent.top
-                anchors.topMargin: 15
-                anchors.horizontalCenter: parent.horizontalCenter
-                z: 1
-            }
-
+            // Header remains the same
             Rectangle {
                 id: modalHeader
                 width: parent.width
                 height: 60
-                anchors.top: parent.top
                 color: theme.secondaryBg
+
+                Label {
+                    id: modalTitle
+                    text: "दिनको विवरण"
+                    font.pixelSize: 20
+                    font.bold: true
+                    color: theme.modalHeaderText
+                    anchors.centerIn: parent
+                    z: 1
+                }
             }
 
+            // Footer remains the same
             Rectangle {
                 id: modalFooter
                 width: parent.width
@@ -748,7 +777,9 @@ ApplicationWindow {
                 Button {
                     text: "बन्द गर्नुहोस्"
                     anchors.centerIn: parent
-                    onClicked: detailModal.close()
+                    onClicked: {
+                        detailModal.close()
+                    }
 
                     background: Rectangle {
                         radius: 8
@@ -769,30 +800,121 @@ ApplicationWindow {
             }
 
             Flickable {
-                anchors.leftMargin: 30
-                anchors.rightMargin: 20
-                anchors.top: modalHeader.bottom
-                anchors.bottom: modalFooter.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                clip: true
-                contentHeight: panchangaDetails.implicitHeight
+                id: flickableArea
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: modalHeader.bottom
+                    bottom: modalFooter.top
+                    leftMargin: 30
+                    rightMargin: 20
+                }
+                clip: false
+                contentHeight: scrollContent.height
 
                 ColumnLayout {
-                    id: panchangaDetails
-                    property var data: []
+                    id: scrollContent
+                    width: parent.width
                     spacing: 15
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.topMargin: 15
-                    anchors.top: parent.top
+
+                    // Button to SHOW debug info (visible by default)
+                    Button {
+                        id: showDebugButton
+                        visible: !window.debugVisible // Only visible when debug is OFF
+                        text: "डिबग जानकारी देखाउनुहोस्"
+                        Layout.fillWidth: true
+                        height: 40
+                        onClicked: window.debugVisible = true
+
+                        background: Rectangle {
+                            radius: 8
+                            color: theme.tertiaryBg
+                            border.color: theme.accent
+                            border.width: 1
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            font: parent.font
+                            color: theme.modalButtonText
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+
+                    // Panchanga Details (visible by default)
+                    ColumnLayout {
+                        id: panchangaDetails
+                        visible: !window.debugVisible
+                        property var data: []
+                        spacing: 15
+                        Layout.fillWidth: true
+                    }
+
+                    //  Debug info area (hidden by default)
+                    Rectangle {
+                        id: debugInfoArea
+                        visible: window.debugVisible
+                        z: 99
+                        Layout.fillWidth: true
+                        implicitHeight: debugInfoText.paintedHeight + 10
+                        color: "black"
+                        border.color: theme.accent
+                        border.width: 1
+                        radius: 8
+
+                        Flickable {
+                            anchors.fill: parent
+                            contentWidth: debugInfoText.paintedWidth
+                            contentHeight: debugInfoText.paintedHeight + 10
+                            clip: true
+
+                            TextEdit {
+                                id: debugInfoText
+                                text: window.currentDebugInfo
+                                color: "white"
+                                font.family: "monospace"
+                                font.pointSize: 9
+                                readOnly: true
+                                wrapMode: TextEdit.NoWrap
+                                selectByMouse: true
+                                padding: 10
+                            }
+                        }
+                    }
+
+                    //  Button to HIDE debug info (hidden by default)
+                    Button {
+                        id: hideDebugButton
+                        visible: window.debugVisible
+                        text: "डिबग लुकाउनुहोस्"
+                        Layout.fillWidth: true
+                        height: 40
+                        onClicked: window.debugVisible = false
+
+                        background: Rectangle {
+                            radius: 8
+                            color: theme.tertiaryBg
+                            border.color: theme.accent
+                            border.width: 1
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            font: parent.font
+                            color: theme.modalButtonText
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
                 }
             }
         }
 
         onClosed: {
+            Panchanga.clearCache()
             clearPanchangaDetails()
-            console.log("Closed detail modal and cleared its dynamic contents.")
+            window.debugVisible = false
+            // console.log("Closed detail modal and cleared its dynamic contents.")
         }
     }
+
 }
