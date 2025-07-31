@@ -6,6 +6,5 @@
         <file>qml/Tooltip.qml</file>
         <file>resources/flag.png</file>
         <file>resources/PanchangaCalculator.js</file>
-        <file alias="PanchangaCalculator.js">resources/PanchangaCalculator.js</file>
     </qresource>
 </RCC>

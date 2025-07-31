@@ -1,5 +1,6 @@
 #include "autostartmanager.h"
 #include <QTextStream>
+#include <QString>
 
 AutostartManager::AutostartManager(QObject *parent) : QObject(parent)
 {

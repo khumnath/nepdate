@@ -1,5 +1,5 @@
 
-QT       += core gui widgets quick qml
+QT += core gui widgets quick qml
 
 SOURCES += \
     autostartmanager.cpp \
