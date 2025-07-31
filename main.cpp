@@ -1,4 +1,4 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QtCore>
@@ -8,6 +8,8 @@
 #include <QStandardPaths>
 #include <QIcon>
 #include "autostartmanager.h"
+#include "tooltipmanager.h"
+#include <cstdlib>
 
 void ensureDesktopFile(const QString &desktopFileName, const QString &startupWMClass) {
     QString dirPath = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
@@ -63,7 +65,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationDomain("com.nepdate.calendar");
     QCoreApplication::setApplicationName("NepaliCalendar");
 
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/resources/flag.png"));
     app.setDesktopFileName("nepdate-calendar");
 
@@ -71,16 +73,24 @@ int main(int argc, char *argv[]) {
     ensureDesktopFile("nepdate-calendar.desktop", "NepaliCalendar");
 
     AutostartManager autostartManager;
+    TooltipManager tooltipManager;
     QQmlApplicationEngine engine;
 
+    // --- C++ Platform Detection ---
+    // Grt the platform name (e.g., "xcb" or "wayland").
+    QString platform = QGuiApplication::platformName();
+    engine.rootContext()->setContextProperty("platformName", platform);
+
+
     engine.rootContext()->setContextProperty("autostartManager", &autostartManager);
+    engine.rootContext()->setContextProperty("tooltipManager", &tooltipManager);
 
     const QUrl url(QStringLiteral("qrc:/qml/widget.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-        &app, [url](QObject *obj, const QUrl &objUrl) {
-            if (!obj && url == objUrl)
-                QCoreApplication::exit(-1);
-        }, Qt::QueuedConnection);
+                     &app, [url](QObject *obj, const QUrl &objUrl) {
+                         if (!obj && url == objUrl)
+                             QCoreApplication::exit(-1);
+                     }, Qt::QueuedConnection);
 
     engine.load(url);
     return app.exec();

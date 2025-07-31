@@ -1,8 +1,10 @@
-QT += quick qml
+
+QT       += core gui widgets quick qml
 
 SOURCES += \
     autostartmanager.cpp \
-    main.cpp
+    main.cpp \
+    tooltipmanager.cpp
 
 RESOURCES += \
     resources.qrc
@@ -11,4 +13,5 @@ qml_files.files = $$PWD/qml
 qml_files.path = qml
 
 HEADERS += \
-    autostartmanager.h
+    autostartmanager.h \
+    tooltipmanager.h

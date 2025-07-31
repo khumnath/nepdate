@@ -8,7 +8,7 @@ ApplicationWindow {
     id: settingsWindow
 
     // Set width and height based on content's implicit size plus margins
-    width: settingsLayout.implicitWidth + 10 * settingsLayoutLeftRightMargin
+    width: settingsLayout.implicitWidth + 2 * settingsLayoutLeftRightMargin
     height: settingsLayout.implicitHeight + 2 * settingsLayoutTopBottomMargin
 
     title: "Settings"
@@ -31,6 +31,9 @@ ApplicationWindow {
     signal exitRequested()
     signal iconVisibilityChanged(bool visible)
     signal screenontopset(bool ontop)
+
+    // The 'platformName' property is now provided by C++ via setContextProperty
+    // property string platformName: "default" // Removed this line, as it's a context property
 
     // Hidden TextEdit for clipboard operations
     TextEdit {
@@ -90,6 +93,7 @@ ApplicationWindow {
                     { name: "Light Blue", colorValue: "lightblue" }
                 ]
                 delegate: Rectangle {
+                    id: colorBox
                     width: 40
                     height: 40
                     color: modelData.colorValue
@@ -97,8 +101,37 @@ ApplicationWindow {
                     border.color: "#444"
                     border.width: 1
 
-                    ToolTip.visible: mouseArea.containsMouse
-                    ToolTip.text: modelData.name
+                    // Custom Popup for tooltip
+                    Popup {
+                        id: customToolTip
+                        // Position the popup relative to the mouse area's center
+                        x: mouseArea.mouseX + 10 // Offset from mouse cursor
+                        y: mouseArea.mouseY + 10 // Offset from mouse cursor
+                        //parent: settingsWindow // Or a more appropriate common parent
+                        visible: mouseArea.containsMouse
+                        modal: false // Don't block interaction with other elements
+                        closePolicy: Popup.NoAutoClose // We control visibility with mouseArea.containsMouse
+                        opacity: 0.9 // Make it slightly transparent
+                        padding: 5
+                        background: Rectangle {
+                            color: "#222"
+                            radius: 3
+                            border.color: "#888"
+                            border.width: 1
+                        }
+                        contentItem: Label {
+                            text: modelData.name
+                            color: "white"
+                            font.pointSize: 10
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        // Ensure the popup's implicit size is respected
+                        implicitWidth: contentItem.implicitWidth + 2 * padding
+                        implicitHeight: contentItem.implicitHeight + 2 * padding
+                    }
+
 
                     MouseArea {
                         id: mouseArea
@@ -189,6 +222,26 @@ ApplicationWindow {
             }
         }
 
+        // --- New Calendar Button (visible only on Wayland) ---
+        Button {
+            id: calendarButton
+            Layout.fillWidth: true
+            text: "Open Calendar"
+            // Access the global 'platformName' context property directly
+            visible: platformName === "wayland"
+
+            onClicked: {
+                openCalendar();
+            }
+
+            background: Rectangle { color: "#555"; radius: 3; }
+            contentItem: Text {
+                text: parent.text; color: "lightgreen"; font.pointSize: 12
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
+
         Button {
             text: "Exit Widget"
             Layout.fillWidth: true
@@ -245,6 +298,31 @@ ApplicationWindow {
         copyButton.text = message;
         resetTimer.start();
     }
+
+    // Function to show the calendar
+    function openCalendar() {
+        if (calendarWindow) {
+            calendarWindow.show();
+            calendarWindow.raise();
+            calendarWindow.requestActivate();
+            return;
+        }
+        if (!calendarComponent) {
+            calendarComponent = Qt.createComponent("main.qml");
+        }
+        if (calendarComponent.status === Component.Ready) {
+            calendarWindow = calendarComponent.createObject(widgetWindow);
+            if (calendarWindow) {
+               calendarWindow.closing.connect(() => {
+                    Panchanga.clearCache();
+                    calendarWindow.destroy();
+                    calendarWindow = null;
+                });
+                calendarWindow.show();
+            } else { console.error("Failed to create calendar window."); }
+        } else { console.error("Error loading component:", calendarComponent.errorString()); }
+    }
+
 
     // --- Window Closing Handler ---
     onClosing: {
