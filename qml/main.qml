@@ -89,6 +89,7 @@ ApplicationWindow {
     property string currentAdLabelStr: ""
     property string prevMonthName: ""
     property string nextMonthName: ""
+    property bool isCurrentMonthComputed: false
 
     function toDevanagari(num) {
         return Panchanga.toDevanagari(num)
@@ -138,6 +139,9 @@ ApplicationWindow {
         for (var day = 1; day <= daysInMonth; ++day) {
             var adDate = Panchanga.fromBikramSambat(year, monthIndex, day)
             var result = Panchanga.calculate(adDate)
+            if (day === 1) {
+                           window.isCurrentMonthComputed = result.isComputed;
+                       }
             var isToday = adDate.toDateString() === todayDate.toDateString()
             var isSaturday = (startDay + day - 1) % 7 === 6
             result.monthName = info.monthName;
@@ -198,17 +202,19 @@ ApplicationWindow {
     }
 
     function navigateMonth(direction) {
-        var newMonth = currentBsMonthIndex + direction;
-        var newYear = currentBsYear;
-        if (newMonth > 11) {
-            newMonth = 0;
-            newYear++;
-        } else if (newMonth < 0) {
-            newMonth = 11;
-            newYear--;
+            var newMonth = currentBsMonthIndex + direction;
+            var newYear = currentBsYear;
+            if (newMonth > 11) {
+                newMonth = 0;
+                newYear++;
+            } else if (newMonth < 0) {
+                newMonth = 11;
+                newYear--;
+            }
+            bsYearInput.internalAsciiValue = newYear.toString();
+            renderCalendarByBs(newYear, newMonth);
         }
-        renderCalendarByBs(newYear, newMonth);
-    }
+
 
     function clearPanchangaDetails() {
         for (var i = panchangaDetails.children.length - 1; i >= 0; i--) {
@@ -646,6 +652,17 @@ ApplicationWindow {
                 }
             }
         }
+
+        Label {
+                    visible: isCurrentMonthComputed
+                    text: "This date is out of available data. Generated using computation."
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    color: theme.secondaryText
+                    font.pixelSize: 11
+                    font.italic: true
+                    Layout.bottomMargin: 5
+                }
 
         GridLayout {
             id: calendarGrid

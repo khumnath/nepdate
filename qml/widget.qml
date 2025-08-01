@@ -25,8 +25,8 @@ ApplicationWindow {
     // --- App Settings Properties ---
     property int fontSize: 12
     property color fontColor: "green"
-    property real latitude: 27.6134
-    property real longitude: 83.5136
+    property real latitude: 27.71
+    property real longitude: 85.32
     property bool showIcon: true
     property bool screenontop: true
 

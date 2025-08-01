@@ -1,12 +1,13 @@
 // PanchangaCalculator.js
-// QML-compatible version - uses var, no 'class', no 'const/let', no =>
+// QML-compatible version
 
 .pragma library
+
+.import "qrc:/resources/PreCalculated_Data.js" as Bsdata
 
 // --- Caching ---
 var calculationCache = {};
 function clearCache() {
-   // console.log("Panchanga cache cleared. Size:", Object.keys(calculationCache).length);
     calculationCache = {};
 }
 
@@ -116,7 +117,7 @@ function fromJulianDay(jd) {
     return new Date(Date.UTC(year, month - 1, day));
 }
 
-// --- Surya Siddhanta Core Calculations ---
+// --- Surya Siddhanta Core Calculations (Used as fallback) ---
 function meanLongitude(ahar, rotation) {
     return zero360(rotation * ahar * 360 / YugaCivilDays);
 }
@@ -201,8 +202,8 @@ function calculateAdhikaMasa(ahar) {
 }
 
 function getSunriseSunset(date, lat, lon, tz) {
-    lat = lat || 27.7;
-    lon = lon || 85.3;
+    lat = lat || 27.71;
+    lon = lon || 85.32;
     tz = tz || 5.75;
     var oneDay = 86400000;
     var dayOfYear = Math.ceil((date.getTime() - new Date(date.getUTCFullYear(), 0, 0).getTime()) / oneDay);
@@ -227,39 +228,79 @@ function getSunriseSunset(date, lat, lon, tz) {
     return { sunrise: formatTime(rise), sunset: formatTime(set) };
 }
 
+// --- Data-Driven Conversion and Info Functions ---
+
 function fromBikramSambat(bsYear, monthIndex, day) {
-    var sakaYear = bsYear - 135;
-    var kaliYear = sakaYear + 3179;
-    var approxAhar = (kaliYear * YugaCivilDays / YugaRotation.sun);
-    approxAhar += monthIndex * 30.5; // Start with an approximation
+    // Use data if within range, otherwise fallback to astronomical calculation
+    if (bsYear >= Bsdata.BS_START_YEAR && bsYear <= Bsdata.BS_END_YEAR) {
+        var daysOffset = 0;
+        // Add days for full years between start year and target year
+        for (var y = Bsdata.BS_START_YEAR; y < bsYear; y++) {
+            var yearData = Bsdata.NP_MONTHS_DATA[y - Bsdata.BS_START_YEAR];
+            var totalDaysInYear = 0;
+            for(var m = 0; m < 12; m++) {
+                totalDaysInYear += yearData[m];
+            }
+            daysOffset += totalDaysInYear;
+        }
+        // Add days for months in the target year
+        var targetYearData = Bsdata.NP_MONTHS_DATA[bsYear - Bsdata.BS_START_YEAR];
+        for (let m = 0; m < monthIndex; m++) {
+            daysOffset += targetYearData[m];
+        }
+        // Add the day of the month
+        daysOffset += (day - 1);
 
-    for (var i = 0; i < 5; i++) { // Iterate to find the start of the solar month
-        var sunLong = trueLongitudeSun(approxAhar);
-        var targetLong = monthIndex * 30;
-        var diff = zero360(targetLong - sunLong);
-        if (diff > 180) diff -= 360;
-        if (Math.abs(diff) < 0.01) break;
-        approxAhar += diff / 0.9856; // Adjust ahar based on Sun's mean motion
+        var resultDate = new Date(Bsdata.BS_START_DATE_AD.getTime());
+        resultDate.setUTCDate(resultDate.getUTCDate() + daysOffset);
+        return resultDate;
+    } else {
+        // Fallback for out-of-range years
+        var sakaYear = bsYear - 135;
+        var kaliYear = sakaYear + 3179;
+        var approxAhar = (kaliYear * YugaCivilDays / YugaRotation.sun);
+        approxAhar += monthIndex * 30.5; // Start with an approximation
+
+        for (var i = 0; i < 5; i++) { // Iterate to find the start of the solar month
+            var sunLong = trueLongitudeSun(approxAhar);
+            var targetLong = monthIndex * 30;
+            var diff = zero360(targetLong - sunLong);
+            if (diff > 180) diff -= 360;
+            if (Math.abs(diff) < 0.01) break;
+            approxAhar += diff / 0.9856; // Adjust ahar based on Sun's mean motion
+        }
+
+        var targetAhar = approxAhar + (day - 1);
+        var jd = targetAhar + KaliEpoch;
+        return fromJulianDay(jd);
     }
-
-    var targetAhar = approxAhar + (day - 1);
-    var jd = targetAhar + KaliEpoch;
-    return fromJulianDay(jd);
 }
 
 function getBikramMonthInfo(bsYear, monthIndex) {
-    var first = fromBikramSambat(bsYear, monthIndex, 1);
-    var nextMon = monthIndex === 11 ? 0 : monthIndex + 1;
-    var nextYear = monthIndex === 11 ? bsYear + 1 : bsYear;
-    var nextFirst = fromBikramSambat(nextYear, nextMon, 1);
-    var jd1 = toJulianDay(first.getUTCFullYear(), first.getUTCMonth(), first.getUTCDate());
-    var jd2 = toJulianDay(nextFirst.getUTCFullYear(), nextFirst.getUTCMonth(), nextFirst.getUTCDate());
-    return {
-        totalDays: Math.round(jd2 - jd1),
-        startDayOfWeek: first.getUTCDay(),
-        monthName: solarMonths[monthIndex],
-        year: bsYear
-    };
+    if (bsYear >= Bsdata.BS_START_YEAR && bsYear <= Bsdata.BS_END_YEAR) {
+        var firstDayAd = fromBikramSambat(bsYear, monthIndex, 1);
+        var monthData = Bsdata.NP_MONTHS_DATA[bsYear - Bsdata.BS_START_YEAR];
+        return {
+            totalDays: monthData[monthIndex],
+            startDayOfWeek: firstDayAd.getUTCDay(),
+            monthName: solarMonths[monthIndex],
+            year: bsYear
+        };
+    } else {
+        // Fallback for out-of-range years
+        var first = fromBikramSambat(bsYear, monthIndex, 1);
+        var nextMon = monthIndex === 11 ? 0 : monthIndex + 1;
+        var nextYear = monthIndex === 11 ? bsYear + 1 : bsYear;
+        var nextFirst = fromBikramSambat(nextYear, nextMon, 1);
+        var jd1 = toJulianDay(first.getUTCFullYear(), first.getUTCMonth(), first.getUTCDate());
+        var jd2 = toJulianDay(nextFirst.getUTCFullYear(), nextFirst.getUTCMonth(), nextFirst.getUTCDate());
+        return {
+            totalDays: Math.round(jd2 - jd1),
+            startDayOfWeek: first.getUTCDay(),
+            monthName: solarMonths[monthIndex],
+            year: bsYear
+        };
+    }
 }
 
 function getTodayBsInfo() {
@@ -301,6 +342,9 @@ function calculate(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
     var bsInfo = getBikramSambatInfo(ahar, sunLong);
     var sunriseSunset = getSunriseSunset(date, lat, lon, tz);
 
+    // Determine if the calculation is a fallback
+    var isComputed = (bsInfo.year < Bsdata.BS_START_YEAR || bsInfo.year > Bsdata.BS_END_YEAR);
+
     var result = {
         gregorianDate: Qt.formatDateTime(date, "dddd, MMMM d, yyyy"),
         bikramSambat: `${bsInfo.year} ${bsInfo.monthName} ${bsInfo.day}`,
@@ -318,7 +362,8 @@ function calculate(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
         karana: karanaName,
         sunRashi: rashis[Math.floor(sunLong / 30) % 12],
         moonRashi: rashis[Math.floor(moonLong / 30) % 12],
-        adhikaMasa: calculateAdhikaMasa(ahar)
+        adhikaMasa: calculateAdhikaMasa(ahar),
+        isComputed: isComputed
     };
     calculationCache[cacheKey] = result;
     return result;
@@ -348,6 +393,7 @@ function generateDebugInfo(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
 
     var bsInfo = getBikramSambatInfo(ahar, sunLong);
     var sunriseSunset = getSunriseSunset(date, lat, lon, tz);
+    var isComputed = (bsInfo.year < Bsdata.BS_START_YEAR || bsInfo.year > Bsdata.BS_END_YEAR);
 
     var debugOutput = `
     Debug Information (Surya Siddhanta):
@@ -368,6 +414,7 @@ function generateDebugInfo(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
     sunRashi: ${rashis[Math.floor(sunLong / 30) % 12]} | index: ${Math.floor(sunLong / 30) % 12 + 1}
     moonRashi: ${rashis[Math.floor(moonLong / 30) % 12]} | index: ${Math.floor(moonLong / 30) % 12 + 1}
     adhikaMasa: ${calculateAdhikaMasa(ahar)}
+    isComputed: ${isComputed}
     `.trim();
 
     return { debug: debugOutput };
