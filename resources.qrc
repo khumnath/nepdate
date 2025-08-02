@@ -7,6 +7,6 @@
         <file>resources/flag.png</file>
         <file alias="PanchangaCalculator.js">resources/PanchangaCalculator.js</file>
         <file>resources/PreCalculated_Data.js</file>
-        <file>version.txt</file>
+        <file>resources/version.txt</file>
     </qresource>
 </RCC>

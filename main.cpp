@@ -62,7 +62,7 @@ void ensureDesktopFile(const QString &desktopFileName, const QString &startupWMC
 
 // Read version.txt from project root or known relative path
 QString readVersionText() {
-    QFile versionFile(":/version.txt");
+    QFile versionFile(":/resources/version.txt");
     if (!versionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Could not open version.txt";
         return "Unknown";
