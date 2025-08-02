@@ -9,7 +9,9 @@ ApplicationWindow {
     id: window
     visible: true
     width: 800
-    height: 700
+    height: 720
+    minimumWidth: 540
+        minimumHeight: 700
     title: "नेपाली क्यालेण्डर"
     color: theme.primaryBg
     Material.theme: theme.isDark ? Material.Dark : Material.Light
@@ -37,32 +39,50 @@ ApplicationWindow {
     QtObject {
         id: theme
         readonly property bool isDark: window.isDarkMode
-        readonly property color primaryBg: isDark ? "#1e293b" : "#f8fafc"
-        readonly property color secondaryBg: isDark ? "#334155" : "white"
-        readonly property color tertiaryBg: isDark ? "#475569" : "#f1f5f9"
-        readonly property color inputBg: isDark ? "#475569" : "#f8fafc"
-        readonly property color primaryText: isDark ? "#f1f5f9" : "#1e293b"
-        readonly property color secondaryText: isDark ? "#cbd5e1" : "#64748b"
-        readonly property color accentText: isDark ? "#5eead4" : "#0f766e"
-        readonly property color saturdayText: isDark ? "#fca5a5" : "#dc2626"
-        readonly property color headerBg: isDark ? "#1e293b" : "white"
-        readonly property color headerPrimaryText: isDark ? "white" : "#1e293b"
-        readonly property color headerSecondaryText: isDark ? "#e0f2fe" : "#475569"
-        readonly property color headerDivider: isDark ? "#94a3b8" : "#cbd5e1"
-        readonly property color accent: isDark ? "#2dd4bf" : "#0d9488"
-        readonly property color accentHover: isDark ? "#5eead4" : "#14b8a6"
-        readonly property color accentDark: isDark ? "#14b8a6" : "#0f766e"
-        readonly property color borderColor: isDark ? "#475569" : "#e2e8f0"
-        readonly property color todayBorder: isDark ? "#2dd4bf" : "#0d9488"
-        readonly property color saturdayBorder: isDark ? "#f472b6" : "#fda4af"
-        readonly property color todayBg: isDark ? "#115e59" : "#f0fdfa"
-        readonly property color saturdayBg: isDark ? "#831843" : "#fff1f2"
-        readonly property color purnimaText: isDark ? "#fcd34d" : "#b45309"
-        readonly property color purnimaIconBg: isDark ? "#78350f" : "#fef3c7"
-        readonly property color amavasyaIconBg: isDark ? "#334155" : "#e2e8f0"
-        readonly property color modalHeaderText: isDark ? theme.headerPrimaryText : theme.headerPrimaryText
-        readonly property color modalButtonBg: isDark ? theme.headerBg : theme.headerBg
-        readonly property color modalButtonText: isDark ? theme.headerPrimaryText : theme.headerPrimaryText
+
+        // === Backgrounds ===
+        readonly property color primaryBg:     isDark ? "#0f172a" : "#f9fafb"
+        readonly property color secondaryBg:   isDark ? "#1e293b" : "#ffffff"
+        readonly property color tertiaryBg:    isDark ? "#334155" : "#f1f5f9"
+        readonly property color inputBg:       isDark ? "#1e293b" : "#ffffff"
+
+        // === Text Colors ===
+        readonly property color primaryText:       isDark ? "#e2e8f0" : "#0f172a"
+        readonly property color secondaryText:     isDark ? "#94a3b8" : "#475569"
+        readonly property color accentText:        isDark ? "#67e8f9" : "#0e7490"
+
+        // === Calendar Specific ===
+        readonly property color saturdayText:      isDark ? "#fecaca" : "#F86262"
+        readonly property color purnimaText:       isDark ? "#fde68a" : "#92400e"
+        readonly property color purnimaIconBg:     isDark ? "#78350f" : "#fef3c7"
+        readonly property color amavasyaIconBg:    isDark ? "#1e293b" : "#e2e8f0"
+
+        // === Headers ===
+        readonly property color headerBg:              isDark ? "#0f172a" : "#ffffff"
+        readonly property color headerPrimaryText:    isDark ? "#f8fafc" : "#1e293b"
+        readonly property color headerSecondaryText:  isDark ? "#cbd5e1" : "#64748b"
+        readonly property color headerDivider:        isDark ? "#475569" : "#cbd5e1"
+
+        // === Accent / Interactive ===
+        readonly property color accent:           isDark ? "#22d3ee" : "#0ea5e9"
+        readonly property color accentHover:      isDark ? "#67e8f9" : "#38bdf8"
+        readonly property color accentDark:       isDark ? "#0e7490" : "#0369a1"
+
+        // === Borders ===
+        readonly property color borderColor:      isDark ? "#334155" : "#e2e8f0"
+        readonly property color todayBorder:      isDark ? "#0ea5e9" : "#0284c7"
+        readonly property color saturdayBorder:   isDark ? "#fb7185" : "#fda4af"
+
+        // === Highlighted Days ===
+        readonly property color todayBg:          isDark ? "#082f49" : "#f0f9ff"
+        readonly property color saturdayBg:       isDark ? "#831843" : "#FEDDDF"
+        readonly property color adDayText:        isDark ? "#BBCFFA" : "#6E9BFD"
+
+        // === Modal / Dialogs ===
+        readonly property color modalHeaderText:  headerPrimaryText
+        readonly property color modalButtonBg:    tertiaryBg
+        readonly property color modalButtonText:  headerPrimaryText
+
     }
 
     onClosing: {
@@ -342,25 +362,33 @@ ApplicationWindow {
             }
 
             Button {
-                id: themeToggleBtn
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.rightMargin: 15
-                text: theme.isDark ? "☀️" : "🌙"
-                font.pixelSize: 20
-                flat: true
-                onClicked: window.isDarkMode = !window.isDarkMode
-                background: Rectangle {
-                    color: "transparent"
-                }
-                contentItem: Text {
-                    text: parent.text
-                    font: parent.font
-                    color: theme.headerPrimaryText
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
+                            id: themeToggleBtn
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.rightMargin: 15
+                            text: theme.isDark ? "☀️" : "🌙"
+                            font.pixelSize: 20
+                            flat: true
+                            onClicked: window.isDarkMode = !window.isDarkMode
+
+                            background: Rectangle {
+                                color: parent.hovered ? theme.tertiaryBg : "transparent"
+                                radius: 8
+                            }
+
+                            contentItem: Text {
+                                text: parent.text
+                                font: parent.font
+                                color: theme.headerPrimaryText
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                scale: parent.hovered ? 1.2 : 1.0
+                                z: parent.hovered ? 1 : 0
+                                Behavior on scale {
+                                              NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                                        }
+                            }
+                        }
         }
 
         RowLayout {
@@ -379,7 +407,7 @@ ApplicationWindow {
                 padding: 8
                 background: Rectangle {
                     radius: 8
-                    color: theme.tertiaryBg
+                    color: parent.hovered ? theme.tertiaryBg : theme.secondaryBg
                     border.color: theme.borderColor
                     border.width: 1
                 }
@@ -389,7 +417,12 @@ ApplicationWindow {
                     color: theme.primaryText
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                }
+                    scale: parent.hovered ? 1.2 : 1.0
+                    z: parent.hovered ? 1 : 0
+                    Behavior on scale {
+                                  NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                            }
+                }                
             }
 
             Item { Layout.fillWidth: true }
@@ -397,48 +430,68 @@ ApplicationWindow {
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 10
-
                 TabBar {
-                    id: tabBar
-                    currentIndex: 0
-                    background: Rectangle { color: "transparent" }
+                                id: tabBar
+                                currentIndex: 0
+                                background: Rectangle { color: "transparent" }
 
-                    TabButton {
-                        text: "बिक्रम संवत"
-                        width: implicitWidth + 15
-                        font.pixelSize: 13
-                        contentItem: Text {
-                            text: parent.text; font: parent.font; color: parent.checked ? theme.accentText : theme.secondaryText
-                            horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                        }
-                        background: Rectangle {
-                            radius: 8; color: parent.checked ? theme.accentText + "33" : "transparent"
-                            border.color: parent.checked ? theme.accent : "transparent"; border.width: 2
-                        }
-                    }
+                                TabButton {
+                                    text: "बिक्रम संवत"
+                                    width: implicitWidth + 15
+                                    font.pixelSize: 13
+                                    contentItem: Text {
+                                        text: parent.text
+                                        font: parent.font
+                                        color: parent.checked ? theme.accentText : (parent.hovered ? theme.primaryText : theme.secondaryText)
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        scale: parent.hovered ? 1.2 : 1.0
+                                        z: parent.hovered ? 1 : 0
+                                        Behavior on scale {
+                                                      NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                                                }
+                                    }
+                                    background: Rectangle {
+                                        radius: 8
+                                        // Background is visible if the button is checked OR hovered
+                                        color: (parent.checked || parent.hovered) ? theme.tertiaryBg :  theme.secondaryBg
+                                        border.color: parent.checked ? theme.accent : theme.borderColor
+                                        border.width: parent.checked ? 2 : 1
+                                    }
+                                }
 
-                    TabButton {
-                        text: "ग्रेगोरियन"
-                        width: implicitWidth + 15
-                        font.pixelSize: 13
-                        contentItem: Text {
-                            text: parent.text; font: parent.font; color: parent.checked ? theme.accentText : theme.secondaryText
-                            horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                        }
-                        background: Rectangle {
-                            radius: 8; color: parent.checked ? theme.accentText + "33" : "transparent"
-                            border.color: parent.checked ? theme.accent : "transparent"; border.width: 2
-                        }
-                    }
-                }
-
+                                TabButton {
+                                    text: "ग्रेगोरियन"
+                                    width: implicitWidth + 15
+                                    font.pixelSize: 13
+                                    // Apply the same logic to the second button
+                                    contentItem: Text {
+                                        text: parent.text
+                                        font: parent.font
+                                        color: parent.checked ? theme.accentText : (parent.hovered ? theme.primaryText : theme.secondaryText)
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        scale: parent.hovered ? 1.2 : 1.0
+                                        z: parent.hovered ? 1 : 0
+                                        Behavior on scale {
+                                                      NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                                                }
+                                    }
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: (parent.checked || parent.hovered) ? theme.tertiaryBg : theme.secondaryBg
+                                        border.color: parent.checked ? theme.accent : theme.borderColor
+                                        border.width: parent.checked ? 2 : 1
+                                    }
+                                }
+                            }
                 Button {
                     text: "आज"
                     font.pixelSize: 13
                     onClicked: initializeApp()
                     background: Rectangle {
                         radius: 8
-                        color: theme.tertiaryBg
+                        color: parent.hovered ? theme.tertiaryBg : theme.secondaryBg
                         border.color: theme.borderColor
                         border.width: 1
                     }
@@ -448,6 +501,11 @@ ApplicationWindow {
                         color: theme.primaryText
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        scale: parent.hovered ? 1.2 : 1.0
+                        z: parent.hovered ? 1 : 0
+                        Behavior on scale {
+                                      NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                                }
                     }
                 }
             }
@@ -462,7 +520,7 @@ ApplicationWindow {
                 padding: 8
                 background: Rectangle {
                     radius: 8
-                    color: theme.tertiaryBg
+                    color: parent.hovered ? theme.tertiaryBg : theme.secondaryBg
                     border.color: theme.borderColor
                     border.width: 1
                 }
@@ -472,6 +530,11 @@ ApplicationWindow {
                     color: theme.primaryText
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
+                    scale: parent.hovered ? 1.2 : 1.0
+                    z: parent.hovered ? 1 : 0
+                    Behavior on scale {
+                                  NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                            }
                 }
             }
         }
@@ -604,7 +667,7 @@ ApplicationWindow {
                         font.pixelSize: 14; Layout.fillWidth: true
                         Layout.preferredWidth: 1
                         horizontalAlignment: TextInput.AlignHCenter
-                        background: Rectangle { radius: 8; border.color: theme.borderColor; border.width: 1; color: theme.inputBg }
+                        background: Rectangle { radius: 8; border.color: theme.borderColor; border.width: 1; color: theme.tertiaryBg }
                         padding: 6
                         onAccepted: renderCalendarByAd(parseInt(text), adMonthSelect.currentIndex)
                     }
@@ -705,8 +768,15 @@ ApplicationWindow {
 
                     Rectangle {
                         id: dayCell
-                        visible: modelData.type === "day"; anchors.fill: parent; radius: 12
-                        color: modelData.isToday ? theme.todayBg : (modelData.isSaturday ? theme.saturdayBg : theme.secondaryBg)
+                        visible: modelData.type === "day"
+                        anchors.fill: parent
+                        radius: 12
+                        scale: cellMouseArea.containsMouse ? 1.2 : 1.0
+                        z: cellMouseArea.containsMouse ? 1 : 0
+                        Behavior on scale {
+                                      NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                                }
+                        color: cellMouseArea.containsMouse ? theme.tertiaryBg : (modelData.isSaturday ? theme.saturdayBg : (modelData.isToday ? theme.todayBg : theme.secondaryBg))
                         border.color: modelData.isToday ? theme.todayBorder : (modelData.isSaturday ? theme.saturdayBorder : theme.borderColor)
                         border.width: modelData.isToday ? 2 : 1
 
@@ -719,7 +789,7 @@ ApplicationWindow {
                             text: toDevanagari(modelData.bsDay || 0)
                           //font.family: lailalfont
                             font.bold: true
-                            font.pixelSize: 26
+                            font.pixelSize: cellMouseArea.containsMouse ? 28 : 25
 
                             color: {
                                 if (modelData.isToday) return theme.accentText;
@@ -738,13 +808,13 @@ ApplicationWindow {
                             anchors.left: parent.left
                             anchors.bottom: parent.bottom
                             anchors.leftMargin: 8
-                            anchors.bottomMargin: 8
+                            anchors.bottomMargin: 4
                         }
 
                         Rectangle {
-                            width: 24; height: 24; radius: 12; color: theme.tertiaryBg
-                            anchors.right: parent.right; anchors.top: parent.top; anchors.margins: 2
-                            Label { anchors.centerIn: parent; text: modelData.adDay || 0; font.pixelSize: 12; color: theme.secondaryText }
+                            width: 12; height: 12; radius: 12; color: theme.tertiaryBg
+                            anchors.right: parent.right; anchors.top: parent.top; anchors.margins: 4
+                            Label { anchors.centerIn: parent; text: modelData.adDay || 0; font.pixelSize: 10; color: theme.adDayText }
                         }
 
                         Text {
@@ -753,11 +823,12 @@ ApplicationWindow {
                             font.pixelSize: 14
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
-                            anchors.rightMargin: 8
-                            anchors.bottomMargin: 8
+                            anchors.rightMargin: 4
+                            anchors.bottomMargin: 4
                         }
 
                         MouseArea {
+                            id: cellMouseArea
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor; hoverEnabled: true
                             onClicked: showDetail(modelData.panchanga)
                         }
@@ -766,41 +837,172 @@ ApplicationWindow {
             }
         }
 
+        // Calendar footer
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 50
+            Layout.preferredHeight: 100
             color: theme.tertiaryBg
             border.color: theme.borderColor
             border.width: 1
 
-            ColumnLayout {
+            Item {
                 anchors.fill: parent
                 anchors.margins: 10
-                spacing: 2
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
-                Label {
-                    text: "पञ्चाङ्ग  सूर्य सिद्धान्तमा आधारित | स्थान: काठमाण्डौ |  समय: नेपाल मानक समय क्षेत्र। "
-                    font.pixelSize: 12
-                    color: theme.secondaryText
-                    horizontalAlignment: Text.AlignHCenter
-                    Layout.alignment: Qt.AlignHCenter
-                    wrapMode: Text.WordWrap
+                Column {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 4
+                    width: parent
+
+                    Label {
+                        text: "पञ्चाङ्ग सूर्य सिद्धान्तमा आधारित | स्थान: काठमाण्डौ | समय: नेपाल मानक समय क्षेत्र।"
+                        font.pixelSize: 12
+                        color: theme.secondaryText
+                        horizontalAlignment: Text.AlignHCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Label {
+                        textFormat: Text.RichText
+                        text: "<a href='https://opensource.org/licenses/GPL-3.0' style='color:" + theme.accentText + "; text-decoration:none;'>License: GPL-3.0</a> or later. || <a href='https://github.com/khumnath/nepdate/tree/qml' style='color:" + theme.accentText + "; text-decoration:none;'>Source Code</a>"
+                        font.pixelSize: 12
+                        color: theme.secondaryText
+                        horizontalAlignment: Text.AlignHCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        onLinkActivated: Qt.openUrlExternally(link)
+                    }
                 }
 
-                Label {
-                    textFormat: Text.RichText
-                    text: "<a href='https://opensource.org/licenses/GPL-3.0' style='color:" + theme.accentText + "; text-decoration:none;'>License: GPL-3.0</a> or later. || <a href='https://github.com/khumnath/nepdate/tree/qml' style='color:" + theme.accentText + "; text-decoration:none;'>Source Code</a>"
-                    font.pixelSize: 12
-                    Layout.alignment: Qt.AlignHCenter
-                    horizontalAlignment: Text.AlignHCenter
+                // Info button
+                Button {
+                    id: info
+                    text: "ⓘ"
+                    font.pixelSize: 15
+                    visible: true
+                    width: 40
+                    height: 40
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
 
-                    onLinkActivated: Qt.openUrlExternally(link)
+
+                    onClicked: infoDialog.open()
+
+                    background: Rectangle {
+                        radius: 8
+                        color: theme.tertiaryBg
+                        border.color: parent.hovered ?  theme.accent : "gray"
+                        border.width: parent.hovered ? 2 : 1
+                    }
+
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: theme.modalButtonText
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.fill: parent
+                        scale: parent.hovered ? 1.2 : 1.0
+                        z: parent.hovered ? 1 : 0
+                        Behavior on scale {
+                                      NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                                }
+
+                    }
                 }
             }
         }
     }
 
+    // Info dilog
+    Dialog {
+        id: infoDialog
+        modal: true
+        title: ""
+        width: Math.min(parent.width * 0.9, 700)
+        x: parent ? (parent.width - width) / 2 : 0
+        y: parent ? (parent.height - height) / 2 : 0
+
+        height: Math.min(implicitHeight, parent.height * 0.9)
+
+        background: Rectangle {
+            color: theme.tertiaryBg
+            border.color: theme.borderColor
+            border.width: 1
+            radius: 12
+        }
+
+        footer: null
+
+        onAccepted: {
+            infoDialog.close()
+        }
+
+        // Detail box
+        contentItem: Column {
+            id: contentColumn
+            width: parent.width
+            spacing: 25
+            padding: 20
+
+            Label {
+                textFormat: Text.RichText
+                width: parent.width
+                wrapMode: Text.WordWrap
+                color: theme.primaryText
+                onLinkActivated: Qt.openUrlExternally(link)
+                text: `
+                    <center>
+                        <h2>Nepali Calendar</h2>
+                        <i>Version: 1.0.0</i>
+                        <br><br>
+                        A lightweight Nepali calendar (Bikram Sambat) with daily Panchanga details written in QML.
+                        <br><br>
+                        All calculations are based on Kathmandu, Nepal and Nepal Standard Time (UTC+5:45).
+                        For years between B.S. 2000-2089, the calendar uses pre-compiled data.
+                        All other dates are calculated using traditional astronomical algorithms based on the Surya Siddhanta.
+                        <br><br>
+                        <b style='color:${theme.saturdayText}'>
+                            Warning: Dates, even those with available data, can have calculation errors.
+                            Always check with an official calendar approved by the Nepal Panchanga Nirnayak Samiti.
+                        </b>
+                        <br><br>
+                        This is a free and open-source project.
+                        License: <a href='https://opensource.org/licenses/GPL-3.0' style='color:${theme.accentText}; text-decoration:none;'>GPL-3.0 or later</a>.
+                        <br>Source Code: <a href='https://github.com/khumnath/nepdate/tree/qml' style='color:${theme.accentText};
+                        text-decoration:none;'>Available on GitHub</a>.</br>
+                    </center>
+                    `
+            }
+
+            // Ok button inside info dilog
+            Button {
+                text: "Ok"
+                font.bold: true
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked: infoDialog.accept()
+
+                background: Rectangle {
+                    color: theme.tertiaryBg
+                    border.color: parent.hovered ?  theme.accent : "gray"
+                    border.width: parent.hovered ? 2 : 1
+                    radius: 12
+                }
+
+                contentItem: Text {
+                    text: parent.text
+                    font: parent.font
+                    color: theme.isDark ? theme.primaryText : theme.primaryText
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    padding: 5
+                }
+            }
+        }
+    }
+
+    // Day detail dilog
     Dialog {
         id: detailModal
         width: Math.min(parent.width * 0.9, 600)
@@ -848,6 +1050,7 @@ ApplicationWindow {
                 anchors.bottomMargin: 12
                 color: theme.secondaryBg
 
+               // Day detail close button
                 Button {
                     text: "बन्द गर्नुहोस्"
                     anchors.centerIn: parent
@@ -856,19 +1059,19 @@ ApplicationWindow {
                     }
 
                     background: Rectangle {
-                        radius: 8
-                        color: theme.secondaryBg
-                        border.color: theme.accent
-                        border.width: 1
+                        color: theme.tertiaryBg
+                        border.color: parent.hovered ?  theme.accent : "gray"
+                        border.width: parent.hovered ? 2 : 1
+                        radius: 12
                     }
 
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
-                        color: theme.modalButtonText
+                        color: theme.isDark ? theme.primaryText : theme.primaryText
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        padding: 10
+                        padding: 5
                     }
                 }
             }
@@ -901,17 +1104,19 @@ ApplicationWindow {
                         onClicked: window.debugVisible = true
 
                         background: Rectangle {
-                            radius: 8
                             color: theme.tertiaryBg
-                            border.color: theme.accent
-                            border.width: 1
+                            border.color: parent.hovered ?  theme.accent : "gray"
+                            border.width: parent.hovered ? 2 : 1
+                            radius: 12
                         }
+
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
-                            color: theme.modalButtonText
+                            color: theme.isDark ? theme.primaryText : theme.primaryText
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
+                            padding: 5
                         }
                     }
 

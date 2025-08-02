@@ -60,6 +60,20 @@ void ensureDesktopFile(const QString &desktopFileName, const QString &startupWMC
     }
 }
 
+// Read version.txt from project root or known relative path
+QString readVersionText() {
+    QFile versionFile(":/version.txt");
+    if (!versionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Could not open version.txt";
+        return "Unknown";
+    }
+    QTextStream in(&versionFile);
+    QString version = in.readLine().trimmed();
+    versionFile.close();
+    return version;
+}
+
+
 int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName("Nepdate");
     QCoreApplication::setOrganizationDomain("com.nepdate.calendar");
@@ -80,6 +94,11 @@ int main(int argc, char *argv[]) {
     // Grt the platform name (e.g., "xcb" or "wayland").
     QString platform = QGuiApplication::platformName();
     engine.rootContext()->setContextProperty("platformName", platform);
+
+    // --- App version pass to qml
+    QString appVersion = readVersionText();
+    engine.rootContext()->setContextProperty("appVersion", appVersion);
+
 
 
     engine.rootContext()->setContextProperty("autostartManager", &autostartManager);

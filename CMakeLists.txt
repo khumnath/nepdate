@@ -1,51 +1,42 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(PancangaCalculator VERSION 1.0 LANGUAGES CXX)
+project(bikram-calendar VERSION 1.0 LANGUAGES CXX)
 
-# Enable Qt features
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-
-# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find required Qt6 packages
-find_package(Qt6 COMPONENTS 
-    Core 
-    Gui 
-    Qml 
-    Quick 
-    QuickControls2 
+find_package(Qt6 COMPONENTS
+    Core
+    Gui
+    Qml
+    Quick
+    Widgets
+    QuickControls2
     REQUIRED)
 
-# Set Qt policies to suppress warnings
 qt_policy(SET QTP0001 NEW)
 qt_policy(SET QTP0004 NEW)
 
-# Add executable target
-qt_add_executable(PancangaCalculator
-    # Source files
+qt_add_executable(bikram-calendar
     main.cpp
     autostartmanager.cpp
-    # Resource files
+    tooltipmanager.cpp
     resources.qrc
 )
 
-# Add header files (required for MOC/headers)
-target_sources(PancangaCalculator PRIVATE
+target_sources(bikram-calendar PRIVATE
     autostartmanager.h
+    tooltipmanager.h
 )
 
-# Set QML_SOURCES_DIR define as in .pro file
-target_compile_definitions(PancangaCalculator PRIVATE QML_SOURCES_DIR="$$PWD/qml")
-
-# Link Qt6 libraries
-target_link_libraries(PancangaCalculator PRIVATE
+target_link_libraries(bikram-calendar PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Qml
     Qt6::Quick
+    Qt6::Widgets
     Qt6::QuickControls2
 )
