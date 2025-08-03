@@ -935,45 +935,139 @@ ApplicationWindow {
 
         footer: null
 
-        onAccepted: {
-            infoDialog.close()
-        }
+        onAccepted: infoDialog.close()
 
-        // Detail box
         contentItem: Column {
             id: contentColumn
             width: parent.width
             spacing: 25
-            padding: 20
+             anchors.horizontalCenter: parent.horizontalCenter
 
-            Label {
-                textFormat: Text.RichText
+            // Title and version
+            Column {
+                width: parent.width
+                spacing: 5
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Text {
+                    text: "Nepali Calendar"
+                    font.pixelSize: 24
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: theme.primaryText
+                }
+
+                Text {
+                    text: "Version: " + appVersion
+                    font.italic: true
+                    font.pixelSize: 16
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: theme.primaryText
+                }
+            }
+
+            // Description
+            Text {
                 width: parent.width
                 wrapMode: Text.WordWrap
                 color: theme.primaryText
-                onLinkActivated: Qt.openUrlExternally(link)
-                text: `
-                    <center>
-                        <h2>Nepali Calendar</h2>
-                        <i>Version: 1.0.0</i>
-                        <br><br>
-                        A lightweight Nepali calendar (Bikram Sambat) with daily Panchanga details written in QML.
-                        <br><br>
-                        All calculations are based on Kathmandu, Nepal and Nepal Standard Time (UTC+5:45).
-                        For years between B.S. 2000-2089, the calendar uses pre-compiled data.
-                        All other dates are calculated using traditional astronomical algorithms based on the Surya Siddhanta.
-                        <br><br>
-                        <b style='color:${theme.saturdayText}'>
-                            Warning: Dates, even those with available data, can have calculation errors.
-                            Always check with an official calendar approved by the Nepal Panchanga Nirnayak Samiti.
-                        </b>
-                        <br><br>
-                        This is a free and open-source project.
-                        License: <a href='https://opensource.org/licenses/GPL-3.0' style='color:${theme.accentText}; text-decoration:none;'>GPL-3.0 or later</a>.
-                        <br>Source Code: <a href='https://github.com/khumnath/nepdate/tree/qml' style='color:${theme.accentText};
-                        text-decoration:none;'>Available on GitHub</a>.</br>
-                    </center>
-                    `
+                text: "A lightweight Nepali calendar (Bikram Sambat) with daily Panchanga details written in QML.\n\n" +
+                      "All calculations are based on Kathmandu, Nepal and Nepal Standard Time (UTC+5:45).\n" +
+                      "For years between B.S. 2000–2089, the calendar uses pre-compiled data.\n" +
+                      "All other dates are calculated using traditional astronomical algorithms based on the Surya Siddhanta."
+            }
+
+            // Warning box
+            Rectangle {
+                width: parent.width
+                color: theme.tertiaryBg
+                radius: 15
+                border.color: theme.accent
+                border.width: 1
+
+                // Let height be determined by content
+                implicitHeight: warningRow.implicitHeight + 20
+
+                Row {
+                    id: warningRow
+                    spacing: 10
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.margins: 10
+
+                    Text {
+                        text: "⚠️"
+                        font.pixelSize: 22
+                        color: "#DAA520"
+                        style: Text.Outline
+                        styleColor: "#000"
+                    }
+
+                    Text {
+                        text: "Warning: Dates, even those with available data, can have calculation errors. " +
+                              "Always check with an official calendar approved by the Nepal Panchanga Nirnayak Samiti."
+                        wrapMode: Text.WordWrap
+                        color: theme.saturdayText
+                        width: parent.width
+                    }
+                }
+            }
+
+
+            // License and source links
+            Column {
+                spacing: 5
+                width: parent.width
+
+                Text {
+                    text: "This is a free and open-source project."
+                    color: theme.primaryText
+                    wrapMode: Text.WordWrap
+                }
+
+                Text {
+                    text: "License: GPL-3.0 or later"
+                    color: theme.accentText
+                    font.underline: true
+                    wrapMode: Text.WordWrap
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: { Qt.openUrlExternally("https://opensource.org/licenses/GPL-3.0")
+                        infoDialog.accept()
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Source Code: Available on GitHub"
+                    color: theme.accentText
+                    font.underline: true
+                    wrapMode: Text.WordWrap
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: { Qt.openUrlExternally("https://github.com/khumnath/nepdate/tree/qml")
+                        infoDialog.accept()
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Contributors"
+                    color: theme.accentText
+                    font.underline: true
+                    wrapMode: Text.WordWrap
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: { Qt.openUrlExternally("https://github.com/khumnath/nepdate/graphs/contributors")
+                        infoDialog.accept()
+                        }
+                    }
+                }
             }
 
             // Ok button inside info dilog
@@ -985,7 +1079,7 @@ ApplicationWindow {
 
                 background: Rectangle {
                     color: theme.tertiaryBg
-                    border.color: parent.hovered ?  theme.accent : "gray"
+                    border.color: parent.hovered ? theme.accent : "gray"
                     border.width: parent.hovered ? 2 : 1
                     radius: 12
                 }
@@ -993,7 +1087,7 @@ ApplicationWindow {
                 contentItem: Text {
                     text: parent.text
                     font: parent.font
-                    color: theme.isDark ? theme.primaryText : theme.primaryText
+                    color: theme.primaryText
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     padding: 5
