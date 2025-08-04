@@ -225,8 +225,6 @@ ApplicationWindow {
     }
 
     function renderCalendarByAd(year, monthIndex) {
-        var d = 1;
-        var date = new Date(Date.UTC(year, monthIndex, d));
         var jd = Panchanga.toJulianDay(year, monthIndex + 1, d);
         var ahar = jd - Panchanga.KaliEpoch;
         var sunLong = Panchanga.trueLongitudeSun(ahar);

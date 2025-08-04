@@ -181,37 +181,13 @@ ApplicationWindow {
     }
 
     // --- Custom Tooltip Functions ---
-    function showTooltip() {
-        var globalPoint;
-        if (widgetWindow.screen) {
-            const screenCenterY = widgetWindow.screen.virtualY + widgetWindow.screen.virtualHeight / 2;
-            const widgetGlobalPos = dragArea.mapToGlobal(0, 0);
-            const widgetCenterY = widgetGlobalPos.y + widgetWindow.height / 2;
-            var point;
+       function showTooltip() {
+           tooltipManager.showAboveOrBelow(dragArea, tooltipDate);
+       }
 
-            if (widgetCenterY < screenCenterY) {
-                // Widget is in top half, show tooltip BELOW
-                point = Qt.point(dragArea.width / 2, dragArea.height);
-                globalPoint = dragArea.mapToGlobal(point.x, point.y);
-                globalPoint.y += 5; // Add a small margin
-            } else {
-                // Widget is in bottom half, show tooltip ABOVE
-                point = Qt.point(dragArea.width / 2, 0);
-                globalPoint = dragArea.mapToGlobal(point.x, point.y);
-            }
-        } else {
-            // Fallback for no screen info: always show below
-            //var point = Qt.point(dragArea.width / 2, dragArea.height);
-            globalPoint = dragArea.mapToGlobal(point.x, point.y);
-            globalPoint.y += 5;
-        }
-        tooltipManager.showText(globalPoint, tooltipDate);
-    }
-
-    function hideTooltip() {
-        tooltipManager.hide();
-    }
-
+       function hideTooltip() {
+           tooltipManager.hide();
+       }
 
     // --- Function to launch the main calendar ---
     function openCalendar() {

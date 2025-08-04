@@ -3,19 +3,17 @@
 
 #include <QObject>
 #include <QPoint>
+#include <QQuickItem>
 
 class TooltipManager : public QObject
 {
     Q_OBJECT
 public:
     explicit TooltipManager(QObject *parent = nullptr);
-
-    // This function will be callable from QML.
-    // It takes screen coordinates (QPoint) and the text to display.
     Q_INVOKABLE void showText(const QPoint &pos, const QString &text);
-
-    // This function will be used to hide the tooltip.
     Q_INVOKABLE void hide();
+
+    Q_INVOKABLE void showAboveOrBelow(QQuickItem *item, const QString &text);
 };
 
 #endif // TOOLTIPMANAGER_H
