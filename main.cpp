@@ -6,11 +6,12 @@
 #include <QFile>
 #include <QTextStream>
 #include <QStandardPaths>
+#include <QCommandLineParser>
 #include <QIcon>
 #include "autostartmanager.h"
 #include "tooltipmanager.h"
-#include <cstdlib>
 #include "helper.h"
+#include <QStyleHints>
 
 void ensureDesktopFile(const QString &desktopFileName, const QString &startupWMClass) {
     QString dirPath = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
@@ -91,12 +92,12 @@ int main(int argc, char *argv[]) {
     TooltipManager tooltipManager;
     QQmlApplicationEngine engine;
 
-    // --- C++ Platform Detection ---
-    // Grt the platform name (e.g., "xcb" or "wayland").
+    // C++ Platform Detection
+    // Get the platform name (e.g., "xcb" or "wayland").
     QString platform = QGuiApplication::platformName();
     engine.rootContext()->setContextProperty("platformName", platform);
 
-    // --- App version pass to qml
+    // App version pass to qml
     QString appVersion = readVersionText();
     engine.rootContext()->setContextProperty("appVersion", appVersion);
 
@@ -118,5 +119,36 @@ int main(int argc, char *argv[]) {
                      }, Qt::QueuedConnection);
 
     engine.load(url);
+
+    // Dark/light mode detection( if DE uses QStyleHint then use as system theme else default to light mode for tooltip)
+    QStyleHints *styleHints = QGuiApplication::styleHints();
+    auto updateTooltipStyle = [&]() {
+        if (styleHints->colorScheme() == Qt::ColorScheme::Dark) {
+            app.setStyleSheet(
+                "QToolTip {"
+                "    color: #ffffff;"
+                "    background-color: #2b2b2b;"
+                "}"
+                );
+        } else {
+            app.setStyleSheet(
+                "QToolTip {"
+                "    color: #000000;"
+                "    background-color: #ffffff;"
+                "}"
+                );
+        }
+    };
+
+    updateTooltipStyle();
+    QObject::connect(styleHints, &QStyleHints::colorSchemeChanged, updateTooltipStyle);
+    QCoreApplication::setApplicationVersion(readVersionText());
+
+    // Command-line parsing
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Nepali Calendar Application");
+    parser.addHelpOption();
+    parser.addVersionOption();   // --version and -v
+    parser.process(app);
     return app.exec();
 }

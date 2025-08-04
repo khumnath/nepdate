@@ -3,7 +3,6 @@
         <file>qml/main.qml</file>
         <file>qml/widget.qml</file>
         <file>qml/Settings.qml</file>
-        <file>qml/Tooltip.qml</file>
         <file>resources/flag.png</file>
         <file alias="PanchangaCalculator.js">resources/PanchangaCalculator.js</file>
         <file>resources/PreCalculated_Data.js</file>

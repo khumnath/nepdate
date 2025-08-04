@@ -941,7 +941,7 @@ ApplicationWindow {
 
                     Label {
                         textFormat: Text.RichText
-                        text: "<a href='https://opensource.org/licenses/GPL-3.0' style='color:" + theme.accentText + "; text-decoration:none;'>License: GPL-3.0</a> or later. || <a href='https://github.com/khumnath/nepdate/tree/qml' style='color:" + theme.accentText + "; text-decoration:none;'>Source Code</a>"
+                        text: "<a href='https://opensource.org/licenses/GPL-3.0' style='color:" + theme.accentText + "; text-decoration:none;'>License: GPL-3.0</a> or later. || <a href='https://github.com/khumnath/nepdate' style='color:" + theme.accentText + "; text-decoration:none;'>Source Code</a>"
                         font.pixelSize: 12
                         color: theme.secondaryText
                         horizontalAlignment: Text.AlignHCenter
@@ -1011,189 +1011,182 @@ ApplicationWindow {
 
     // Info dilog
     Dialog {
-        id: infoDialog
-        modal: true
-        title: ""
-        width: Math.min(parent.width * 0.9, 700)
-        x: parent ? (parent.width - width) / 2 : 0
-        y: parent ? (parent.height - height) / 2 : 0
+            id: infoDialog
+            modal: true
+            title: ""
+            width: Math.min(parent.width * 0.9, 700)
+            x: parent ? (parent.width - width) / 2 : 0
+            y: parent ? (parent.height - height) / 2 : 0
 
-        height: Math.min(implicitHeight, parent.height * 0.9)
+            height: Math.min(implicitHeight, parent.height * 0.9)
 
-        background: Rectangle {
-            color: theme.tertiaryBg
-            border.color: theme.borderColor
-            border.width: 1
-            radius: 12
-        }
+            background: Rectangle {
+                color: theme.tertiaryBg
+                border.color: theme.borderColor
+                border.width: 1
+                radius: 12
+            }
 
-        footer: null
+            footer: null
 
-        onAccepted: infoDialog.close()
+            onAccepted: infoDialog.close()
 
-        contentItem: Column {
-            id: contentColumn
-            width: parent.width
-            spacing: 25
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            // Title and version
-            Column {
+            contentItem: Column {
+                id: contentColumn
                 width: parent.width
-                spacing: 5
+                spacing: 25
                 anchors.horizontalCenter: parent.horizontalCenter
 
-                Text {
-                    text: "Nepali Calendar"
-                    font.pixelSize: 24
-                    font.bold: true
-                    horizontalAlignment: Text.AlignHCenter
+                // Title and version
+                Column {
+                    width: parent.width
+                    spacing: 5
                     anchors.horizontalCenter: parent.horizontalCenter
-                    color: theme.primaryText
-                }
-
-                Text {
-                    text: "Version: " + appVersion
-                    font.italic: true
-                    font.pixelSize: 16
-                    horizontalAlignment: Text.AlignHCenter
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: theme.primaryText
-                }
-            }
-
-            // Description
-            Text {
-                color: theme.primaryText
-                width: parent.width
-                wrapMode: Text.WordWrap
-                horizontalAlignment: Text.AlignHCenter
-                text: "A lightweight Nepali calendar (Bikram Sambat) with daily Panchanga details written in QML.\n\n" +
-                    "All calculations are based on Kathmandu, Nepal and Nepal Standard Time (UTC+5:45).\n" +
-                    "For years between B.S. 2000–2089, the calendar uses pre-compiled data.\n" +
-                    "All other dates are calculated using traditional astronomical algorithms based on the Surya Siddhanta."
-            }
-
-            // Warning box
-            Rectangle {
-                width: parent.width
-                color: theme.tertiaryBg
-                radius: 15
-                border.color: theme.accent
-                border.width: 1
-
-                // Let height be determined by content
-                implicitHeight: warningRow.implicitHeight + 12
-
-                Row {
-                    id: warningRow
-                    spacing: 10
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.margins: 10
 
                     Text {
-                        text: "⚠️"
-                        font.pixelSize: 22
-                        color: "#DAA520"
-                        style: Text.Outline
-                        styleColor: "#000"
+                        text: "Nepali Calendar"
+                        font.pixelSize: 24
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: theme.primaryText
                     }
 
                     Text {
-                        text: "Warning: Dates, even those with available data, can have calculation errors." +
-                        "Always check with an official calendar approved by the Nepal Panchanga Nirnayak Samiti."
-                        wrapMode: Text.AlignJustify
-                        color: theme.saturdayText
-                        width: parent.width
+                        text: "Version: " + appVersion
+                        font.italic: true
+                        font.pixelSize: 16
+                        horizontalAlignment: Text.AlignHCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: theme.primaryText
                     }
                 }
-            }
 
+                // Description
+                Text {
+                    width: parent.width
+                    wrapMode: Text.WordWrap
+                    color: theme.primaryText
+                    text: "A lightweight Nepali calendar (Bikram Sambat) with daily Panchanga details written in QML.\n\n" +
+                          "All calculations are based on Kathmandu, Nepal and Nepal Standard Time (UTC+5:45).\n" +
+                          "For years between B.S. 2000–2089, the calendar uses pre-compiled data.\n" +
+                          "All other dates are calculated using traditional astronomical algorithms based on the Surya Siddhanta."
+                }
 
-            // License and source links
-                        Column {
-                            spacing: 10
+                // Warning box
+                Rectangle {
+                    width: parent.width
+                    color: theme.tertiaryBg
+
+                    implicitHeight: warningRow.implicitHeight + 12
+
+                    Row {
+                        id: warningRow
+                        spacing: 10
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.margins: 10
+
+                        Text {
+                            text: "⚠️"
+                            font.pixelSize: 22
+                            color: "#DAA520"
+                            style: Text.Outline
+                            styleColor: "#000"
+                        }
+
+                        Text {
+                            text: "Warning: Dates, even those with available data, can have calculation errors." +
+                            "Always check with an official calendar approved by the Nepal Panchanga Nirnayak Samiti."
+                            wrapMode: Text.AlignJustify
+                            color: theme.saturdayText
                             width: parent.width
+                        }
+                    }
+                }
 
-                            Text {
-                                text: "This is a free and open-source project. The project started as a Qt C++ application, " +
-                                      "then a JavaScript version was created. You are running this application using JavaScript with QML now."
-                                color: theme.primaryText
-                                width: parent.width
-                                wrapMode: Text.WordWrap
-                                horizontalAlignment: Text.AlignHCenter
-                            }
+                // License and source links
+                Column {
+                    spacing: 10
+                    width: parent.width
 
-                            Text {
-                                text: "License: GPL-3.0 or later"
-                                color: theme.accentText
-                                font.underline: true
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: { Qt.openUrlExternally("https://opensource.org/licenses/GPL-3.0")
-                                    infoDialog.accept()
-                                    }
-                                }
-                            }
+                    Text {
+                        text: "This is a free and open-source project. The project started as a Qt C++ application, " +
+                              "then a JavaScript version was created. You are running this application using JavaScript with QML now."
+                        color: theme.primaryText
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
 
-                            Text {
-                                text: "Source Code: Available on GitHub"
-                                color: theme.accentText
-                                font.underline: true
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: { Qt.openUrlExternally("https://github.com/khumnath/nepdate/tree/qml")
-                                    infoDialog.accept()
-                                    }
-                                }
-                            }
-
-                            Text {
-                                text: "Contributors"
-                                color: theme.accentText
-                                font.underline: true
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: { Qt.openUrlExternally("https://github.com/khumnath/nepdate/graphs/contributors")
-                                    infoDialog.accept()
-                                    }
-                                }
+                    Text {
+                        text: "License: GPL-3.0 or later"
+                        color: theme.accentText
+                        font.underline: true
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: { Qt.openUrlExternally("https://opensource.org/licenses/GPL-3.0")
+                            infoDialog.accept()
                             }
                         }
-            // Ok button inside info dilog
-            Button {
-                text: "Ok"
-                font.bold: true
-                anchors.bottomMargin: 20
-                anchors.horizontalCenter: parent.horizontalCenter
-                onClicked: infoDialog.accept()
+                    }
 
+                    Text {
+                        text: "Source Code: Available on GitHub"
+                        color: theme.accentText
+                        font.underline: true
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: { Qt.openUrlExternally("https://github.com/khumnath/nepdate")
+                            infoDialog.accept()
+                            }
+                        }
+                    }
 
-                background: Rectangle {
-                    color: theme.tertiaryBg
-                    border.color: parent.hovered ? theme.accent : "gray"
-                    border.width: parent.hovered ? 2 : 1
-                    radius: 12
+                    Text {
+                        text: "Contributors"
+                        color: theme.accentText
+                        font.underline: true
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: { Qt.openUrlExternally("https://github.com/khumnath/nepdate/graphs/contributors")
+                            infoDialog.accept()
+                            }
+                        }
+                    }
                 }
 
-                contentItem: Text {
-                    text: parent.text
-                    font: parent.font
-                    color: theme.primaryText
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
+                // Ok button inside info dilog
+                Button {
+                    text: "Ok"
+                    font.bold: true
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: infoDialog.accept()
+
+                    background: Rectangle {
+                        color: theme.tertiaryBg
+                        border.color: parent.hovered ? theme.accent : "gray"
+                        border.width: parent.hovered ? 2 : 1
+                        radius: 12
+                    }
+
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: theme.primaryText
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        padding: 5
+                    }
                 }
             }
         }
-    }
-
     // Day detail dilog
     Dialog {
         id: detailModal

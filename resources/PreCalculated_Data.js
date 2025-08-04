@@ -1,5 +1,12 @@
 // PreCalculated_Data.js
 
+/**
+ * Bikram Calculator precalculated data
+ *
+ * Licence:  GPL-3.0 license
+ * copied from https://github.com/opensource-nepal/node-nepali-datetime/blob/main/src/dateConverter/constants.ts
+ */
+
 .pragma library
 
 var BS_START_YEAR = 2000;
