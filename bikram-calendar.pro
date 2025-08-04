@@ -1,8 +1,9 @@
 
-QT += core gui widgets quick qml
+QT += core gui widgets quick qml printsupport
 
 SOURCES += \
     autostartmanager.cpp \
+    helper.cpp \
     main.cpp \
     tooltipmanager.cpp
 
@@ -14,4 +15,5 @@ qml_files.path = qml
 
 HEADERS += \
     autostartmanager.h \
+    helper.h \
     tooltipmanager.h

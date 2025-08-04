@@ -10,6 +10,7 @@
 #include "autostartmanager.h"
 #include "tooltipmanager.h"
 #include <cstdlib>
+#include "helper.h"
 
 void ensureDesktopFile(const QString &desktopFileName, const QString &startupWMClass) {
     QString dirPath = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
@@ -99,7 +100,12 @@ int main(int argc, char *argv[]) {
     QString appVersion = readVersionText();
     engine.rootContext()->setContextProperty("appVersion", appVersion);
 
-
+    // Register the Printer class as a QML singleton
+    qmlRegisterSingletonType<Printer>("com.calendar.printer", 1, 0, "Printer", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject * {
+        Q_UNUSED(engine)
+        Q_UNUSED(scriptEngine)
+        return new Printer();
+    });
 
     engine.rootContext()->setContextProperty("autostartManager", &autostartManager);
     engine.rootContext()->setContextProperty("tooltipManager", &tooltipManager);
