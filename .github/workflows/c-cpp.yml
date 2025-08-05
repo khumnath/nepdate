@@ -13,11 +13,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install system dependencies for Qt
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libgl1-mesa-dev
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -27,13 +22,8 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
-          host: 'linux'
-          target: 'desktop'
-          arch: 'gcc_64'
-          tools: 'tools_cmake'
-          archives: 'qttools qtsvg qtdeclarative qtbase icu'
 
-      - name: Build Project with CMake
+      - name: Build Project with QMake
         run: |
           mkdir build
           cd build
