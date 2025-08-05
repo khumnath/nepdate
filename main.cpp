@@ -119,29 +119,13 @@ int main(int argc, char *argv[]) {
                      }, Qt::QueuedConnection);
 
     engine.load(url);
-
-    // Dark/light mode detection( if DE uses QStyleHint then use as system theme else default to light mode for tooltip)
-    QStyleHints *styleHints = QGuiApplication::styleHints();
-    auto updateTooltipStyle = [&]() {
-        if (styleHints->colorScheme() == Qt::ColorScheme::Dark) {
-            app.setStyleSheet(
-                "QToolTip {"
-                "    color: #ffffff;"
-                "    background-color: #2b2b2b;"
-                "}"
-                );
-        } else {
-            app.setStyleSheet(
-                "QToolTip {"
-                "    color: #000000;"
-                "    background-color: #ffffff;"
-                "}"
-                );
-        }
-    };
-
-    updateTooltipStyle();
-    QObject::connect(styleHints, &QStyleHints::colorSchemeChanged, updateTooltipStyle);
+    // Tooltip style.  dark light mode detection removed for compatibility with smaller Qt6 versions.
+    app.setStyleSheet(
+        "QToolTip {"
+        "    color: #000000;"
+        "    background-color: #ffffff;"
+        "}"
+        );
     QCoreApplication::setApplicationVersion(readVersionText());
 
     // Command-line parsing

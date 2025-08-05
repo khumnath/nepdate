@@ -10,28 +10,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.11' 
+      - name: Install system dependencies for Qt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgl1-mesa-dev
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v3
-      with:
-        aqtversion: '==3.1.*'
-        version: '6.2.0'
-        host: 'linux'
-        target: 'desktop'
-        arch: 'gcc_64'
-        tools: 'tools_cmake'
-        archives: 'qttools qtsvg qtdeclarative qtbase icu'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Build Project
-      run: |
-        mkdir build
-        cd build
-        qmake ../bikram-calendar.pro
-        make
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.0'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'gcc_64'
+
+      - name: Build Project with CMake
+        run: |
+        - name: Build Project
+
+              run: |
+
+                mkdir build
+                cd build
+                qmake ../bikram-calendar.pro
+                make
