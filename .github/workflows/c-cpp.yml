@@ -33,11 +33,7 @@ jobs:
 
       - name: Build Project with CMake
         run: |
-        - name: Build Project
-
-              run: |
-
-                mkdir build
-                cd build
-                qmake ../bikram-calendar.pro
-                make
+          mkdir build
+          cd build
+          cmake ..
+          make
