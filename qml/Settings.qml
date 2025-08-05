@@ -2,13 +2,14 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
+import QtQuick.Dialogs
 import QtCore
 
 ApplicationWindow {
     id: settingsWindow
 
     // Set width and height based on content's implicit size plus margins
-    width: settingsLayout.implicitWidth + 2 * settingsLayoutLeftRightMargin
+    width: settingsLayout.implicitWidth + 10 * settingsLayoutLeftRightMargin
     height: settingsLayout.implicitHeight + 2 * settingsLayoutTopBottomMargin
 
     title: "Settings"
@@ -21,7 +22,7 @@ ApplicationWindow {
 
     property var mainWindow: null
 
-    // --- Signals and Properties ---
+    // Signals and Properties
     property int initialFontSize: 11
     property bool showIcon: true
     property bool screenontop: true
@@ -33,7 +34,6 @@ ApplicationWindow {
     signal screenontopset(bool ontop)
 
     // The 'platformName' property is now provided by C++ via setContextProperty
-    // property string platformName: "default" // Removed this line, as it's a context property
 
     // Hidden TextEdit for clipboard operations
     TextEdit {
@@ -42,12 +42,11 @@ ApplicationWindow {
         text: ""
     }
 
-    // --- Main Layout ---
+    // Main Layout
     ColumnLayout {
         id: settingsLayout
         anchors.fill: parent
         anchors.margins: settingsLayoutLeftRightMargin
-        spacing: 10
 
         Label {
             text: "Font Size"
@@ -71,77 +70,130 @@ ApplicationWindow {
             Layout.alignment: Qt.AlignHCenter
         }
 
-        GridLayout {
+        // Color picker
+        Item {
+            id: customColorPicker
+            width: 250
+            height: 150
             Layout.alignment: Qt.AlignHCenter
-            columns: 4
-            columnSpacing: 15
-            rowSpacing: 15
 
-            Repeater {
-                model: [
-                    { name: "Green", colorValue: "lightgreen" },
-                    { name: "Cyan", colorValue: "cyan" },
-                    { name: "Yellow", colorValue: "yellow" },
-                    { name: "White", colorValue: "white" },
-                    { name: "Orange", colorValue: "orange" },
-                    { name: "Magenta", colorValue: "magenta" },
-                    { name: "Red", colorValue: "red" },
-                    { name: "Gray", colorValue: "gray" },
-                    { name: "Teal", colorValue: "teal" },
-                    { name: "Black", colorValue: "black" },
-                    { name: "Blue", colorValue: "blue" },
-                    { name: "Light Blue", colorValue: "lightblue" }
-                ]
-                delegate: Rectangle {
-                    id: colorBox
-                    width: 40
-                    height: 40
-                    color: modelData.colorValue
-                    radius: 4
-                    border.color: "#444"
-                    border.width: 1
+            property color selectedColor: appSettings.value("fontColor", "white")
+            property real currentHue: selectedColor.hsvHue >= 0 ? selectedColor.hsvHue : 0
+            property real currentSaturation: selectedColor.hsvSaturation
+            property real currentValue: selectedColor.hsvValue
+            property bool isInitialized: false
 
-                    // Custom Popup for tooltip
-                    Popup {
-                        id: customToolTip
-                        // Position the popup relative to the mouse area's center
-                        x: mouseArea.mouseX + 10 // Offset from mouse cursor
-                        y: mouseArea.mouseY + 10 // Offset from mouse cursor
-                        //parent: settingsWindow // Or a more appropriate common parent
-                        visible: mouseArea.containsMouse
-                        modal: false // Don't block interaction with other elements
-                        closePolicy: Popup.NoAutoClose // We control visibility with mouseArea.containsMouse
-                        opacity: 0.9 // Make it slightly transparent
-                        padding: 5
-                        background: Rectangle {
-                            color: "#222"
-                            radius: 3
-                            border.color: "#888"
-                            border.width: 1
-                        }
-                        contentItem: Label {
-                            text: modelData.name
-                            color: "white"
-                            font.pointSize: 10
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
+            Component.onCompleted: {
+                isInitialized = true;
+            }
 
-                        // Ensure the popup's implicit size is respected
-                        implicitWidth: contentItem.implicitWidth + 2 * padding
-                        implicitHeight: contentItem.implicitHeight + 2 * padding
-                    }
+            onCurrentHueChanged: updateColor()
+            onCurrentSaturationChanged: updateColor()
+            onCurrentValueChanged: updateColor()
 
+            onSelectedColorChanged: {
+                currentHue = selectedColor.hsvHue >= 0 ? selectedColor.hsvHue : 0;
+                currentSaturation = selectedColor.hsvSaturation;
+                currentValue = selectedColor.hsvValue;
 
-                    MouseArea {
-                        id: mouseArea
+                if (isInitialized) {
+                    fontColorChanged(selectedColor);
+                }
+            }
+
+            function updateColor() {
+                var newColor = Qt.hsva(currentHue, currentSaturation, currentValue, 1.0);
+                if (newColor.toString() !== selectedColor.toString()) {
+                    selectedColor = newColor;
+                }
+            }
+
+            RowLayout {
+                anchors.fill: parent
+                spacing: 10
+                width: 250
+                    height: 180
+
+                Rectangle {
+                    id: svArea
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: Qt.hsva(customColorPicker.currentHue, 1.0, 1.0, 1.0)
+
+                    Rectangle {
                         anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: fontColorChanged(modelData.colorValue)
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "white" }
+                            GradientStop { position: 1.0; color: "transparent" }
+                        }
+                    }
+                    Rectangle {
+                        anchors.fill: parent
+                        gradient: Gradient {
+                            orientation: Gradient.Vertical
+                            GradientStop { position: 0.0; color: "transparent" }
+                            GradientStop { position: 1.0; color: "black" }
+                        }
+                    }
+                    Rectangle {
+                        id: svIndicator
+                        x: svArea.width * customColorPicker.currentSaturation - (width / 2)
+                        y: svArea.height * (1.0 - customColorPicker.currentValue) - (height / 2)
+                        width: 12
+                        height: 12
+                        radius: 6
+                        color: "transparent"
+                        border.color: customColorPicker.currentValue > 0.5 ? "black" : "white"
+                        border.width: 2
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onPressed: (mouse) => updateSV(mouse.x, mouse.y)
+                        onPositionChanged: (mouse) => { if (pressed) updateSV(mouse.x, mouse.y) }
+
+                        function updateSV(mx, my) {
+                            customColorPicker.currentSaturation = Math.max(0, Math.min(1, mx / svArea.width));
+                            customColorPicker.currentValue = 1.0 - Math.max(0, Math.min(1, my / svArea.height));
+                        }
+                    }
+                }
+
+                Rectangle {
+                    id: hueSlider
+                    Layout.preferredWidth: 25
+                    Layout.fillHeight: true
+                    radius: 4
+                    gradient: Gradient {
+                        orientation: Gradient.Vertical
+                        GradientStop { position: 0.0;     color: "#ff0000" }
+                        GradientStop { position: 0.166;   color: "#ffff00" }
+                        GradientStop { position: 0.333;   color: "#00ff00" }
+                        GradientStop { position: 0.5;     color: "#00ffff" }
+                        GradientStop { position: 0.666;   color: "#0000ff" }
+                        GradientStop { position: 0.833;   color: "#ff00ff" }
+                        GradientStop { position: 1.0;     color: "#ff0000" }
+                    }
+                    Rectangle {
+                        width: parent.width + 4
+                        height: 4
+                        x: -2
+                        y: hueSlider.height * customColorPicker.currentHue - (height / 2)
+                        color: "white"
+                        border.color: "black"
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onPressed: (mouse) => updateHue(mouse.y)
+                        onPositionChanged: (mouse) => { if (pressed) updateHue(mouse.y) }
+
+                        function updateHue(my) {
+                            customColorPicker.currentHue = Math.max(0, Math.min(1, my / hueSlider.height));
+                        }
                     }
                 }
             }
         }
+
 
         Item { Layout.fillHeight: true }
 
@@ -203,7 +255,7 @@ ApplicationWindow {
             }
         }
 
-        // --- Autostart Button ---
+        // Autostart Button
         Button {
             id: autostartButton
             Layout.fillWidth: true
@@ -222,7 +274,7 @@ ApplicationWindow {
             }
         }
 
-        // --- New Calendar Button (visible only on Wayland) ---
+        // New Calendar Button (visible only on Wayland)
         Button {
             id: calendarButton
             Layout.fillWidth: true
@@ -267,7 +319,7 @@ ApplicationWindow {
         }
     }
 
-    // --- Declarative Timer for Copy Message ---
+    // Declarative Timer for Copy Message
     Timer {
         id: resetTimer
         interval: 1500
@@ -324,7 +376,7 @@ ApplicationWindow {
     }
 
 
-    // --- Window Closing Handler ---
+    // Window Closing Handler
     onClosing: {
         resetTimer.stop();
         destroy();

@@ -245,129 +245,106 @@ ApplicationWindow {
         }
 
     // --- Function to launch the settings window ---
-    function openSettingsWindow() {
-        if (settingsWindow) {
-            settingsWindow.show();
-            settingsWindow.raise();
-            settingsWindow.requestActivate();
-            return;
-        }
-
-        if (!settingsComponent) {
-            settingsComponent = Qt.createComponent("Settings.qml");
-        }
-
-        if (settingsComponent.status === Component.Ready) {
-            settingsWindow = settingsComponent.createObject(widgetWindow, {
-                "initialFontSize": fontSize,
-                "showIcon": showIcon,
-                "screenontop": screenontop
-            });
-
+        function openSettingsWindow() {
             if (settingsWindow) {
-                settingsWindow.mainWindow = widgetWindow;
-
-                // Signal bindings
-                settingsWindow.screenontopset.connect(function(ontop) {
-                    screenontop = ontop;
-                    appSettings.setValue("screenontop", ontop);
-                });
-
-                settingsWindow.iconVisibilityChanged.connect(function(visible) {
-                    showIcon = visible;
-                    appSettings.setValue("showIcon", visible);
-                });
-
-                settingsWindow.fontSizeChanged.connect(function(newSize) {
-                    updateFontSize(newSize);
-                    appSettings.setValue("fontSize", parseInt(newSize));
-                });
-
-                settingsWindow.fontColorChanged.connect(function(newColorName) {
-                    fontColor = newColorName;
-                    appSettings.setValue("fontColor", newColorName);
-                });
-
-                settingsWindow.exitRequested.connect(function() {
-                    Qt.quit();
-                });
-
-                settingsWindow.closing.connect(() => {
-                    settingsWindow.destroy();
-                    settingsWindow = null;
-                });
-
-                // --- Smart Positioning ---
-                if (widgetWindow.screen) {
-                    const screen = widgetWindow.screen;
-                    const screenLeft = screen.virtualX;
-                    const screenTop = screen.virtualY;
-                    const screenRight = screenLeft + screen.width;
-                    const screenBottom = screenTop + screen.height;
-                    const padding = 0;
-                    let idealX, idealY;
-                    const fallbackWidth = 200;
-                    const fallbackHeight = 150;
-                    const settingsWidth = settingsWindow.width || fallbackWidth;
-                    const settingsHeight = settingsWindow.height || fallbackHeight;
-
-                    if (!screen || !screen.width || !screen.height) {
-                            settingsWindow.x = widgetWindow.x;
-                            settingsWindow.y = widgetWindow.y;
-                            settingsWindow.width = settingsWidth;
-                            settingsWindow.height = settingsHeight;
-                            return;
-                        }
-
-                    const widgetCenterX = widgetWindow.x + widgetWindow.width / 2;
-                    const screenCenterX = screenLeft + screen.width / 2;
-
-                    if (widgetCenterX >= screenCenterX) {
-                        idealX = widgetWindow.x - settingsWidth - padding;
-                        if (idealX < screenLeft + padding) {
-                            idealX = widgetWindow.x + widgetWindow.width + padding;
-                        }
-                    } else {
-                        idealX = widgetWindow.x + widgetWindow.width + padding;
-                        if (idealX + settingsWidth > screenRight - padding) {
-                            idealX = widgetWindow.x - settingsWidth - padding;
-                        }
-                    }
-
-                    const widgetCenterY = widgetWindow.y + widgetWindow.height / 2;
-                    const screenCenterY = screenTop + screen.height / 2;
-
-                    if (widgetCenterY >= screenCenterY) {
-                        idealY = widgetWindow.y - settingsHeight - padding;
-                        if (idealY < screenTop + padding) {
-                            idealY = widgetWindow.y + widgetWindow.height + padding;
-                        }
-                    } else {
-                        idealY = widgetWindow.y + widgetWindow.height + padding;
-                        if (idealY + settingsHeight > screenBottom - padding) {
-                            idealY = widgetWindow.y - settingsHeight - padding;
-                        }
-                    }
-
-                    settingsWindow.x = Math.max(screenLeft + padding, Math.min(idealX, screenRight - settingsWidth - padding));
-                    settingsWindow.y = Math.max(screenTop + padding, Math.min(idealY, screenBottom - settingsHeight - padding));
-                } else {
-                    settingsWindow.x = widgetWindow.x + widgetWindow.width + 5;
-                    settingsWindow.y = widgetWindow.y;
-                }
-
                 settingsWindow.show();
-            } else {
-                console.error("Failed to create settings window.");
+                settingsWindow.raise();
+                settingsWindow.requestActivate();
+                return;
             }
-        } else {
-            console.error("Error loading settings component:", settingsComponent.errorString());
+
+            if (!settingsComponent) {
+                settingsComponent = Qt.createComponent("Settings.qml");
+            }
+
+            if (settingsComponent.status === Component.Ready) {
+                settingsWindow = settingsComponent.createObject(widgetWindow, {
+                    "initialFontSize": fontSize,
+                    "showIcon": showIcon,
+                    "screenontop": screenontop
+                });
+
+                if (settingsWindow) {
+                    settingsWindow.mainWindow = widgetWindow;
+
+                    settingsWindow.screenontopset.connect(function(ontop) {
+                        screenontop = ontop;
+                        appSettings.setValue("screenontop", ontop);
+                    });
+                    settingsWindow.iconVisibilityChanged.connect(function(visible) {
+                        showIcon = visible;
+                        appSettings.setValue("showIcon", visible);
+                    });
+                    settingsWindow.fontSizeChanged.connect(function(newSize) {
+                        updateFontSize(newSize);
+                        appSettings.setValue("fontSize", parseInt(newSize));
+                    });
+                    settingsWindow.fontColorChanged.connect(function(newColorName) {
+                        fontColor = newColorName;
+                        appSettings.setValue("fontColor", newColorName);
+                    });
+                    settingsWindow.exitRequested.connect(function() {
+                        Qt.quit();
+                    });
+                    settingsWindow.closing.connect(() => {
+                        settingsWindow.destroy();
+                        settingsWindow = null;
+                    });
+
+                    if (widgetWindow.screen) {
+                        const screen = widgetWindow.screen;
+                        const margin = 5;
+                        const titleBarOffset = 30;
+
+                        const screenLeft = screen.virtualX;
+                        const screenTop = screen.virtualY;
+                        const screenRight = screenLeft + screen.width;
+                        const screenBottom = screenTop + screen.height;
+
+                        const fallbackWidth = 200;
+                        const fallbackHeight = 150;
+                        const settingsWidth = settingsWindow.width || fallbackWidth;
+                        const settingsHeight = settingsWindow.height || fallbackHeight;
+
+                        let idealX, idealY;
+
+                        const totalVerticalMargin = margin + titleBarOffset;
+                        const hasSpaceBelow = (widgetWindow.y + widgetWindow.height + totalVerticalMargin + settingsHeight) <= screenBottom;
+                        const hasSpaceAbove = (widgetWindow.y - totalVerticalMargin - settingsHeight) >= screenTop;
+                        const hasSpaceRight = (widgetWindow.x + widgetWindow.width + margin + settingsWidth) <= screenRight;
+
+                        if (hasSpaceBelow) {
+                            idealY = widgetWindow.y + widgetWindow.height + totalVerticalMargin;
+                            idealX = widgetWindow.x + (widgetWindow.width / 2) - (settingsWidth / 2);
+                        } else if (hasSpaceAbove) {
+                            idealY = widgetWindow.y - settingsHeight - totalVerticalMargin;
+                            idealX = widgetWindow.x + (widgetWindow.width / 2) - (settingsWidth / 2);
+                        } else if (hasSpaceRight) {
+                            idealX = widgetWindow.x + widgetWindow.width + margin;
+                            idealY = widgetWindow.y;
+                        } else {
+                            idealX = widgetWindow.x - settingsWidth - margin;
+                            idealY = widgetWindow.y;
+                        }
+
+                        settingsWindow.x = Math.max(screenLeft, Math.min(idealX, screenRight - settingsWidth));
+                        settingsWindow.y = Math.max(screenTop, Math.min(idealY, screenBottom - settingsHeight));
+
+                    } else {
+                        settingsWindow.x = widgetWindow.x + widgetWindow.width + 5;
+                        settingsWindow.y = widgetWindow.y;
+                    }
+
+                    settingsWindow.show();
+                } else {
+                    console.error("Failed to create settings window.");
+                }
+            } else {
+                console.error("Error loading settings component:", settingsComponent.errorString());
+            }
         }
-    }
 
-
-
-    // --- Use a one-shot Timer for reliable initial positioning ---
+        // --- Use a one-shot Timer for reliable initial positioning ---
     Timer {
            id: positioningTimer
            interval: 50

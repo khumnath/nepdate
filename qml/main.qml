@@ -41,7 +41,6 @@ ApplicationWindow {
     property bool isDarkMode: false
     property bool debugVisible: false
     property string currentDebugInfo: ""
-    property string appVersion: "1.0.0"
     property bool isPrintMode: false
 
     QtObject {
