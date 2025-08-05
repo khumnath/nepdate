@@ -26,10 +26,12 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.8.0'
+          version: '6.8.3'
           host: 'linux'
           target: 'desktop'
           arch: 'gcc_64'
+          tools: 'tools_cmake'
+          archives: 'qttools qtsvg qtdeclarative qtbase icu'
 
       - name: Build Project with CMake
         run: |
