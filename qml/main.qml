@@ -224,7 +224,8 @@ ApplicationWindow {
     }
 
     function renderCalendarByAd(year, monthIndex) {
-        var jd = Panchanga.toJulianDay(year, monthIndex + 1, d);
+        var d = 1;
+        var jd = Panchanga.toJulianDay(year, monthIndex, d); //Show month with gregorian day 1
         var ahar = jd - Panchanga.KaliEpoch;
         var sunLong = Panchanga.trueLongitudeSun(ahar);
         var bsInfo = Panchanga.getBikramSambatInfo(ahar, sunLong);
