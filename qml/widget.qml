@@ -5,7 +5,7 @@ import QtQuick.Window 2.15
 import "qrc:PanchangaCalculator.js" as Panchanga
 import QtCore
 
-// This is the main window for the small desktop widget.
+// widget.qml(main window for the small desktop widget)
 ApplicationWindow {
     id: widgetWindow
     title: "नेपाली क्यालेण्डर"
@@ -16,13 +16,13 @@ ApplicationWindow {
    flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification | Qt.BypassWindowManagerHint
     color: "transparent"
 
-    // --- Settings Component ---
+    // Settings Component
     Settings {
         id: appSettings
         category: "NepdateDesktopWidget"
     }
 
-    // --- App Settings Properties ---
+    // App Settings Properties
     property int fontSize: 12
     property color fontColor: "green"
     property real latitude: 27.71
@@ -34,13 +34,13 @@ ApplicationWindow {
         updateStayOnTopFlag(screenontop);
     }
 
-    // --- Component and Window Properties ---
+    // Component and Window Properties
     property var calendarComponent: null
     property var calendarWindow: null
     property var settingsComponent: null
     property var settingsWindow: null
 
-    // --- Date and Timer Logic ---
+    // Date and Timer Logic
     property string displayedDate: "Loading..."
     property string tooltipDate: "Loading date..."
 
@@ -63,7 +63,7 @@ ApplicationWindow {
         tooltipDate = `${displayedDate}\n${result.paksha} ${result.tithi}`;
     }
 
-    // --- Main UI Button ---
+    // Main UI Button
     Button {
         id: dateButton
         anchors.centerIn: parent
@@ -93,7 +93,7 @@ ApplicationWindow {
         }
     }
 
-    // --- Drag and Click Logic ---
+    // Drag and Click Logic
     MouseArea {
         id: dragArea
         anchors.fill: parent
@@ -180,7 +180,7 @@ ApplicationWindow {
         }
     }
 
-    // --- Custom Tooltip Functions ---
+    // Custom Tooltip Functions
        function showTooltip() {
            tooltipManager.showAboveOrBelow(dragArea, tooltipDate);
        }
@@ -189,7 +189,7 @@ ApplicationWindow {
            tooltipManager.hide();
        }
 
-    // --- Function to launch the main calendar ---
+    // Function to launch the main calendar
     function openCalendar() {
         if (calendarWindow) {
             calendarWindow.show();
@@ -221,7 +221,7 @@ ApplicationWindow {
         }
     }
 
-    // --- Function to update the window's stay on top flag ---
+    // Function to update the window's stay on top flag
         function updateStayOnTopFlag(isOnTop) {
             const wasVisible = widgetWindow.visible;
             if (wasVisible) {
@@ -244,7 +244,7 @@ ApplicationWindow {
             });
         }
 
-    // --- Function to launch the settings window ---
+    // Function to launch the settings window
         function openSettingsWindow() {
             if (settingsWindow) {
                 settingsWindow.show();
@@ -344,7 +344,7 @@ ApplicationWindow {
             }
         }
 
-        // --- Use a one-shot Timer for reliable initial positioning ---
+        //  One-shot Timer for reliable initial positioning
     Timer {
            id: positioningTimer
            interval: 50
@@ -368,7 +368,7 @@ ApplicationWindow {
        }
 
 
-    // --- Settings Validation and Loading ---
+    // Settings Validation and Loading
         function resetAndSaveDefaultSettings() {
             const defaultFontSize = 14;
             const defaultFontColor = "magenta";
@@ -423,7 +423,7 @@ ApplicationWindow {
         }
 
 
-        // --- Load settings on startup ---
+        // Load settings on startup
         Component.onCompleted: {
             Qt.callLater(function() {
                 console.log("Platform detected:", platformName);

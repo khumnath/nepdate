@@ -5,6 +5,7 @@ import QtQuick.Window 2.15
 import QtQuick.Dialogs
 import QtCore
 
+// Settings.qml(setting window)
 ApplicationWindow {
     id: settingsWindow
 
