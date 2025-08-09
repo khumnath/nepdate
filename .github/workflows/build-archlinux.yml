@@ -23,7 +23,8 @@ jobs:
       - name: Set up build environment
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm base-devel git
+          pacman -S --noconfirm --needed base-devel git qt6-base qt6-declarative cmake qt6-tools
+
 
       # Build the package using makepkg
       - name: Build the package
