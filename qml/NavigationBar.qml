@@ -36,6 +36,7 @@ RowLayout {
             color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
+            anchors.fill: parent
         }
     }
 
@@ -46,6 +47,9 @@ RowLayout {
             text: parent.text
             font: parent.font
             color: parent.checked && theme ? theme.accentText : (parent.hovered && theme ? theme.primaryText : (theme ? theme.secondaryText : "grey"))
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            anchors.fill: parent
         }
         background: Rectangle {
             radius: 8
