@@ -1,0 +1,57 @@
+# Maintainer: khumnath <nath.khum@gmail.com>
+pkgname=nepdate-git
+_pkgname=nepdate
+pkgdesc='Standalone Nepali calendar widget and converter for Bikram Sambat and Gregorian calendars. (Git version)'
+pkgver=0.5.r29.g6c8e3b3
+pkgrel=1
+arch=('x86_64' 'aarch64')
+url="https://github.com/khumnath/nepdate"
+license=('GPL-3.0-or-later')
+depends=('qt6-base' 'qt6-declarative')
+makedepends=('cmake' 'git' 'qt6-tools')
+provides=("${_pkgname}")
+conflicts=("${_pkgname}")
+source=("git+$url.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$_pkgname"
+  basever=$(grep -E '^version=' resources/version.conf | cut -d= -f2)
+  commitcount=$(git rev-list --count HEAD)
+  shorthash=$(git rev-parse --short HEAD)
+  echo "${basever}.r${commitcount}.g${shorthash}"
+}
+
+build() {
+  cd "$_pkgname"
+  cmake -B build -S . \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  cmake --build build
+}
+
+package() {
+  cd "$_pkgname"
+  DESTDIR="$pkgdir" cmake --install build
+
+  # License
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+  # Desktop entry
+  install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/nepdate.desktop" <<EOF
+[Desktop Entry]
+Name=Nepdate Calendar
+Comment=Nepali Calendar Application
+Exec=nepdate
+Icon=calendar
+Categories=Utility;Calendar;
+Type=Application
+StartupNotify=true
+Terminal=false
+EOF
+
+  # Symlinks
+  install -d "$pkgdir/usr/bin"
+  ln -sf bikram-calendar "$pkgdir/usr/bin/nepdate"
+  ln -sf bikram-calendar "$pkgdir/usr/bin/nepdate-git"
+}

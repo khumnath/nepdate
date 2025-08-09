@@ -13,7 +13,6 @@ Rectangle {
         NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
     }
 
-    // --- Added default values to prevent "Unable to assign [undefined]" errors ---
     property int bsDay: 0
     property int adDay: 0
     property string tithi: ""
