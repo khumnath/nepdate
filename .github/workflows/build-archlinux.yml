@@ -34,7 +34,7 @@ jobs:
 
           # Switch to the builder user and run makepkg
           # The -s flag installs dependencies from the PKGBUILD
-          su builder -c "cd PACKAGEBUILD && makepkg -s --noconfirm"
+          su builder -c "cd PKGBUILD && makepkg -s --noconfirm"
 
       # Upload the compiled package as a workflow artifact
       - name: Upload build artifacts
