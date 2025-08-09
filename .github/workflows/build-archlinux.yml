@@ -1,0 +1,44 @@
+# .github/workflows/build-archlinux.yml
+name: Arch Linux Build & Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on Arch Linux
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+
+    steps:
+      # Check out the repository code
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Prepare the Arch Linux container for building
+      - name: Set up build environment
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm base-devel git
+
+      # Build the package using makepkg
+      - name: Build the package
+        run: |
+          # Create a non-root user to run the build for security
+          useradd -m builder
+          chown -R builder:builder .
+
+          # Switch to the builder user and run makepkg
+          # The -s flag installs dependencies from the PKGBUILD
+          su builder -c "cd PACKAGEBUILD && makepkg -s --noconfirm"
+
+      # Upload the compiled package as a workflow artifact
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-package
+          path: PACKAGEBUILD/*.pkg.tar.*

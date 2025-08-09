@@ -43,3 +43,7 @@ compile_commands.json
 
 # others
 *.txt
+
+# pkgbuild files
+PKGBUILD/*
+!PKGBUILD/PKGBUILD
