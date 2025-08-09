@@ -13,7 +13,6 @@ Dialog {
     height: Math.min(implicitHeight, parent.height * 0.9)
 
     property var theme
-    property string appVersion: "1.0"
 
     background: Rectangle {
         color: theme ? theme.tertiaryBg : "lightgrey"

@@ -19,8 +19,6 @@ QtObject {
     // === Calendar Specific ===
     readonly property color saturdayText: isDark ? "#fecaca" : "#F86262"
     readonly property color purnimaText: isDark ? "#fde68a" : "#92400e"
-    readonly property color purnimaIconBg: isDark ? "#78350f" : "#fef3c7"
-    readonly property color amavasyaIconBg: isDark ? "#1e293b" : "#e2e8f0"
 
     // === Headers ===
     readonly property color headerBg: isDark ? "#0f172a" : "#ffffff"

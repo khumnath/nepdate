@@ -55,7 +55,7 @@ Rectangle {
     Label {
         text: tithi || ""
         font.pixelSize: 11
-        color: theme && (tithi === "पूर्णिमा" || tithi === "अमावस्या") ? theme.purnimaText : (theme ? theme.secondaryText : "grey")
+        color: theme && (tithi === "पूर्णिमा" || tithi === "अमावस्या") ? theme.purnimaText : theme ? theme.secondaryText : theme.primaryText
         elide: Text.ElideRight
         font.bold: tithi === "पूर्णिमा" || tithi === "अमावस्या"
         anchors.left: parent.left
@@ -70,14 +70,29 @@ Rectangle {
         Label { anchors.centerIn: parent; text: adDay || 0; font.pixelSize: 10; color: theme ? theme.adDayText : "blue" }
     }
 
-    Text {
+    Item {
+        width: 16
+        height: 16
         visible: tithi === "पूर्णिमा" || tithi === "अमावस्या"
-        text: tithi === "पूर्णिमा" ? "🌕" : "🌑"
-        font.pixelSize: 14
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.rightMargin: 4
         anchors.bottomMargin: 4
+
+
+        Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            color: tithi === "पूर्णिमा" ? "gold" : "black"
+            border.width: 0.5
+            border.color: {
+                if (dayCell.theme && dayCell.theme.isDark) {
+                    return "white";
+                } else {
+                    return "black";
+                }
+            }
+        }
     }
 
     MouseArea {
