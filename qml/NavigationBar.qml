@@ -23,9 +23,13 @@ RowLayout {
 
     component NavButton: Button {
         font.pixelSize: 13
-        padding: 8
+        topPadding: 12
+        bottomPadding: 12
+        leftPadding: 10
+        rightPadding: 10
+
         background: Rectangle {
-            radius: 8
+            radius: 12
             color: parent.hovered && theme ? theme.tertiaryBg : (theme ? theme.secondaryBg : "white")
             border.color: theme ? theme.borderColor : "grey"
             border.width: 1
@@ -36,20 +40,22 @@ RowLayout {
             color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            anchors.fill: parent
         }
     }
 
     component CustomTabButton: TabButton {
-        width: implicitWidth + 20
         font.pixelSize: 13
+        topPadding: 12
+        bottomPadding: 12
+        leftPadding: 10
+        rightPadding: 10
+
         contentItem: Text {
             text: parent.text
             font: parent.font
             color: parent.checked && theme ? theme.accentText : (parent.hovered && theme ? theme.primaryText : (theme ? theme.secondaryText : "grey"))
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            anchors.fill: parent
         }
         background: Rectangle {
             radius: 8
@@ -62,7 +68,7 @@ RowLayout {
     NavButton {
         property string prevBsMonth: (calendarLogic && calendarLogic.prevMonthName) || ""
         property string prevAdMonth: (calendarLogic && calendarLogic.prevAdMonthName) || ""
-        text: "‹ " + (tabBar.currentIndex === 0 ? prevBsMonth : prevAdMonth)
+        text: "< " + (tabBar.currentIndex === 0 ? prevBsMonth : prevAdMonth)
 
         onClicked: {
             if (tabBar.currentIndex === 0) {
@@ -71,7 +77,7 @@ RowLayout {
                 calendarLogic.navigateAdMonth(-1)
             }
         }
-        visible: text.trim() !== "‹"
+        visible: text.trim() !== "< "
     }
 
     Item { Layout.fillWidth: true }
@@ -102,7 +108,7 @@ RowLayout {
     NavButton {
         property string nextBsMonth: (calendarLogic && calendarLogic.nextMonthName) || ""
         property string nextAdMonth: (calendarLogic && calendarLogic.nextAdMonthName) || ""
-        text: (tabBar.currentIndex === 0 ? nextBsMonth : nextAdMonth) + " ›"
+        text: (tabBar.currentIndex === 0 ? nextBsMonth : nextAdMonth) + " >"
 
         onClicked: {
             if (tabBar.currentIndex === 0) {
@@ -111,6 +117,6 @@ RowLayout {
                 calendarLogic.navigateAdMonth(1)
             }
         }
-        visible: text.trim() !== "›"
+        visible: text.trim() !== " >"
     }
 }
