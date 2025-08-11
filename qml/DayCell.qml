@@ -6,7 +6,7 @@ import "qrc:/qml/"
 // DayCell.qml
 Rectangle {
     id: dayCell
-    radius: 12
+    radius: 5
     scale: cellMouseArea.containsMouse ? 1.2 : 1.0
     z: cellMouseArea.containsMouse ? 1 : 0
     Behavior on scale {
