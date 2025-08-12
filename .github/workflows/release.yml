@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+
+      - name: Build Project with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bikram-calendar
+          path: ./build/bikram-calendar
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed to get full git history for changelog
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+            # Current tag that triggered the workflow
+            CURR_TAG="${GITHUB_REF_NAME}"
+
+            if [ "$(git tag --sort=-creatordate | wc -l)" -eq 1 ]; then
+                # First release
+                FIRST_COMMIT=$(git rev-list --max-parents=0 HEAD | sort | head -n 1)
+                LOG=$(git log "$FIRST_COMMIT..$CURR_TAG" --reverse --pretty=format:"- %s (%h)")
+            else
+                # Later releases - commits since previous tag
+                PREV_TAG=$(git tag --sort=-creatordate | sed -n 2p)
+                LOG=$(git log "$PREV_TAG..$CURR_TAG" --reverse --pretty=format:"- %s (%h)")
+            fi
+
+            # Output to GitHub Actions
+            {
+                printf 'LOG<<EOF\n'
+                printf '%s\n' "$LOG"
+                printf 'EOF\n'
+            } >> "$GITHUB_OUTPUT"
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bikram-calendar
+          path: ./build
+
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./build/bikram-calendar
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            Changes since last release:
+            ${{ steps.changelog.outputs.LOG }}
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
