@@ -275,26 +275,6 @@ ApplicationWindow {
             }
         }
 
-        // New Calendar Button (visible only on Wayland)
-        Button {
-            id: calendarButton
-            Layout.fillWidth: true
-            text: "Open Calendar"
-            // Access the global 'platformName' context property directly
-            visible: platformName === "wayland"
-
-            onClicked: {
-                openCalendar();
-            }
-
-            background: Rectangle { color: "#555"; radius: 3; }
-            contentItem: Text {
-                text: parent.text; color: "lightgreen"; font.pointSize: 12
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
         Button {
             text: "Exit Widget"
             Layout.fillWidth: true
@@ -351,31 +331,6 @@ ApplicationWindow {
         copyButton.text = message;
         resetTimer.start();
     }
-
-    // Function to show the calendar
-    function openCalendar() {
-        if (calendarWindow) {
-            calendarWindow.show();
-            calendarWindow.raise();
-            calendarWindow.requestActivate();
-            return;
-        }
-        if (!calendarComponent) {
-            calendarComponent = Qt.createComponent("main.qml");
-        }
-        if (calendarComponent.status === Component.Ready) {
-            calendarWindow = calendarComponent.createObject(widgetWindow);
-            if (calendarWindow) {
-               calendarWindow.closing.connect(() => {
-                    Panchanga.clearCache();
-                    calendarWindow.destroy();
-                    calendarWindow = null;
-                });
-                calendarWindow.show();
-            } else { console.error("Failed to create calendar window."); }
-        } else { console.error("Error loading component:", calendarComponent.errorString()); }
-    }
-
 
     // Window Closing Handler
     onClosing: {
