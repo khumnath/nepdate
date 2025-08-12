@@ -7,8 +7,8 @@ import "qrc:/qml/"
 GridLayout {
     id: calendarGrid
     columns: 7
-    rowSpacing: 8
-    columnSpacing: 8
+    rowSpacing: 0
+    columnSpacing: 0
     Layout.fillWidth: true
     Layout.fillHeight: true
     Layout.margins: 20
@@ -26,13 +26,10 @@ GridLayout {
             Layout.fillHeight: modelData.type === "day" || modelData.type === "empty"
             Layout.preferredHeight: modelData.type === "header" ? 35 : -1
 
-            // Use a Loader to conditionally instantiate the correct component.
-            // This is the key to fixing the "Unable to assign [undefined]" errors.
             Loader {
                 id: delegateLoader
                 anchors.fill: parent
 
-                // Set the source component based on the model data type
                 sourceComponent: {
                     if (modelData.type === "header") {
                         return headerComponent;
@@ -43,7 +40,6 @@ GridLayout {
                     }
                 }
 
-                // After the correct component is loaded, set its specific properties.
                 onLoaded: {
                     if (modelData.type === "day") {
                         item.bsDay = modelData.bsDay;
@@ -52,53 +48,104 @@ GridLayout {
                         item.isToday = modelData.isToday;
                         item.isSaturday = modelData.isSaturday;
                         item.theme = calendarGrid.theme;
-                        // Connect the signal from the loaded DayCell to the CalendarGrid's signal
                         item.clicked.connect(function() {
                             calendarGrid.dayClicked(modelData.panchanga)
                         });
                     } else if (modelData.type === "header") {
                         item.text = modelData.text;
                         item.theme = calendarGrid.theme;
+                        item.cellIndex = index;
                     }
                 }
             }
         }
     }
 
-    // --- Component Definitions for the Loader ---
 
     Component {
         id: headerComponent
-        Rectangle {
-            // These properties are set by the Loader
+        Item {
+            id: headerItemContainer
             property string text
             property var theme
+            property int cellIndex: -1
 
-            radius: 8
-            color: theme && theme.isDark ? theme.secondaryBg : (theme ? theme.tertiaryBg : "lightgrey")
-            border.width: 0
+            Rectangle {
+                id: headerBackground
+                anchors.fill: parent
+                radius: (cellIndex === 0 || cellIndex === 6) ? 6 : 0
+                color: theme ? theme.secondaryBg : "#FFFFFF"
+                border.color: theme.borderColor
+            }
+
+            Rectangle {
+                visible: cellIndex === 0
+                width: headerBackground.radius
+                height: headerBackground.radius
+                color: headerBackground.color
+                anchors.top: parent.top
+                anchors.right: parent.right
+            }
+            Rectangle {
+                visible: cellIndex === 0
+                width: headerBackground.radius
+                height: headerBackground.radius
+                color: headerBackground.color
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+            }
+            Rectangle {
+                visible: cellIndex === 6
+                width: headerBackground.radius
+                height: headerBackground.radius
+                color: headerBackground.color
+                anchors.top: parent.top
+                anchors.left: parent.left
+            }
+            Rectangle {
+                visible: cellIndex === 6
+                width: headerBackground.radius
+                height: headerBackground.radius
+                color: headerBackground.color
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+            }
+            Rectangle {
+                visible: cellIndex === 0 || cellIndex === 6
+                width: headerBackground.radius
+                height: headerBackground.radius
+                color: headerBackground.color
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+            }
 
             Label {
-                text: parent.text
-                color: theme && theme.isDark ? theme.secondaryText : (theme ? theme.accentText : "blue")
+                text: headerItemContainer.text
+                color: {
+                    if (cellIndex === 6) {
+                        return "#E4080A"
+                    } else {
+                        return theme.accentText;
+                    }
+                }
                 font.bold: true
-                font.pixelSize: 12
-                anchors.fill: parent
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: 14
+                anchors.centerIn: parent
             }
         }
     }
 
     Component {
         id: dayComponent
-        // The DayCell itself. Its properties will be set by the Loader's onLoaded handler.
         DayCell {}
     }
 
     Component {
         id: emptyComponent
-        // An empty item for the blank days at the start of the month.
-        Item {}
+        Rectangle {
+            border.color: theme ? theme.borderColor : "grey"
+            border.width: 1
+            color: "transparent"
+        }
     }
 }

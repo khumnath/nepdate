@@ -100,12 +100,35 @@ ApplicationWindow {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
 
+        // Drag state
+        property bool isPressed: false
+        property bool dragStarted: false
+        property bool wasDragged: false
+        property point pressPos: Qt.point(0, 0)
         property int dragStartX: 0
         property int dragStartY: 0
         property int windowStartX: 0
         property int windowStartY: 0
-        property bool wasDragged: false
+        property int dragThreshold: 8 // pixels
 
+        // Tooltip logic
+        Timer {
+            id: tooltipTimer
+            interval: 500
+            repeat: false
+            onTriggered: showTooltip()
+        }
+        // Ignore wayland for tooltip now. (REASON: tooltip position is over widget in buttom side of screen)
+        onEntered:  if (platformName !== "wayland") {
+            tooltipTimer.start()
+                    }
+        onExited: { if (platformName !== "wayland") {
+            tooltipTimer.stop()
+            hideTooltip()
+            }
+        }
+
+        // Drag reset timer
         Timer {
             id: resetDragTimer
             interval: 300
@@ -113,56 +136,59 @@ ApplicationWindow {
             onTriggered: dragArea.wasDragged = false
         }
 
-        Timer {
-            id: tooltipTimer
-            interval: 500
-            repeat: false
-            onTriggered: showTooltip()
-        }
-
-        onEntered: tooltipTimer.start()
-        onExited: {
-            tooltipTimer.stop()
-            hideTooltip()
-        }
-
         Item { id: globalMapper; anchors.fill: parent; visible: false }
 
         onPressed: function(mouse) {
             if (mouse.button === Qt.LeftButton) {
-                wasDragged = false;
-                if (platformName === "wayland") {
-                    widgetWindow.startSystemMove()
-                    wasDragged = true; // Assume a drag will happen
-                } else { // X11 and other platforms
-                    // Use the direct screen coordinates from the mouse event for reliability.
-                    var globalPos = globalMapper.mapToGlobal(Qt.point(mouse.x, mouse.y))
-                                        dragStartX = globalPos.x
-                                        dragStartY = globalPos.y
-                                        windowStartX = widgetWindow.x
-                                        windowStartY = widgetWindow.y
+                isPressed = true
+                dragStarted = false
+                wasDragged = false
+                pressPos = Qt.point(mouse.x, mouse.y)
 
+                if (platformName !== "wayland") {
+                    var globalPos = globalMapper.mapToGlobal(pressPos)
+                    dragStartX = globalPos.x
+                    dragStartY = globalPos.y
+                    windowStartX = widgetWindow.x
+                    windowStartY = widgetWindow.y
                 }
             }
         }
 
         onPositionChanged: function(mouse) {
-            if (platformName !== "wayland" && (mouse.buttons & Qt.LeftButton)) {
-                var globalPos = globalMapper.mapToGlobal(Qt.point(mouse.x, mouse.y))
-                               widgetWindow.x = windowStartX + (globalPos.x - dragStartX)
-                               widgetWindow.y = windowStartY + (globalPos.y - dragStartY)
+            if (!isPressed)
+                return
 
+            var dx = mouse.x - pressPos.x
+            var dy = mouse.y - pressPos.y
+            var distance = Math.sqrt(dx * dx + dy * dy)
+
+            if (!dragStarted && distance > dragThreshold) {
+                dragStarted = true
                 wasDragged = true
+
+                if (platformName === "wayland") {
+                    widgetWindow.startSystemMove()
+                }
+            }
+
+            if (dragStarted && platformName !== "wayland") {
+                var globalPos = globalMapper.mapToGlobal(Qt.point(mouse.x, mouse.y))
+                widgetWindow.x = windowStartX + (globalPos.x - dragStartX)
+                widgetWindow.y = windowStartY + (globalPos.y - dragStartY)
                 resetDragTimer.stop()
             }
         }
 
         onReleased: function(mouse) {
-            if (mouse.button === Qt.LeftButton && wasDragged) {
-                if (mouse.button === Qt.LeftButton && wasDragged) {
-                                appSettings.setValue("widgetPositionX", widgetWindow.x)
-                                appSettings.setValue("widgetPositionY", widgetWindow.y)
-                                resetDragTimer.start()
+            if (mouse.button === Qt.LeftButton) {
+                isPressed = false
+                dragStarted = false
+
+                if (wasDragged) {
+                    appSettings.setValue("widgetPositionX", widgetWindow.x)
+                    appSettings.setValue("widgetPositionY", widgetWindow.y)
+                    resetDragTimer.start()
                 }
             }
         }

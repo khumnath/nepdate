@@ -6,13 +6,7 @@ import "qrc:/qml/"
 // DayCell.qml
 Rectangle {
     id: dayCell
-    radius: 12
-    scale: cellMouseArea.containsMouse ? 1.2 : 1.0
-    z: cellMouseArea.containsMouse ? 1 : 0
-    Behavior on scale {
-        NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
-    }
-
+    radius: 5
     property int bsDay: 0
     property int adDay: 0
     property string tithi: ""
@@ -42,6 +36,11 @@ Rectangle {
         text: Panchanga.toDevanagari(bsDay || 0)
         font.bold: true
         font.pixelSize: cellMouseArea.containsMouse ? 28 : 25
+        scale: cellMouseArea.containsMouse ? 1.2 : 1.0
+        z: cellMouseArea.containsMouse ? 1 : 0
+        Behavior on scale {
+            NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+        }
         color: {
             if (!theme) return "black";
             if (isToday) return theme.accentText;

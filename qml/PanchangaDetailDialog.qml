@@ -212,6 +212,7 @@ Dialog {
 
     onClosed: {
         clearPanchangaDetails();
+        Panchanga.clearCache();
         debugVisible = false;
     }
 
