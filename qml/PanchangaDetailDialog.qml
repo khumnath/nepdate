@@ -6,109 +6,74 @@ import "qrc:/qml/"
 
 // PanchangaDetailDialog.qml
 Dialog {
-    id: panchangaDetailDialogRoot // Changed id to avoid name collision
+    id: panchangaDetailDialogRoot
     width: Math.min(parent.width * 0.9, 600)
-    height: Math.min(parent.height * 0.8, 550)
+    height: Math.min(contentItem.implicitHeight, parent.height * 0.8)
     modal: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     x: (parent.width - width) / 2
     y: (parent.height - height) / 2
     padding: 0
+    background: null
 
+    // Properties
     property var theme
     property var panchangaData: null
     property bool debugVisible: false
     property string currentDebugInfo: ""
 
-    background: Rectangle {
+    // Components
+    contentItem: Rectangle {
+        id: contentRect
+        width: panchangaDetailDialogRoot.width
+        implicitHeight: contentColumn.implicitHeight
         color: theme ? theme.secondaryBg : "white"
         radius: 12
         border.color: theme ? theme.borderColor : "grey"
         border.width: 1
         clip: true
-    }
 
-    contentItem: Item {
-        width: panchangaDetailDialogRoot.width
-        height: panchangaDetailDialogRoot.height
-
-        Rectangle {
-            id: modalHeader
+        ColumnLayout {
+            id: contentColumn
             width: parent.width
-            height: 60
-            color: theme ? theme.secondaryBg : "white"
 
-            Label {
-                id: modalTitle
-                text: "दिनको विवरण"
-                font.pixelSize: 20
-                font.bold: true
-                color: theme ? theme.modalHeaderText : "black"
-                anchors.centerIn: parent
-                z: 1
-            }
-        }
+            // Header section of the dialog.
+            Rectangle {
+                id: modalHeader
+                Layout.fillWidth: true
+                height: 60
+                color: "transparent"
 
-        Rectangle {
-            id: modalFooter
-            width: parent.width
-            height: 65
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 12
-            color: theme ? theme.secondaryBg : "white"
-
-            Button {
-                text: "बन्द गर्नुहोस्"
-                anchors.centerIn: parent
-                onClicked: panchangaDetailDialogRoot.close()
-
-                background: Rectangle {
-                    color: theme ? theme.tertiaryBg : "lightgrey"
-                    border.color: parent.hovered && theme ? theme.accent : "gray"
-                    border.width: parent.hovered ? 2 : 1
-                    radius: 12
-                }
-
-                contentItem: Text {
-                    text: parent.text
-                    font: parent.font
-                    color: theme ? theme.primaryText : "black"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    padding: 5
+                Label {
+                    id: modalTitle
+                    text: "दिनको विवरण"
+                    font.pixelSize: 20
+                    font.bold: true
+                    color: theme ? theme.modalHeaderText : "black"
+                    anchors.centerIn: parent
+                    z: 1
                 }
             }
-        }
 
-        Flickable {
-            id: flickableArea
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: modalHeader.bottom
-                bottom: modalFooter.top
-                leftMargin: 30
-                rightMargin: 20
-            }
-            clip: false
-            contentHeight: scrollContent.height
-
+            // The main content area.
             ColumnLayout {
-                id: scrollContent
-                width: parent.width
+                id: contentArea
+                Layout.fillWidth: true
                 spacing: 15
 
                 Button {
                     id: showDebugButton
-                    visible: !window.debugVisible
+                    visible: !panchangaDetailDialogRoot.debugVisible
                     text: "डिबग जानकारी देखाउनुहोस्"
                     Layout.fillWidth: true
                     height: 40
-                    onClicked: debugVisible = true
+                    onClicked: panchangaDetailDialogRoot.debugVisible = true
+                    Layout.leftMargin: 30
+                    Layout.rightMargin: 20
 
                     background: Rectangle {
                         color: theme.tertiaryBg
-                        border.color: parent.hovered ?  theme.accent : "gray"
+                        border.color: parent.hovered ? theme.accent : "gray"
                         border.width: parent.hovered ? 2 : 1
                         radius: 12
                     }
@@ -123,28 +88,33 @@ Dialog {
                     }
                 }
 
+                // Layout for the Panchanga details।
                 ColumnLayout {
                     id: panchangaDetails
-                    visible: !debugVisible
-                    spacing: 15
+                    visible: !panchangaDetailDialogRoot.debugVisible
+                    spacing: 8
                     Layout.fillWidth: true
+                    Layout.leftMargin: 30
+                    Layout.rightMargin: 20
                 }
 
                 Rectangle {
                     id: debugInfoArea
-                    visible: debugVisible
+                    visible: panchangaDetailDialogRoot.debugVisible
                     z: 99
                     Layout.fillWidth: true
-                    implicitHeight: debugInfoText.paintedHeight + 10
+                    implicitHeight: debugInfoText.paintedHeight + 20
                     color: "black"
                     border.color: theme ? theme.accent : "blue"
                     border.width: 1
                     radius: 8
+                    Layout.leftMargin: 30
+                    Layout.rightMargin: 20
 
                     Flickable {
                         anchors.fill: parent
                         contentWidth: debugInfoText.paintedWidth
-                        contentHeight: debugInfoText.paintedHeight + 10
+                        contentHeight: debugInfoText.paintedHeight
                         clip: true
 
                         TextEdit {
@@ -163,11 +133,13 @@ Dialog {
 
                 Button {
                     id: hideDebugButton
-                    visible: debugVisible
+                    visible: panchangaDetailDialogRoot.debugVisible
                     text: "डिबग लुकाउनुहोस्"
                     Layout.fillWidth: true
                     height: 40
-                    onClicked: debugVisible = false
+                    onClicked: panchangaDetailDialogRoot.debugVisible = false
+                    Layout.leftMargin: 30
+                    Layout.rightMargin: 20
 
                     background: Rectangle {
                         radius: 8
@@ -184,25 +156,68 @@ Dialog {
                     }
                 }
             }
+
+            // Footer section with the close button.
+            Rectangle {
+                id: modalFooter
+                Layout.fillWidth: true
+                height: 65
+                color: "transparent"
+
+                Button {
+                    text: "बन्द गर्नुहोस्"
+                    anchors.centerIn: parent
+                    onClicked: panchangaDetailDialogRoot.close()
+
+                    background: Rectangle {
+                        color: theme ? theme.tertiaryBg : "lightgrey"
+                        border.color: parent.hovered && theme ? theme.accent : "gray"
+                        border.width: parent.hovered ? 2 : 1
+                        radius: 12
+                    }
+
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: theme ? theme.primaryText : "black"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        padding: 5
+                    }
+                }
+            }
         }
     }
 
+
+    //  Handlers and Functions
     onOpened: {
         if (panchangaData) {
             clearPanchangaDetails();
             modalTitle.text = panchangaData.gregorianDate;
+
+            var eventComponent = Qt.createComponent("EventDisplay.qml");
+            if (eventComponent.status === Component.Ready) {
+                var eventObj = eventComponent.createObject(panchangaDetails, {
+                                                               "theme": theme,
+                                                               "events": panchangaData.events
+                                                           });
+            } else {
+                console.log("Error creating event component:", eventComponent.errorString());
+            }
+
             var details = [
-                        createDetailRow("बिक्रम संवत", toDevanagari(panchangaData.bsYear) + " " + panchangaData.monthName + " " + toDevanagari(panchangaData.bsDay)),
-                        createDetailRow("वार", panchangaData.weekday),
-                        createDetailRow("तिथि", panchangaData.tithi + " (" + panchangaData.paksha + ")"),
-                        createDetailRow("नक्षत्र", panchangaData.nakshatra),
-                        createDetailRow("योग", panchangaData.yoga),
-                        createDetailRow("करण", panchangaData.karana),
-                        createDetailRow("सूर्य राशि", panchangaData.sunRashi),
-                        createDetailRow("चन्द्र राशि", panchangaData.moonRashi),
-                        createDetailRow("उदयास्त", "सूर्योदय " + panchangaData.sunrise + " | सूर्यास्त " + panchangaData.sunset),
-                        createDetailRow("अधिक/क्षय मास", panchangaData.adhikaMasa)
-                    ];
+                createDetailRow("बिक्रम संवत", toDevanagari(panchangaData.bsYear) + " " + panchangaData.monthName + " " + toDevanagari(panchangaData.bsDay)),
+                createDetailRow("वार", panchangaData.weekday),
+                createDetailRow("तिथि", panchangaData.tithi + " (" + panchangaData.paksha + ")"),
+                createDetailRow("नक्षत्र", panchangaData.nakshatra),
+                createDetailRow("योग", panchangaData.yoga),
+                createDetailRow("करण", panchangaData.karana),
+                createDetailRow("सूर्य राशि", panchangaData.sunRashi),
+                createDetailRow("चन्द्र राशि", panchangaData.moonRashi),
+                createDetailRow("उदयास्त", "सूर्योदय " + panchangaData.sunrise + " | सूर्यास्त " + panchangaData.sunset),
+                createDetailRow("अधिक/क्षय मास", panchangaData.adhikaMasa)
+            ];
             for (var i = 0; i < details.length; ++i) {
                 details[i].parent = panchangaDetails;
             }

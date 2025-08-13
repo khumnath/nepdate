@@ -12,6 +12,7 @@ Rectangle {
     property string tithi: ""
     property bool isToday: false
     property bool isSaturday: false
+    property bool hasEvent: false
     property var theme
 
     signal clicked()
@@ -31,6 +32,20 @@ Rectangle {
         return theme.borderColor;
     }
     border.width: isToday ? 2 : 1
+
+    // Event Indicator
+    Rectangle {
+        id: eventIndicator
+        width: 6
+        height: 6
+        radius: 4
+        color: "orange"
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.margins: 5
+        visible: hasEvent
+        z: 1
+    }
 
     Label {
         text: Panchanga.toDevanagari(bsDay || 0)

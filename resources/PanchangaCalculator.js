@@ -21,14 +21,15 @@
 .pragma library
 
 .import "qrc:/resources/PreCalculated_Data.js" as Bsdata
+.import "qrc:/resources/EventData.js" as EventsData
 
-// --- Caching ---
+// Caching
 var calculationCache = {};
 function clearCache() {
     calculationCache = {};
 }
 
-// --- Surya Siddhanta Constants ---
+// Surya Siddhanta Constants
 var YugaRotation = {
     'star': 1582237828,
     'sun': 4320000,
@@ -47,7 +48,7 @@ var PlanetApogee = { 'sun': 77 + 17 / 60 };
 var PlanetCircumm = { 'sun': 13 + 50 / 60, 'moon': 31 + 50 / 60 };
 
 
-// --- Panchanga Names ---
+// Panchanga Names
 var tithiNamesList = [
     "प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पञ्चमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी",
     "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "अमावस्या"
@@ -81,7 +82,7 @@ var nepaliGregorianMonths = [
 ];
 
 
-// --- Helper Functions ---
+// Helper Functions
 function zero360(x) {
     x = x - Math.floor(x / 360) * 360;
     return x < 0 ? x + 360 : x;
@@ -96,6 +97,10 @@ function toDevanagari(num) {
     return String(num).split('').map(function(digit) {
         return devanagariNumerals[parseInt(digit, 10)];
     }).join('');
+}
+
+function formatMonthDay(month, day) {
+    return `${(month < 10 ? '0' : '')}${month}/${(day < 10 ? '0' : '')}${day}`;
 }
 
 function toJulianDay(year, month, day) {
@@ -134,7 +139,7 @@ function fromJulianDay(jd) {
     return new Date(Date.UTC(year, month - 1, day));
 }
 
-// --- Surya Siddhanta Core Calculations (Used as fallback) ---
+// Surya Siddhanta Core Calculations (Used as fallback)
 function meanLongitude(ahar, rotation) {
     return zero360(rotation * ahar * 360 / YugaCivilDays);
 }
@@ -245,7 +250,7 @@ function getSunriseSunset(date, lat, lon, tz) {
     return { sunrise: formatTime(rise), sunset: formatTime(set) };
 }
 
-// --- Data-Driven Conversion and Info Functions ---
+// Data-Driven Conversion and Info Functions
 
 function fromBikramSambat(bsYear, monthIndex, day) {
     // Use data if within range, otherwise fallback to astronomical calculation
@@ -328,14 +333,75 @@ function getTodayBsInfo() {
     return getBikramSambatInfo(ahar, sunLong);
 }
 
-// --- Shared Name Resolution Utility ---
+// Shared Name Resolution Utility
 function resolveTithiName(tithiDay, paksha) {
     if (paksha === "कृष्ण पक्ष" && tithiDay === 15) return tithiNamesList[15]; // Amavasya
     if (paksha === "शुक्ल पक्ष" && tithiDay === 15) return tithiNamesList[14]; // Purnima
     return tithiNamesList[tithiDay - 1];
 }
 
-// --- Main Calculation Function ---
+// Event Calculation Function
+function getEventsForDate(date, bsYear, bsMonthIndex, bsDay) {
+    const events = [];
+    const gregorianMonth = date.getUTCMonth() + 1; // 1-indexed month
+    const gregorianDay = date.getUTCDate();
+    const gregorianYear = date.getUTCFullYear();
+
+    const formattedGregorianDate = formatMonthDay(gregorianMonth, gregorianDay);
+    const formattedBikramRecurringDate = formatMonthDay(bsMonthIndex + 1, bsDay); // bsMonthIndex is 0-indexed
+
+    // Check Gregorian events
+    for (var i = 0; i < EventsData.gregorianEvents.length; i++) {
+        var event = EventsData.gregorianEvents[i];
+        if (event.dateType === "gregorian" && event.date === formattedGregorianDate) {
+            var isValidYear = (!event.startYear || gregorianYear >= event.startYear) &&
+                              (!event.endYear || gregorianYear <= event.endYear);
+            if (isValidYear) {
+                events.push({
+                    name: event.event,
+                    detail: event.detail,
+                    category: event.category
+                });
+            }
+        }
+    }
+
+    // Check Bikram recurring events
+    for (var j = 0; j < EventsData.bikramRecurringEvents.length; j++) {
+        let event = EventsData.bikramRecurringEvents[j];
+        if (event.dateType === "brecurring" && event.date === formattedBikramRecurringDate) {
+            const isValidYear = (!event.startYear || bsYear >= event.startYear) &&
+                              (!event.endYear || bsYear <= event.endYear);
+            if (isValidYear) {
+                events.push({
+                    name: event.event,
+                    detail: event.detail,
+                    category: event.category
+                });
+            }
+        }
+    }
+
+    // Check Bikram fixed events
+    for (var k = 0; k < EventsData.bikramFixedEvents.length; k++) {
+        let event = EventsData.bikramFixedEvents[k];
+        if (event.dateType === "bikram") {
+            const eventDateParts = event.date.split('/').map(Number);
+            if (eventDateParts[0] === bsYear &&
+                eventDateParts[1] === (bsMonthIndex + 1) && // Convert back to 1-indexed for comparison
+                eventDateParts[2] === bsDay) {
+                events.push({
+                    name: event.event,
+                    detail: event.detail,
+                    category: event.category
+                });
+            }
+        }
+    }
+    return events;
+}
+
+// Main Calculation Function
 function calculate(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
     var cacheKey = "panchanga_" + date.getTime();
     if (calculationCache[cacheKey]) return calculationCache[cacheKey];
@@ -362,6 +428,9 @@ function calculate(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
     // Determine if the calculation is a fallback
     var isComputed = (bsInfo.year < Bsdata.BS_START_YEAR || bsInfo.year > Bsdata.BS_END_YEAR);
 
+    // Get events for the current date
+    var events = getEventsForDate(date, bsInfo.year, bsInfo.monthIndex, bsInfo.day);
+
     var result = {
         gregorianDate: Qt.formatDateTime(date, "dddd, MMMM d, yyyy"),
         bikramSambat: `${bsInfo.year} ${bsInfo.monthName} ${bsInfo.day}`,
@@ -380,14 +449,14 @@ function calculate(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
         sunRashi: rashis[Math.floor(sunLong / 30) % 12],
         moonRashi: rashis[Math.floor(moonLong / 30) % 12],
         adhikaMasa: calculateAdhikaMasa(ahar),
+        events: events,
         isComputed: isComputed
     };
     calculationCache[cacheKey] = result;
     return result;
 }
 
-
-// --- Debug calculations. ---
+// Debug calculations.
 function generateDebugInfo(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
     var cacheKey = "debug_" + date.getTime();
         if (calculationCache[cacheKey]) return calculationCache[cacheKey];
