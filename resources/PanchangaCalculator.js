@@ -226,39 +226,134 @@ function fromGregorianAstronomical(gYear, gMonth, gDay) {
     };
 }
 
+
+
 function findNewMoon(ahar) {
-    var getElongation = function (a) { return zero360(trueLongitudeMoon(a) - trueLongitudeSun(a)); };
-    var lo = ahar - 2, hi = ahar + 2;
-    var el = getElongation(lo), eh = getElongation(hi);
-    if (el < eh) el += 360;
-    for (var i = 0; i < 30; i++) {
+    var getElongation = function(a) {
+        return zero360(trueLongitudeMoon(a) - trueLongitudeSun(a));
+    };
+
+    var guess = ahar;
+    var step = 0.5;
+
+    for (var i = 0; i < 10; i++) {
+        var elong = getElongation(guess);
+
+        if (elong < 5 || elong > 355) {
+            break;
+        }
+
+        if (elong < 180) {
+            guess -= (elong / 360) * 29.53;
+        } else {
+            guess += ((360 - elong) / 360) * 29.53;
+        }
+    }
+
+    var lo = guess - 1;
+    var hi = guess + 1;
+
+    for (let i = 0; i < 50; i++) {
         var mid = (lo + hi) / 2;
         var em = getElongation(mid);
-        if (el < em) em -= 360;
-        if (em > 0) { lo = mid; el = em; }
-        else { hi = mid; eh = em; }
+
+        if (em < 180) {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
     }
+
     return (lo + hi) / 2;
 }
 
 function calculateAdhikaMasa(ahar) {
-    const tithi = getTithi(trueLongitudeSun(ahar), trueLongitudeMoon(ahar));
-    const daysPerTithi = 29.530588 / 30; // ~0.9843 days
-    const nextNewMoon = findNewMoon(ahar + (30 - tithi) * daysPerTithi);
-    const prevNewMoon = findNewMoon(nextNewMoon - 29.6);
-
-    const signAtPrev = Math.floor(trueLongitudeSun(prevNewMoon) / 30);
-    const signAtNext = Math.floor(trueLongitudeSun(nextNewMoon) / 30);
-
-    if (signAtPrev === signAtNext) {
-        return "अधिक " + solarMonths[signAtNext];
+    var lunarMonthStart = findNewMoon(ahar);
+    if (lunarMonthStart > ahar) {
+        lunarMonthStart = findNewMoon(lunarMonthStart - 29.530588853);
     }
 
-    if ((signAtNext - signAtPrev + 12) % 12 === 2) {
-        return "क्षय मास";
+    var lunarMonthEnd = findNewMoon(lunarMonthStart + 29.530588853);
+    var sunLongStart = trueLongitudeSun(lunarMonthStart);
+    var sunLongEnd = trueLongitudeSun(lunarMonthEnd);
+
+    var startSign = Math.floor(sunLongStart / 30);
+    var endSign = Math.floor(sunLongEnd / 30);
+
+    var signCrossings = 0;
+    var currentSign = startSign;
+
+    for (var i = 1; i <= 29; i++) {
+        var checkAhar = lunarMonthStart + i;
+        var checkSunLong = trueLongitudeSun(checkAhar);
+        var checkSign = Math.floor(checkSunLong / 30);
+
+        if (checkSign < currentSign) {
+            checkSign += 12;
+        }
+
+        if (checkSign > currentSign) {
+            signCrossings += (checkSign - currentSign);
+            currentSign = checkSign % 12;
+        }
     }
 
-    return "छैन";
+    if (endSign < currentSign) {
+        endSign += 12;
+    }
+    if (endSign > currentSign) {
+        signCrossings += (endSign - currentSign);
+    }
+
+    var result = "छैन";
+
+    if (signCrossings === 0) {
+        result = "अधिक " + solarMonths[startSign]
+    }
+
+    if (signCrossings >= 2) {
+        var skippedSign = (startSign + 1) % 12;
+        result = "क्षय " + solarMonths[skippedSign]
+    }
+
+    return result;
+}
+
+function getLunarMonthNameWithAdhik(ahar) {
+    var lunarMonthStart = findNewMoon(ahar);
+    if (lunarMonthStart > ahar) {
+        lunarMonthStart = findNewMoon(lunarMonthStart - 29.53);
+    }
+
+    var purnima = findNewMoon(lunarMonthStart + 14.77); // ~14.77 days after new moon
+
+    var sunLongPurnima = trueLongitudeSun(purnima);
+    var purnimaSign = Math.floor(sunLongPurnima / 30);
+
+    var signCrossings = 0;
+    var currentSign = Math.floor(trueLongitudeSun(lunarMonthStart) / 30);
+
+    for (var i = 1; i <= 29; i++) {
+        var checkAhar = lunarMonthStart + i;
+        var checkSunLong = trueLongitudeSun(checkAhar);
+        var checkSign = Math.floor(checkSunLong / 30);
+
+        if (checkSign < currentSign) {
+            checkSign += 12;
+        }
+
+        if (checkSign > currentSign) {
+            signCrossings += (checkSign - currentSign);
+            currentSign = checkSign % 12;
+        }
+    }
+
+    var isAdhik = (signCrossings === 0);
+    var result = {
+        monthName: solarMonths[purnimaSign],
+        isAdhik: isAdhik
+    };
+    return result;
 }
 
 function getSunriseSunset(date, lat, lon, tz) {
@@ -608,6 +703,12 @@ function generateDebugInfo(date, lat = 27.7172, lon = 85.3240, tz = 5.75) {
     // Calculate difference in milliseconds
     var timeDiff = date.getTime() - gregFromAstronomical.getTime();
     dayDifference = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+    var dayDifferenceDisplay = dayDifference;
+        if (Math.abs(dayDifference) > 2) {  // Show in red if difference is more than 2 days
+            dayDifferenceDisplay = `<font color="#ff0000">${dayDifference}</font>`;
+        } else if (Math.abs(dayDifference) > 0) {
+            dayDifferenceDisplay = `<font color="yellow">${dayDifference}</font>`;
+        }
     var sunriseSunset = getSunriseSunset(date, lat, lon, tz);
     var isComputed = (bsInfoData.year < Bsdata.BS_START_YEAR || bsInfoData.year > Bsdata.BS_END_YEAR);
 
@@ -623,13 +724,23 @@ Data-Driven BS Date: Not available (using astronomical calculation)
 `;
     }
 
+    var lunarMonthInfo = getLunarMonthNameWithAdhik(ahar);
+       var lunarMonthDisplay;
+       if (lunarMonthInfo.isAdhik) {
+           lunarMonthDisplay = "अधिक " + lunarMonthInfo.monthName + " " + paksha;
+       } else {
+           lunarMonthDisplay = lunarMonthInfo.monthName + " " + paksha;
+       }
+
     var debugOutput = `
+    <pre style="font-family: monospace; font-size: 9pt; color: white; white-space: pre; line-height: 1.2;">
 ${dataDrivenInfo}Consistency Check:
 Data-Driven BS Date: ${bsInfoData ? `${toDevanagari(bsInfoData.year)} ${bsInfoData.monthName} ${toDevanagari(bsInfoData.day)}` : 'N/A'}
 Astronomical BS Date (Corrected): ${toDevanagari(bsInfoCalc.year)} ${bsInfoCalc.monthName} ${toDevanagari(bsInfoCalc.day)}
-Day Difference: ${dayDifference} ${Math.abs(dayDifference) === 1 ? 'day' : 'days'}
-(Note: Positive = Astronomical date is behind; Negative = Astronomical date is ahead)
-
+Day Difference: ${dayDifferenceDisplay} ${Math.abs(dayDifference) === 1 ? 'day' : 'days'}
+<span style="margin: 0; color: yellow; padding: 0;">lunar Month(testing): ${lunarMonthDisplay}</span>
+<span style="margin: 0; color: red; padding: 0;">Note: Positive = Astronomical date is behind;
+Negative = Astronomical date is ahead)</span>
 Detailed Astronomical Calculation:
 gregorianDate: ${Qt.formatDateTime(date, "dddd, MMMM d, yyyy")}
 bsMonthIndex(0 based index): ${bsInfoCalc.monthIndex}
@@ -646,8 +757,9 @@ karana: ${karanaName} | index: ${karanaIdx}
 karanaAngle: ${(2 * tithiVal).toFixed(4)}
 sunRashi: ${rashis[Math.floor(sunLong / 30) % 12]} | index: ${Math.floor(sunLong / 30) % 12 + 1}
 moonRashi: ${rashis[Math.floor(moonLong / 30) % 12]} | index: ${Math.floor(moonLong / 30) % 12 + 1}
-adhikaMasa: ${calculateAdhikaMasa(ahar)}
+adhikaMasa: ${calculateAdhikaMasa(ahar)}(approximation)
 isComputed: ${isComputed}
+    </pre>
     `.trim();
 
     var result = { debug: debugOutput.replace(/^\s*[\r\n]/gm, "") };

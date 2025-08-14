@@ -8,7 +8,7 @@ import "qrc:/qml/"
 Dialog {
     id: panchangaDetailDialogRoot
     width: Math.min(parent.width * 0.9, 600)
-    height: Math.min(contentItem.implicitHeight, parent.height * 0.8)
+    height: Math.min(contentItem.implicitHeight, parent.height)
     modal: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     x: (parent.width - width) / 2
@@ -88,7 +88,7 @@ Dialog {
                     }
                 }
 
-                // Layout for the Panchanga details।
+                // Layout for the Panchanga details.
                 ColumnLayout {
                     id: panchangaDetails
                     visible: !panchangaDetailDialogRoot.debugVisible
@@ -113,20 +113,26 @@ Dialog {
 
                     Flickable {
                         anchors.fill: parent
-                        contentWidth: debugInfoText.paintedWidth
+                        contentWidth: Math.min(parent.width * 0.96, 600)
                         contentHeight: debugInfoText.paintedHeight
                         clip: true
 
-                        TextEdit {
-                            id: debugInfoText
-                            text: currentDebugInfo
-                            color: "white"
-                            font.family: "monospace"
-                            font.pointSize: 9
-                            readOnly: true
-                            wrapMode: TextEdit.NoWrap
-                            selectByMouse: true
-                            padding: 10
+                        ScrollView {
+                            anchors.fill: parent
+                            clip: true
+
+                            TextEdit {
+                                id: debugInfoText
+                                text: currentDebugInfo
+                                color: "white"
+                                font.family: "monospace"
+                                font.pointSize: 9
+                                readOnly: true
+                                wrapMode: TextEdit.NoWrap
+                                textFormat: TextEdit.RichText
+                                selectByMouse: true
+                                padding: 10
+                            }
                         }
                     }
                 }
@@ -207,17 +213,17 @@ Dialog {
             }
 
             var details = [
-                createDetailRow("बिक्रम संवत", toDevanagari(panchangaData.bsYear) + " " + panchangaData.monthName + " " + toDevanagari(panchangaData.bsDay)),
-                createDetailRow("वार", panchangaData.weekday),
-                createDetailRow("तिथि", panchangaData.tithi + " (" + panchangaData.paksha + ")"),
-                createDetailRow("नक्षत्र", panchangaData.nakshatra),
-                createDetailRow("योग", panchangaData.yoga),
-                createDetailRow("करण", panchangaData.karana),
-                createDetailRow("सूर्य राशि", panchangaData.sunRashi),
-                createDetailRow("चन्द्र राशि", panchangaData.moonRashi),
-                createDetailRow("उदयास्त", "सूर्योदय " + panchangaData.sunrise + " | सूर्यास्त " + panchangaData.sunset),
-                createDetailRow("अधिक/क्षय मास", panchangaData.adhikaMasa)
-            ];
+                        createDetailRow("बिक्रम संवत", toDevanagari(panchangaData.bsYear) + " " + panchangaData.monthName + " " + toDevanagari(panchangaData.bsDay)),
+                        createDetailRow("वार", panchangaData.weekday),
+                        createDetailRow("तिथि", panchangaData.tithi + " (" + panchangaData.paksha + ")"),
+                        createDetailRow("नक्षत्र", panchangaData.nakshatra),
+                        createDetailRow("योग", panchangaData.yoga),
+                        createDetailRow("करण", panchangaData.karana),
+                        createDetailRow("सूर्य राशि", panchangaData.sunRashi),
+                        createDetailRow("चन्द्र राशि", panchangaData.moonRashi),
+                        createDetailRow("उदयास्त", "सूर्योदय " + panchangaData.sunrise + " | सूर्यास्त " + panchangaData.sunset),
+                        createDetailRow("अधिक/क्षय मास", panchangaData.adhikaMasa)
+                    ];
             for (var i = 0; i < details.length; ++i) {
                 details[i].parent = panchangaDetails;
             }
