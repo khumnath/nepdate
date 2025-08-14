@@ -106,7 +106,7 @@ ColumnLayout {
                 return str;
             }
 
-            font.pixelSize: 14
+            font.pixelSize: 12
             color: theme ? theme.secondaryText : "black"
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter

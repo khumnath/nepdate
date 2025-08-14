@@ -14,16 +14,7 @@ ColumnLayout {
 
     //  Components
 
-    // Title for the events section. Only visible if there are events.
-    Label {
-        text: "कार्यक्रम हरु"
-        font.pixelSize: 18
-        font.bold: true
-        color: theme ? theme.accentText : "darkblue"
-        Layout.alignment: Qt.AlignHCenter
-        Layout.bottomMargin: 5
-        visible: events.length > 0
-    }
+
 
     //Label to display all events, joined by commas.
     Label {
@@ -35,29 +26,11 @@ ColumnLayout {
             }
             return "";
         }
-        font.pixelSize: 16
+        font.pixelSize: 12
         color: theme ? theme.primaryText : "black"
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
         Layout.fillWidth: true
         visible: events.length > 0
-    }
-
-    // Message to display if no events are found for the selected day.
-    Label {
-        text: "कुनै कार्यक्रम भेटिएन"
-        font.pixelSize: 16
-        font.italic: true
-        color: theme ? theme.secondaryText : "grey"
-        horizontalAlignment: Text.AlignHCenter
-        Layout.fillWidth: true
-        visible: events.length === 0
-    }
-
-    // Bottom margin to the event section.
-    Rectangle {
-        height: 20
-        color: "transparent"
-        Layout.fillWidth: true
     }
 }

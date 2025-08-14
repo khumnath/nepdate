@@ -114,7 +114,7 @@ Dialog {
                     Flickable {
                         anchors.fill: parent
                         contentWidth: Math.min(parent.width * 0.96, 600)
-                        contentHeight: debugInfoText.paintedHeight
+                        contentHeight: parent.height
                         clip: true
 
                         ScrollView {
@@ -126,7 +126,7 @@ Dialog {
                                 text: currentDebugInfo
                                 color: "white"
                                 font.family: "monospace"
-                                font.pointSize: 9
+                                font.pointSize: 8
                                 readOnly: true
                                 wrapMode: TextEdit.NoWrap
                                 textFormat: TextEdit.RichText
