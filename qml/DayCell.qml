@@ -13,13 +13,17 @@ Rectangle {
     property bool isToday: false
     property bool isSaturday: false
     property bool hasEvent: false
+    property bool isHoliday: false
     property var theme
+    property var cellDate
 
     signal clicked()
 
     color: {
         if (!theme) return "white";
         if (cellMouseArea.containsMouse) return theme.tertiaryBg;
+        //holiday background disabled now
+        //if (isHoliday) return theme.holidayBg;
         if (isSaturday) return theme.saturdayBg;
         if (isToday) return theme.todayBg;
         return theme.secondaryBg;
@@ -29,9 +33,25 @@ Rectangle {
         if (!theme) return "grey";
         if (isToday) return theme.todayBorder;
         if (isSaturday) return theme.saturdayBorder;
+        if (isHoliday) return theme.holidayBorder;
         return theme.borderColor;
     }
     border.width: isToday ? 2 : 1
+
+    Component.onCompleted: {
+        if (cellDate) {
+            var dayInfo = Panchanga.calculate(cellDate);
+            if (dayInfo.events && dayInfo.events.length > 0) {
+                for (var i = 0; i < dayInfo.events.length; i++) {
+                    if (dayInfo.events[i].holiday) {
+                        isHoliday = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
 
     // Event Indicator
     Rectangle {

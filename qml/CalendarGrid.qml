@@ -28,7 +28,6 @@ ColumnLayout {
         Layout.preferredHeight: parent.width
         Layout.margins: 10
         Layout.topMargin: 10
-        //Layout.bottomMargin: 10
 
         Repeater {
             id: repeater
@@ -60,6 +59,18 @@ ColumnLayout {
                             item.isSaturday = modelData.isSaturday;
                             item.hasEvent = modelData.hasEvent;
                             item.theme = calendarGridRoot.theme;
+
+                            var isHoliday = false;
+                            if (modelData.panchanga && modelData.panchanga.events) {
+                                for (var i = 0; i < modelData.panchanga.events.length; i++) {
+                                    if (modelData.panchanga.events[i].holiday) {
+                                        isHoliday = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            item.isHoliday = isHoliday;
+
                             item.clicked.connect(function() {
                                 calendarGridRoot.dayClicked(modelData.panchanga)
                             });
@@ -78,7 +89,6 @@ ColumnLayout {
     Rectangle {
         id: eventFooter
         Layout.fillWidth: true
-        //Layout.topMargin: 10
         implicitHeight: eventLabel.paintedHeight + 20
         color: theme.secondaryBg
         radius: 6
@@ -91,7 +101,6 @@ ColumnLayout {
 
             property var eventModel: [] // Model reference
 
-            // Bind the text property to a function that builds the string
             text: {
                 var str = "";
                 if (eventModel) {
@@ -99,7 +108,7 @@ ColumnLayout {
                         var item = eventModel[i];
                         str += item.bsDay + " :\u00A0" + item.eventName;
                         if (i < eventModel.length - 1) {
-                            str += "  •  ";
+                            str += "  •  ";
                         }
                     }
                 }

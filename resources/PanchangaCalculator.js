@@ -343,46 +343,76 @@ function _getPanchangaBasics(date) {
 
 function getEventsForDate(date, bsYear, bsMonthIndex, bsDay) {
     var events = [];
+    var gregorianYear = date.getUTCFullYear();
     var gregorianMonth = date.getUTCMonth() + 1;
     var gregorianDay = date.getUTCDate();
     var formattedGregorianDate = formatMonthDay(gregorianMonth, gregorianDay);
     var formattedBikramRecurringDate = formatMonthDay(bsMonthIndex + 1, bsDay);
 
+    // Handle Gregorian events
     if (EventsData.gregorianEvents) {
         for (var i = 0; i < EventsData.gregorianEvents.length; i++) {
             var event = EventsData.gregorianEvents[i];
+            // Check year constraints using Gregorian year
+            if (event.startYear && gregorianYear < event.startYear) continue;
+            if (event.endYear && gregorianYear > event.endYear) continue;
+
             if (event.date === formattedGregorianDate) {
-                events.push({ name: event.event, detail: event.detail, category: event.category });
-            }
-        }
-    }
-    if (EventsData.bikramRecurringEvents) {
-        for (var j = 0; j < EventsData.bikramRecurringEvents.length; j++) {
-            let event = EventsData.bikramRecurringEvents[j];
-            if (event.date === formattedBikramRecurringDate) {
-                events.push({ name: event.event, detail: event.detail, category: event.category });
+                events.push({ name: event.event, detail: event.detail, holiday: event.holiday });
             }
         }
     }
 
+    // Handle Bikram recurring events
+    if (EventsData.bikramRecurringEvents) {
+        for (var j = 0; j < EventsData.bikramRecurringEvents.length; j++) {
+            let event = EventsData.bikramRecurringEvents[j];
+            // Check year constraints using BS year
+            if (event.startYear && bsYear < event.startYear) continue;
+            if (event.endYear && bsYear > event.endYear) continue;
+
+            if (event.date === formattedBikramRecurringDate) {
+                events.push({ name: event.event, detail: event.detail, holiday: event.holiday });
+            }
+        }
+    }
+
+    // Handle Bikram fixed events
+    if (EventsData.bikramFixedEvents) {
+        var formattedFixedDate = bsYear + "/" + formatMonthDay(bsMonthIndex + 1, bsDay);
+        for(let i = 0; i < EventsData.bikramFixedEvents.length; i++) {
+            let event = EventsData.bikramFixedEvents[i];
+            if (event.date === formattedFixedDate) {
+                events.push({ name: event.event, detail: event.detail, holiday: event.holiday });
+            }
+        }
+    }
+
+    // Handle Lunar events
     if (EventsData.lunarEvents) {
         var todayInfo = _getPanchangaBasics(date);
         if (todayInfo.isAdhika) {
-            return events;
+            return events; // Assuming no lunar events in Adhika masa
         }
 
         var yesterday = new Date(date.getTime() - 86400000);
         var yesterdayInfo = _getPanchangaBasics(yesterday);
 
+        // Check if the *previous* lunar month was a kshaya month. If so, its events are observed in the current month.
         var prevLunarMonthAhar = todayInfo.ahar - 29.53;
-        var prevLunarMonthAdhikaKshaya = calculateAdhikaMasa(prevLunarMonthAhar);
+        var prevMonthStatus = calculateAdhikaMasa(prevLunarMonthAhar);
         var kshayaMonthName = null;
-        if (prevLunarMonthAdhikaKshaya.startsWith("क्षय")) {
-            kshayaMonthName = prevLunarMonthAdhikaKshaya.split(" ")[1];
+        if (prevMonthStatus.startsWith("क्षय")) {
+            kshayaMonthName = prevMonthStatus.split(" ")[1];
         }
 
         for (var k = 0; k < EventsData.lunarEvents.length; k++) {
             var lunarEvent = EventsData.lunarEvents[k];
+
+            // Check year constraints using BS year
+            if (lunarEvent.startYear && bsYear < lunarEvent.startYear) continue;
+            if (lunarEvent.endYear && bsYear > lunarEvent.endYear) continue;
+
             var isEventForToday = (lunarEvent.lunarMonth === todayInfo.lunarMonthName &&
                                    lunarEvent.paksha === todayInfo.paksha &&
                                    lunarEvent.tithi === todayInfo.tithiName);
@@ -398,13 +428,14 @@ function getEventsForDate(date, bsYear, bsMonthIndex, bsDay) {
                                           yesterdayInfo.tithiName === todayInfo.tithiName);
 
                 if (isFirstDayOfTithi) {
-                    events.push({ name: lunarEvent.event, detail: lunarEvent.detail, category: lunarEvent.category });
+                    events.push({ name: lunarEvent.event, detail: lunarEvent.detail, holiday: lunarEvent.holiday });
                 }
             }
         }
     }
     return events;
 }
+
 
 // Main calculations
 function calculate(date, lat, lon, tz) {
