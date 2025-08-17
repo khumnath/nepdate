@@ -35,7 +35,7 @@ QtObject {
     readonly property color borderColor: isDark ? "#334155" : "#e2e8f0"
     readonly property color todayBorder: isDark ? "#0ea5e9" : "#0284c7"
     readonly property color saturdayBorder: isDark ? "#334155" : "#fda4af"
-    readonly property color holidayBorder: isDark ? "#334155" : "#fda4af"
+    readonly property color holidayBorder: isDark ? "#C58F69" : "#FF9101"
 
     // === Highlighted Days ===
     readonly property color todayBg: isDark ? "#082f49" : "#f0f9ff"
