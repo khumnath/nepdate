@@ -632,7 +632,6 @@ function generateDebugInfo(date, lat, lon, tz) {
                 date.getUTCDate()
                 );
     var ahar = jd - KaliEpoch + 0.25 + ((lon / 15 - tz) / 24);
-
     var sunLong = trueLongitudeSun(ahar);
     var moonLong = trueLongitudeMoon(ahar);
     var tithiVal = getTithi(sunLong, moonLong);
@@ -642,101 +641,109 @@ function generateDebugInfo(date, lat, lon, tz) {
     var tithiName = resolveTithiName(tithiDay, paksha);
 
     var karanaIdx = Math.floor(2 * tithiVal);
-    var karanaName = karanaIdx > 0
-            ? (karanaIdx < 57 ? karanas[karanaIdx % 7 || 7] : karanas[karanaIdx - 57 + 8])
-            : karanas[0];
+    var karanaName = karanaIdx > 0 ? (karanaIdx < 57 ? karanas[(karanaIdx - 1) % 7 + 1] : karanas[karanaIdx - 57 + 8]) : karanas[0];
 
     var bsInfoCalc = fromGregorianAstronomical(
                 date.getUTCFullYear(),
                 date.getUTCMonth() + 1,
                 date.getUTCDate()
                 );
-
     var dayDifference = 0;
-    var gregFromAstronomical = fromBikramSambat(
+    var gregFromAstronomical_Today = fromBikramSambat(
                 bsInfoCalc.year,
                 bsInfoCalc.monthIndex,
                 bsInfoCalc.day
-                );
+    );
 
-    if (gregFromAstronomical) {
-        var timeDiff = date.getTime() - gregFromAstronomical.getTime();
+    if (gregFromAstronomical_Today) {
+        var timeDiff = date.getTime() - gregFromAstronomical_Today.getTime();
         dayDifference = Math.round(timeDiff / (1000 * 60 * 60 * 24));
     }
 
+    if (dayDifference === 0 && !bsInfoData.isComputed) {
+        var isMismatch = (bsInfoData.day !== bsInfoCalc.day || bsInfoData.monthIndex !== bsInfoCalc.monthIndex);
+        if (isMismatch) {
+            var tomorrow = new Date(date.getTime());
+            tomorrow.setUTCDate(date.getUTCDate() + 1);
+            var bsInfoCalc_Tomorrow = fromGregorianAstronomical(
+                tomorrow.getUTCFullYear(),
+                tomorrow.getUTCMonth() + 1,
+                tomorrow.getUTCDate()
+            );
+
+            var gregFromAstronomical_Tomorrow = fromBikramSambat(
+                bsInfoCalc_Tomorrow.year,
+                bsInfoCalc_Tomorrow.monthIndex,
+                bsInfoCalc_Tomorrow.day
+            );
+
+            if (gregFromAstronomical_Tomorrow) {
+                var timeDiff_Tomorrow = tomorrow.getTime() - gregFromAstronomical_Tomorrow.getTime();
+                var dayDifference_Tomorrow = Math.round(timeDiff_Tomorrow / (1000 * 60 * 60 * 24));
+
+                if (dayDifference_Tomorrow !== 0) {
+                    dayDifference = dayDifference_Tomorrow;
+                }
+            }
+        }
+    }
+
     var dayDifferenceDisplay = dayDifference;
-    if (Math.abs(dayDifference) > 2) {  // Show in red if difference is more than 2 days
+    if (Math.abs(dayDifference) > 2) {
         dayDifferenceDisplay = '<font color="#ff0000">' + dayDifference + '</font>';
     } else if (Math.abs(dayDifference) > 0) {
         dayDifferenceDisplay = '<font color="yellow">' + dayDifference + '</font>';
     }
+
     var sunriseSunset = getSunriseSunset(date, lat, lon, tz);
     var isComputed = bsInfoData.isComputed;
     var computedbsdate = toDevanagari(bsInfoCalc.year) + " " + bsInfoCalc.monthName + " " + toDevanagari(bsInfoCalc.day);
-
     var dataDrivenBsDateString = "N/A";
-    var acceptedBsDate = computedbsdate; // fallback by default
+    var acceptedBsDate = computedbsdate;
     var dataDrivenInfo = "";
 
     if (bsInfoData && !isComputed) {
         dataDrivenBsDateString = toDevanagari(bsInfoData.year) + " " + bsInfoData.monthName + " " + toDevanagari(bsInfoData.day);
         acceptedBsDate = dataDrivenBsDateString;
-        dataDrivenInfo =
-                `<span style="font-size: 10pt; color: #00CED1;">Debug Information\n` +
-                `(Data-Driven for date conversion):</span>\n` +
-                "Gregorian Date: " + date + "\n" +
-                "accepted BS Date: " + acceptedBsDate + "\n" +
-                "(panchanga is based on data-driven conversion)\n";
+        dataDrivenInfo = `<span style="font-size: 10pt; color: #00CED1;">Debug Information\n(Data-Driven for date conversion):</span>\n` + "Gregorian Date: " + date + "\n" + "accepted BS Date: " + acceptedBsDate + "\n" + "(panchanga is based on data-driven conversion)\n";
     } else {
-        dataDrivenInfo =
-                `<span style="font-size: 10pt; color: #FF6347;">Debug Information\n` +
-                `(Astronomical Calculation - outside data range):</span>\n` +
-                "Gregorian Date: " + date + "\n" +
-                "accepted BS Date: " + acceptedBsDate + "\n" +
-                "(panchanga is based on astronomical computation)\n";
+        dataDrivenInfo = `<span style="font-size: 10pt; color: #FF6347;">Debug Information\n(Astronomical Calculation - outside data range):</span>\n` + "Gregorian Date: " + date + "\n" + "accepted BS Date: " + acceptedBsDate + "\n" + "(panchanga is based on astronomical computation)\n";
     }
-
-
 
     var lunarMonthInfo = getLunarMonthNameWithAdhik(ahar);
     var lunarMonthDisplay = lunarMonthInfo.isAdhika ? "अधिक " + lunarMonthInfo.monthName + " " + paksha : lunarMonthInfo.monthName + " " + paksha;
 
     var debugOutput =
-            '<pre style="font-family: monospace; font-size: 8pt; color: white; white-space: pre; line-height: 1.2;">' +
-            dataDrivenInfo +
-            `<span style="color: orange;">Consistency Check:</span>\n` +
-            "Data-Driven BS Date: " + dataDrivenBsDateString + "\n" +
-            "Astronomical BS Date (Computed): " + computedbsdate + "\n" +
-            "Day Difference: " + dayDifferenceDisplay + " " + (Math.abs(dayDifference) === 1 ? 'day' : 'days') + "\n" +
-            `<span style="color: red;">Note: Positive = Astronomical date is behind;\n` +
-            `Negative = Astronomical date is ahead</span>\n` +
+        '<pre style="font-family: monospace; font-size: 8pt; color: white; white-space: pre; line-height: 1.2;">' +
+        dataDrivenInfo +
+        `<span style="color: orange;">Consistency Check:</span>\n` +
+        "Data-Driven BS Date: " + dataDrivenBsDateString + "\n" +
+        "Astronomical BS Date (Computed): " + computedbsdate + "\n" +
+        "Day Difference: " + dayDifferenceDisplay + " " + (Math.abs(dayDifference) === 1 ? 'day' : 'days') + "\n" +
+        `<span style="color: red;">Note: Positive = Astronomical date is behind;\n` +
+        `Negative = Astronomical date is ahead</span>\n` +
+        " " + `<span style="color: yellow;">Lunar Month (Purnimanta): ` + lunarMonthDisplay + "</span>\n" +
+        `<span style="color: #B118E7;">--- Solar Outputs ---</span>\n` +
+        "gregorianDate: " + Qt.formatDateTime(date, "dddd, MMMM d, yyyy") + "\n" +
+        "sunrise: " + sunriseSunset.sunrise + "\n" + "sunset: " + sunriseSunset.sunset + "\n" +
+        "sunRashi: " + rashis[Math.floor(sunLong / 30) % 12] + " | index: " + (Math.floor(sunLong / 30) % 12 + 1) + "\n" +
+        " " + `<span style="color: #B118E7;">--- Lunar Outputs ---</span>\n` +
+        "tithi: " + tithiName + " | index: " + tithiDay + "\n" +
+        "tithiAngle: " + (tithiVal * 12).toFixed(4) + "°\n" + "paksha: " + paksha + "\n" +
+        "nakshatra: " + nakshatras[Math.floor(moonLong / (360 / 27))] + " | index: " + (Math.floor(moonLong / (360 / 27)) + 1) + "\n" +
+        "yoga: " + yogas[Math.floor(zero360(sunLong + moonLong) / (360 / 27))] + " | index: " + (Math.floor(zero360(sunLong + moonLong) / (360 / 27)) + 1) + "\n" +
+        "yogaAngle: " + zero360(sunLong + moonLong).toFixed(4) + "°\n" +
+        "karana: " + karanaName + " | index: " + karanaIdx + "\n" +
+        "karanaAngle: " + (2 * tithiVal).toFixed(4) + "\n" +
+        "moonRashi: " + rashis[Math.floor(moonLong / 30) % 12] + " | index: " + (Math.floor(moonLong / 30) % 12 + 1) + "\n" +
+        "adhikaMasa: " + calculateAdhikaMasa(ahar) + " (computed)\n" +
 
-            " " +`<span style="color: yellow;">Lunar Month (Purnimanta): ` + lunarMonthDisplay + "</span>\n" +
-
-            `<span style="color: #B118E7;">--- Solar Outputs ---</span>\n` +
-            "gregorianDate: " + Qt.formatDateTime(date, "dddd, MMMM d, yyyy") + "\n" +
-            "sunrise: " + sunriseSunset.sunrise + "\n" +
-            "sunset: " + sunriseSunset.sunset + "\n" +
-            "sunRashi: " + rashis[Math.floor(sunLong / 30) % 12] + " | index: " + (Math.floor(sunLong / 30) % 12 + 1) + "\n" +
-
-            " " +`<span style="color: #B118E7;">--- Lunar Outputs ---</span>\n` +
-            "tithi: " + tithiName + " | index: " + tithiDay + "\n" +
-            "tithiAngle: " + (tithiVal * 12).toFixed(4) + "°\n" +
-            "paksha: " + paksha + "\n" +
-            "nakshatra: " + nakshatras[Math.floor(moonLong * 27 / 360) % 27] + " | index: " + (Math.floor(moonLong * 27 / 360) % 27 + 1) + "\n" +
-            "yoga: " + yogas[Math.floor(zero360(sunLong + moonLong) * 27 / 360) % 27] + " | index: " + (Math.floor(zero360(sunLong + moonLong) * 27 / 360) % 27 + 1) + "\n" +
-            "yogaAngle: " + zero360(sunLong + moonLong).toFixed(4) + "°\n" +
-            "karana: " + karanaName + " | index: " + karanaIdx + "\n" +
-            "karanaAngle: " + (2 * tithiVal).toFixed(4) + "\n" +
-            "moonRashi: " + rashis[Math.floor(moonLong / 30) % 12] + " | index: " + (Math.floor(moonLong / 30) % 12 + 1) + "\n" +
-            "adhikaMasa: " + calculateAdhikaMasa(ahar) + " (computed)\n" +
-
-            " " + `<span style="color: #B118E7;">--- Metadata ---</span>\n` +
-            "bsMonthIndex (0-based): " + bsInfoCalc.monthIndex + "\n" +
-            "weekday (UTC): " + weekdays[date.getUTCDay()] + "\n" +
-            "isComputed: " + isComputed +
-            '</pre>';
-
+        " " + `<span style="color: #B118E7;">--- Metadata ---</span>\n` +
+        "Julian Day: " + jd.toFixed(4) + "\n" +
+        "Ahar: " + ahar.toFixed(4) + "\n" +
+        "weekday (UTC): " + weekdays[date.getUTCDay()] + "\n" +
+        "isComputed: " + isComputed +
+        '</pre>';
 
     var result = { debug: debugOutput.trim().replace(/^\s*[\r\n]/gm, "") };
     calculationCache[cacheKey] = result;
