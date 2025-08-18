@@ -4,64 +4,127 @@ import QtQuick.Controls 2.15
 import "qrc:/qml/"
 
 // CalendarGrid.qml
-GridLayout {
-    id: calendarGrid
-    columns: 7
-    rowSpacing: 0
-    columnSpacing: 0
+ColumnLayout {
+    id: calendarGridRoot
     Layout.fillWidth: true
-    Layout.fillHeight: true
-    Layout.margins: 20
-    Layout.topMargin: 10
 
+    // Properties
     property alias calendarModel: repeater.model
+    property alias eventListModel: eventLabel.eventModel
     property var theme
 
+    // Signals
     signal dayClicked(var panchanga)
 
-    Repeater {
-        id: repeater
-        delegate: Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: modelData.type === "day" || modelData.type === "empty"
-            Layout.preferredHeight: modelData.type === "header" ? 35 : -1
+    // Components
 
-            Loader {
-                id: delegateLoader
-                anchors.fill: parent
+    // Calendar grid layout
+    GridLayout {
+        id: calendarGrid
+        columns: 7
+        rowSpacing: 0
+        columnSpacing: 0
+        Layout.fillWidth: true
+        Layout.preferredHeight: parent.width
+        Layout.margins: 10
+        Layout.topMargin: 10
 
-                sourceComponent: {
-                    if (modelData.type === "header") {
-                        return headerComponent;
-                    } else if (modelData.type === "day") {
-                        return dayComponent;
-                    } else { // for "empty" type
-                        return emptyComponent;
+        Repeater {
+            id: repeater
+            delegate: Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: modelData.type === "day" || modelData.type === "empty"
+                Layout.preferredHeight: modelData.type === "header" ? 35 : -1
+
+                Loader {
+                    id: delegateLoader
+                    anchors.fill: parent
+
+                    sourceComponent: {
+                        if (modelData.type === "header") {
+                            return headerComponent;
+                        } else if (modelData.type === "day") {
+                            return dayComponent;
+                        } else {
+                            return emptyComponent;
+                        }
                     }
-                }
 
-                onLoaded: {
-                    if (modelData.type === "day") {
-                        item.bsDay = modelData.bsDay;
-                        item.adDay = modelData.adDay;
-                        item.tithi = modelData.tithi;
-                        item.isToday = modelData.isToday;
-                        item.isSaturday = modelData.isSaturday;
-                        item.theme = calendarGrid.theme;
-                        item.clicked.connect(function() {
-                            calendarGrid.dayClicked(modelData.panchanga)
-                        });
-                    } else if (modelData.type === "header") {
-                        item.text = modelData.text;
-                        item.theme = calendarGrid.theme;
-                        item.cellIndex = index;
+                    onLoaded: {
+                        if (modelData.type === "day") {
+                            item.bsDay = modelData.bsDay;
+                            item.adDay = modelData.adDay;
+                            item.tithi = modelData.tithi;
+                            item.isToday = modelData.isToday;
+                            item.isSaturday = modelData.isSaturday;
+                            item.hasEvent = modelData.hasEvent;
+                            item.theme = calendarGridRoot.theme;
+
+                            var isHoliday = false;
+                            if (modelData.panchanga && modelData.panchanga.events) {
+                                for (var i = 0; i < modelData.panchanga.events.length; i++) {
+                                    if (modelData.panchanga.events[i].holiday) {
+                                        isHoliday = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            item.isHoliday = isHoliday;
+
+                            item.clicked.connect(function() {
+                                calendarGridRoot.dayClicked(modelData.panchanga)
+                            });
+                        } else if (modelData.type === "header") {
+                            item.text = modelData.text;
+                            item.theme = calendarGridRoot.theme;
+                            item.cellIndex = index;
+                        }
                     }
                 }
             }
         }
     }
 
+    // Event List Footer
+    Rectangle {
+        id: eventFooter
+        Layout.fillWidth: true
+        implicitHeight: eventLabel.paintedHeight + 20
+        color: theme.secondaryBg
+        radius: 6
+        visible: eventLabel.eventModel && eventLabel.eventModel.length > 0
 
+        Label {
+            id: eventLabel
+            anchors.fill: parent
+            anchors.margins: 10
+
+            property var eventModel: [] // Model reference
+
+            text: {
+                var str = "";
+                if (eventModel) {
+                    for (var i = 0; i < eventModel.length; i++) {
+                        var item = eventModel[i];
+                        str += item.bsDay + " :\u00A0" + item.eventName;
+                        if (i < eventModel.length - 1) {
+                            str += "  •  ";
+                        }
+                    }
+                }
+                return str;
+            }
+
+            font.pixelSize: 12
+            color: theme ? theme.secondaryText : "black"
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
+
+
+    // Component Definitions
     Component {
         id: headerComponent
         Item {
@@ -78,56 +141,15 @@ GridLayout {
                 border.color: theme.borderColor
             }
 
-            Rectangle {
-                visible: cellIndex === 0
-                width: headerBackground.radius
-                height: headerBackground.radius
-                color: headerBackground.color
-                anchors.top: parent.top
-                anchors.right: parent.right
-            }
-            Rectangle {
-                visible: cellIndex === 0
-                width: headerBackground.radius
-                height: headerBackground.radius
-                color: headerBackground.color
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-            }
-            Rectangle {
-                visible: cellIndex === 6
-                width: headerBackground.radius
-                height: headerBackground.radius
-                color: headerBackground.color
-                anchors.top: parent.top
-                anchors.left: parent.left
-            }
-            Rectangle {
-                visible: cellIndex === 6
-                width: headerBackground.radius
-                height: headerBackground.radius
-                color: headerBackground.color
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-            }
-            Rectangle {
-                visible: cellIndex === 0 || cellIndex === 6
-                width: headerBackground.radius
-                height: headerBackground.radius
-                color: headerBackground.color
-                anchors.bottom: parent.bottom
-                anchors.right: parent.right
-            }
+            Rectangle { visible: cellIndex === 0; width: headerBackground.radius; height: headerBackground.radius; color: headerBackground.color; anchors.top: parent.top; anchors.right: parent.right }
+            Rectangle { visible: cellIndex === 0; width: headerBackground.radius; height: headerBackground.radius; color: headerBackground.color; anchors.bottom: parent.bottom; anchors.left: parent.left }
+            Rectangle { visible: cellIndex === 6; width: headerBackground.radius; height: headerBackground.radius; color: headerBackground.color; anchors.top: parent.top; anchors.left: parent.left }
+            Rectangle { visible: cellIndex === 6; width: headerBackground.radius; height: headerBackground.radius; color: headerBackground.color; anchors.bottom: parent.bottom; anchors.left: parent.left }
+            Rectangle { visible: cellIndex === 0 || cellIndex === 6; width: headerBackground.radius; height: headerBackground.radius; color: headerBackground.color; anchors.bottom: parent.bottom; anchors.right: parent.right }
 
             Label {
                 text: headerItemContainer.text
-                color: {
-                    if (cellIndex === 6) {
-                        return "#E4080A"
-                    } else {
-                        return theme.accentText;
-                    }
-                }
+                color: (cellIndex === 6) ? "#E4080A" : theme.accentText
                 font.bold: true
                 font.pixelSize: 14
                 anchors.centerIn: parent

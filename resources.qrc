@@ -15,5 +15,7 @@
         <file>qml/NavigationBar.qml</file>
         <file>qml/PanchangaDetailDialog.qml</file>
         <file>qml/Theme.qml</file>
+        <file>resources/EventData.js</file>
+        <file>qml/EventDisplay.qml</file>
     </qresource>
 </RCC>

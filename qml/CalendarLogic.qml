@@ -14,6 +14,7 @@ QtObject {
     property int currentBsYear: 2081
     property int currentBsMonthIndex: 1
     property var calendarModel: []
+    property var currentMonthEvents: [] // Holds events for the current month
     property string currentBsLabelStr: ""
     property string currentAdLabelStr: ""
     property string prevMonthName: ""
@@ -59,7 +60,9 @@ QtObject {
     }
 
     function renderCalendarByBs(year, monthIndex, preserveAdState = false) {
-        calendarModel = [];
+        var newCalendarModel = [];
+        var eventsByDay = {}; // Use an object to group events by day
+
         currentBsYear = year;
         currentBsMonthIndex = monthIndex;
         var info = Panchanga.getBikramMonthInfo(year, monthIndex);
@@ -69,23 +72,18 @@ QtObject {
         }
 
         if (!preserveAdState) {
-            // LOGIC to determine the representative AD month
             var bsMonthStartDate = Panchanga.fromBikramSambat(year, monthIndex, 1);
             var startAdYear = bsMonthStartDate.getUTCFullYear();
             var startAdMonth = bsMonthStartDate.getUTCMonth();
-
             var nextAdMonth = (startAdMonth + 1) % 12;
             var nextAdYear = (startAdMonth === 11) ? startAdYear + 1 : startAdYear;
             var firstOfNextAdMonth = new Date(Date.UTC(nextAdYear, nextAdMonth, 1));
-
             var bsMonthEndDate = Panchanga.fromBikramSambat(year, monthIndex, info.totalDays);
 
             if (firstOfNextAdMonth <= bsMonthEndDate) {
-                // Prefer the later AD month if its first day is in the BS month.
                 currentAdYear = nextAdYear;
                 currentAdMonth = nextAdMonth;
             } else {
-                // Otherwise, use the starting AD month.
                 currentAdYear = startAdYear;
                 currentAdMonth = startAdMonth;
             }
@@ -98,13 +96,12 @@ QtObject {
 
         var daysInMonth = info.totalDays;
         var startDay = info.startDayOfWeek;
-        var model = [];
         var weekdaysNe = ["आइतबार", "सोमबार", "मङ्गलबार", "बुधबार", "बिहीबार", "शुक्रबार", "शनिबार"];
         for (var i = 0; i < 7; ++i) {
-            model.push({ type: "header", text: weekdaysNe[i] });
+            newCalendarModel.push({ type: "header", text: weekdaysNe[i] });
         }
         for (i = 0; i < startDay; ++i) {
-            model.push({ type: "empty" });
+            newCalendarModel.push({ type: "empty" });
         }
         for (var day = 1; day <= daysInMonth; ++day) {
             var adDate = Panchanga.fromBikramSambat(year, monthIndex, day);
@@ -114,14 +111,45 @@ QtObject {
             }
             var isToday = adDate.toDateString() === new Date().toDateString();
             var isSaturday = (startDay + day - 1) % 7 === 6;
+            var hasEventForDay = result.events && result.events.length > 0;
+
+            if (hasEventForDay) {
+                var devanagariDay = toDevanagari(day);
+                if (!eventsByDay[devanagariDay]) {
+                    eventsByDay[devanagariDay] = []; // Initialize array if it doesn't exist
+                }
+                for (var j = 0; j < result.events.length; j++) {
+                    eventsByDay[devanagariDay].push(result.events[j].name);
+                }
+            }
+
             result.monthName = info.monthName;
-            model.push({
+            newCalendarModel.push({
                 type: "day", bsDay: day, adDay: adDate.getDate(),
                 tithi: result.tithi, isToday: isToday, isSaturday: isSaturday,
+                hasEvent: hasEventForDay,
                 gregorianDate: result.gregorianDate, panchanga: result
             });
         }
-        calendarModel = model;
+
+        // Process the grouped events
+        var newMonthEvents = [];
+        // Sort the days to ensure events are listed in chronological order
+        var sortedDays = Object.keys(eventsByDay).sort(function(a, b) {
+            return parseInt(fromDevanagari(a)) - parseInt(fromDevanagari(b));
+        });
+
+        for (i = 0; i < sortedDays.length; i++) {
+            var bsDay = sortedDays[i];
+            newMonthEvents.push({
+                bsDay: bsDay,
+                eventName: eventsByDay[bsDay].join(", ")
+            });
+        }
+
+        calendarModel = newCalendarModel;
+        currentMonthEvents = newMonthEvents;
+
         currentBsLabelStr = toDevanagari(year) + " " + info.monthName;
         currentAdLabelStr = getGregorianRange(year, monthIndex);
         var prevMonthIndex = monthIndex - 1;
@@ -143,10 +171,8 @@ QtObject {
     function renderCalendarByAd(year, monthIndex) {
         currentAdYear = year;
         currentAdMonth = monthIndex;
-
         var date = new Date(Date.UTC(year, monthIndex, 1));
         var bsInfo = Panchanga.calculate(date);
-
         renderCalendarByBs(bsInfo.bsYear, bsInfo.bsMonthIndex, true);
     }
 

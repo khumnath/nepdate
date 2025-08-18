@@ -322,7 +322,9 @@ ApplicationWindow {
                 panchangaDetailDialog.panchangaData = panchanga
                 panchangaDetailDialog.open()
             }
+            eventListModel: calendarLogic.currentMonthEvents
         }
+
 
         Rectangle {
             Layout.fillWidth: true
