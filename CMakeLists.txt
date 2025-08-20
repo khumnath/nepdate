@@ -3,17 +3,28 @@ cmake_minimum_required(VERSION 3.16)
 #=============================================================================
 # Project Metadata and Versioning
 #=============================================================================
+
+execute_process(
+    COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/update_version.sh"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    RESULT_VARIABLE VERSION_SCRIPT_RESULT
+)
+if(NOT VERSION_SCRIPT_RESULT EQUAL 0)
+    message(WARNING "The version update script failed to run. Version info may be stale or incorrect.")
+endif()
+
 set(VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.conf")
+
 if(EXISTS "${VERSION_FILE}")
     file(READ "${VERSION_FILE}" PROJECT_VERSION_STRING)
     string(STRIP "${PROJECT_VERSION_STRING}" PROJECT_VERSION_STRING)
 else()
-    set(PROJECT_VERSION_STRING "unknown")
+    set(PROJECT_VERSION_STRING "0.0.0")
     message(WARNING "Could not find version file: ${VERSION_FILE}. Defaulting to version ${PROJECT_VERSION_STRING}.")
 endif()
 
 project(bikram-calendar VERSION ${PROJECT_VERSION_STRING} LANGUAGES CXX)
-message(STATUS "Configuring bikram-calendar version: ${PROJECT_VERSION}")
+message(STATUS "Configuring bikram-calendar version: ${PROJECT_VERSION_STRING}")
 
 #=============================================================================
 # C++ Standard and Qt Setup
@@ -35,18 +46,6 @@ find_package(Qt6 REQUIRED COMPONENTS
 
 qt_policy(SET QTP0001 NEW)
 qt_policy(SET QTP0004 NEW)
-
-#=============================================================================
-# Run Versioning Script Before Build
-#=============================================================================
-execute_process(
-    COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/update_version.sh"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    RESULT_VARIABLE VERSION_SCRIPT_RESULT
-)
-if(NOT VERSION_SCRIPT_RESULT EQUAL 0)
-    message(WARNING "The version update script failed to run. Version info may be stale or incorrect.")
-endif()
 
 #=============================================================================
 # Source Files
