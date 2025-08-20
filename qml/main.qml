@@ -11,7 +11,7 @@ import "qrc:/qml/"
 ApplicationWindow {
     id: window
     visible: true
-    width: 800
+    width: 550
     height: 720
     objectName: "printableRoot"
     minimumWidth: 540

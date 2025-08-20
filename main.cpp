@@ -62,19 +62,15 @@ void ensureDesktopFile(const QString &desktopFileName, const QString &startupWMC
     }
 }
 
-// Read version.txt from project root or known relative path
-QString readVersionText() {
-    QFile versionFile(":/resources/version.conf");
-    if (!versionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Could not open version.conf";
-        return "Unknown";
+QString readStringFromResource(const QString& resourcePath) {
+    QFile file(resourcePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Could not open resource file:" << resourcePath;
+        return QString();
     }
-    QTextStream in(&versionFile);
-    QString version = in.readLine().trimmed();
-    versionFile.close();
-    return version;
+    QTextStream in(&file);
+    return in.readLine().trimmed();
 }
-
 
 int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName("Nepdate");
@@ -97,9 +93,11 @@ int main(int argc, char *argv[]) {
     QString platform = QGuiApplication::platformName();
     engine.rootContext()->setContextProperty("platformName", platform);
 
-    // App version pass to qml
-    QString appVersion = readVersionText();
-    engine.rootContext()->setContextProperty("appVersion", appVersion);
+    // Pass Version and Build Info to QML
+    QString baseVersion = readStringFromResource(":/resources/version.conf");
+    QString buildInfo = readStringFromResource(":/resources/build_info.conf");
+    engine.rootContext()->setContextProperty("appVersion", baseVersion);
+    engine.rootContext()->setContextProperty("appBuildInfo", buildInfo);
 
     // Register the Printer class as a QML singleton
     qmlRegisterSingletonType<Printer>("com.calendar.printer", 1, 0, "Printer", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject * {
@@ -126,7 +124,7 @@ int main(int argc, char *argv[]) {
         "    background-color: #ffffff;"
         "}"
         );
-    QCoreApplication::setApplicationVersion(readVersionText());
+    QCoreApplication::setApplicationVersion(baseVersion);
 
     // Command-line parsing
     QCommandLineParser parser;

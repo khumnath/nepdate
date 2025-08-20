@@ -53,6 +53,16 @@ Dialog {
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: theme ? theme.primaryText : "black"
             }
+
+            Text {
+                text: appBuildInfo
+                font.italic: true
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
+                horizontalAlignment: Text.AlignHCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: theme ? theme.infoText : "transparent"
+            }
         }
 
         Text {

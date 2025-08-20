@@ -13,6 +13,13 @@ CONFIG += c++17
 QT += core gui widgets quick qml printsupport
 
 #=============================================================================
+# Run Versioning Script Before Build
+#=============================================================================
+!system(bash $$PWD/update_version.sh) {
+    warning("The version update script failed to run. Version info may be stale or incorrect.")
+}
+
+#=============================================================================
 # Project Files
 #=============================================================================
 
