@@ -419,8 +419,6 @@ function getEventsForDate(date, bsInfo, lunarInfo) {
 function calculate(date, lat, lon, tz) {
     var cacheKey = "panchanga_" + date.getTime();
     if (calculationCache[cacheKey]) return calculationCache[cacheKey];
-
-    // --- Step 1: Basic Astronomical Calculations for the Given Day ---
     var jd = toJulianDay(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
     var ahar = jd - KaliEpoch + 0.25 + (((lon || 85.3240) / 15 - (tz || 5.75)) / 24);
     var sunLong = trueLongitudeSun(ahar);
@@ -430,33 +428,19 @@ function calculate(date, lat, lon, tz) {
     var paksha = tithiNum <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
     var tithiDay = tithiNum > 15 ? tithiNum - 15 : tithiNum;
     var tithiName = resolveTithiName(tithiDay, paksha);
-
-    // --- Step 2: Definitive Purnimanta Month Calculation ---
-    // a. Find the Purnima that ENDS the current Purnimanta month.
     var purnima_end_of_month = findPurnima(ahar);
     if (purnima_end_of_month < ahar) {
-        // If the Purnima for this cycle has already passed, we are in the Krishna Paksha
-        // of a month that ends at the *next* Purnima.
         purnima_end_of_month = findPurnima(ahar + 29.53);
     }
 
-    // b. The Amavasya for this Purnimanta month occurred roughly 14.7 days before its ending Purnima.
-    var amavasya_of_this_month = findNewMoon(purnima_end_of_month - 14.7);
-
-    // c. The entire Purnimanta month is named based on the Sun's position at THAT Amavasya.
-    var sunLongAtAmavasya = trueLongitudeSun(amavasya_of_this_month);
-    var nameSign = Math.floor(sunLongAtAmavasya / 30);
+    var sunLongAtPurnima = trueLongitudeSun(purnima_end_of_month);
+    var nameSign = Math.floor(sunLongAtPurnima / 30);
     var purnimantaMonthName = solarMonths[nameSign];
 
-    // d. Check for Adhika Masa.
     var adhikaMasaStatus = calculateAdhikaMasa(ahar);
     var isAdhika = adhikaMasaStatus.startsWith("अधिक");
 
-    // e. Construct the final display name.
     var lunarMonthDisplayName = isAdhika ? "अधिक " + purnimantaMonthName : purnimantaMonthName;
-
-
-    // --- Step 3: Calculate Solar Date and Assemble All Final Results ---
     var bsInfo = toBikramSambat(date);
     if (!bsInfo) return { error: "Date out of range" };
 

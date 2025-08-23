@@ -222,7 +222,8 @@ Dialog {
                         createDetailRow("सूर्य राशि", panchangaData.sunRashi),
                         createDetailRow("चन्द्र राशि", panchangaData.moonRashi),
                         createDetailRow("उदयास्त", "सूर्योदय " + panchangaData.sunrise + " | सूर्यास्त " + panchangaData.sunset),
-                        createDetailRow("अधिक/क्षय मास", panchangaData.adhikaMasa)
+                        createDetailRow("अधिक/क्षय मास", panchangaData.adhikaMasa),
+                        createDetailRow("चन्द्रमास",  panchangaData.lunarMonth)
                     ];
             for (var i = 0; i < details.length; ++i) {
                 details[i].parent = panchangaDetails;
