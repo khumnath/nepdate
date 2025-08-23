@@ -1,25 +1,25 @@
 /**
- * Bikram Calculator - Hindu Astrological Calendar with panchanga
- * Copyright (C) 2025 Khumnath Cg <nath.khum@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+ * Bikram Calculator - Hindu Astrological Calendar with panchanga
+ * Copyright (C) 2025 Khumnath Cg <nath.khum@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 .pragma library
 
-.import "qrc:/resources/PreCalculated_Data.js" as Bsdata
-.import "qrc:/resources/EventData.js" as EventsData
+    .import "qrc:/resources/PreCalculated_Data.js" as Bsdata
+        .import "qrc:/resources/EventData.js" as EventsData
 
 // Caching
 var calculationCache = {};
@@ -42,36 +42,36 @@ var rad = 180 / Math.PI;
 
 // Panchanga Names
 var tithiNamesList = [
-            "प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पञ्चमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी",
-            "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "अमावस्या"
-        ];
+    "प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पञ्चमी", "षष्ठी", "सप्तमी", "अष्टमी", "नवमी", "दशमी",
+    "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी", "पूर्णिमा", "अमावस्या"
+];
 var nakshatras = [
-            "अश्विनी", "भरणी", "कृत्तिका", "रोहिणी", "मृगशिरा", "आर्द्रा", "पुनर्वसु", "पुष्य", "अश्लेषा",
-            "मघा", "पूर्व फाल्गुनी", "उत्तर फाल्गुनी", "हस्त", "चित्रा", "स्वाती", "विशाखा", "अनुराधा",
-            "ज्येष्ठा", "मूल", "पूर्वाषाढा", "उत्तराषाढा", "श्रवण", "धनिष्ठा", "शतभिषा", "पूर्व भाद्रपद",
-            "उत्तर भाद्रपद", "रेवती"
-        ];
+    "अश्विनी", "भरणी", "कृत्तिका", "रोहिणी", "मृगशिरा", "आर्द्रा", "पुनर्वसु", "पुष्य", "अश्लेषा",
+    "मघा", "पूर्व फाल्गुनी", "उत्तर फाल्गुनी", "हस्त", "चित्रा", "स्वाती", "विशाखा", "अनुराधा",
+    "ज्येष्ठा", "मूल", "पूर्वाषाढा", "उत्तराषाढा", "श्रवण", "धनिष्ठा", "शतभिषा", "पूर्व भाद्रपद",
+    "उत्तर भाद्रपद", "रेवती"
+];
 var yogas = [
-            "विष्कम्भ", "प्रीति", "आयुष्मान्", "सौभाग्य", "शोभन", "अतिगण्ड", "सुकर्म", "धृति", "शूल", "गण्ड",
-            "वृद्धि", "ध्रुव", "व्याघात", "हर्षण", "वज्र", "सिद्धि", "व्यतिपात", "वरीयान्", "परिघ", "शिव",
-            "सिद्ध", "साध्य", "शुभ", "शुक्ल", "ब्रह्म", "इन्द्र", "वैधृति"
-        ];
+    "विष्कम्भ", "प्रीति", "आयुष्मान्", "सौभाग्य", "शोभन", "अतिगण्ड", "सुकर्म", "धृति", "शूल", "गण्ड",
+    "वृद्धि", "ध्रुव", "व्याघात", "हर्षण", "वज्र", "सिद्धि", "व्यतिपात", "वरीयान्", "परिघ", "शिव",
+    "सिद्ध", "साध्य", "शुभ", "शुक्ल", "ब्रह्म", "इन्द्र", "वैधृति"
+];
 var karanas = [
-            "किंस्तुघ्न", "बव", "बालव", "कौलव", "तैतिल", "गर", "वणिज", "विष्टि", "शकुनि", "चतुष्पाद", "नाग"
-        ];
+    "किंस्तुघ्न", "बव", "बालव", "कौलव", "तैतिल", "गर", "वणिज", "विष्टि", "शकुनि", "चतुष्पाद", "नाग"
+];
 var rashis = [
-            "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या",
-            "तुला", "वृश्चिक", "धनु", "मकर", "कुम्भ", "मीन"
-        ];
+    "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या",
+    "तुला", "वृश्चिक", "धनु", "मकर", "कुम्भ", "मीन"
+];
 var solarMonths = [
-            "वैशाख", "ज्येष्ठ", "आषाढ", "श्रावण", "भाद्रपद", "आश्विन",
-            "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन", "चैत्र"
-        ];
+    "वैशाख", "ज्येष्ठ", "आषाढ", "श्रावण", "भाद्रपद", "आश्विन",
+    "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन", "चैत्र"
+];
 var weekdays = ["आइतबार", "सोमबार", "मङ्गलबार", "बुधबार", "बिहीबार", "शुक्रबार", "शनिबार"];
 var nepaliGregorianMonths = [
-            "जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जून",
-            "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"
-        ];
+    "जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जून",
+    "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"
+];
 
 
 // Helper Functions
@@ -150,7 +150,7 @@ function getTithi(sunLong, moonLong) {
 }
 
 function findNewMoon(ahar) {
-    var getElongation = function(a) { return zero360(trueLongitudeMoon(a) - trueLongitudeSun(a)); };
+    var getElongation = function (a) { return zero360(trueLongitudeMoon(a) - trueLongitudeSun(a)); };
     var guess = ahar;
     for (var i = 0; i < 10; i++) {
         var elong = getElongation(guess);
@@ -168,7 +168,7 @@ function findNewMoon(ahar) {
 }
 
 function findPurnima(ahar) {
-    var getElongation = function(a) { return zero360(trueLongitudeMoon(a) - trueLongitudeSun(a)); };
+    var getElongation = function (a) { return zero360(trueLongitudeMoon(a) - trueLongitudeSun(a)); };
     var guess = ahar;
     for (var i = 0; i < 10; i++) {
         var elong = getElongation(guess);
@@ -199,7 +199,7 @@ function getSunriseSunset(date, lat, lon, tz) {
     var hourAngle = hourAngleRad * rad;
     var sunrise = 12 - hourAngle / 15 - tc;
     var sunset = 12 + hourAngle / 15 - tc;
-    var formatTime = function(h) {
+    var formatTime = function (h) {
         if (!isFinite(h)) return "N/A";
         var hr = Math.floor(h);
         var min = Math.round((h - hr) * 60);
@@ -306,10 +306,10 @@ function toBikramSambat(gregorianDate) {
     }
     // Fallback to astronomical calculation
     var result = fromGregorianAstronomical(
-                gregorianDate.getUTCFullYear(),
-                gregorianDate.getUTCMonth() + 1,
-                gregorianDate.getUTCDate()
-                );
+        gregorianDate.getUTCFullYear(),
+        gregorianDate.getUTCMonth() + 1,
+        gregorianDate.getUTCDate()
+    );
     result.isComputed = true;
     return result;
 }
@@ -320,43 +320,51 @@ function resolveTithiName(tithiDay, paksha) {
     return tithiNamesList[tithiDay - 1];
 }
 
+function getLunarMonthNameWithAdhik(ahar) {
+    var lunarMonthStart = findNewMoon(ahar);
+    if (lunarMonthStart > ahar) {
+        lunarMonthStart = findNewMoon(lunarMonthStart - 29.53);
+    }
+    var sunLongAtAmavasya = trueLongitudeSun(lunarMonthStart);
+    var nameSign = Math.floor(sunLongAtAmavasya / 30);
+    var adhikaMasaStatus = calculateAdhikaMasa(ahar);
+    var isAdhika = adhikaMasaStatus.startsWith("अधिक");
+    var result = {
+        monthName: solarMonths[nameSign],
+        isAdhika: isAdhika
+    };
+    return result;
+}
+
 function _getPanchangaBasics(date) {
     var jd = toJulianDay(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
     var ahar = jd - KaliEpoch + 0.25 + ((85.3240 / 15 - 5.75) / 24);
-    var sunLong = trueLongitudeSun(ahar);
-    var moonLong = trueLongitudeMoon(ahar);
-    var tithiVal = getTithi(sunLong, moonLong);
-    var tithiNum = Math.floor(tithiVal) + 1;
-    var paksha = tithiNum <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
-    var tithiDay = tithiNum > 15 ? tithiNum - 15 : tithiNum;
-    var tithiName = resolveTithiName(tithiDay, paksha);
-    var lunarMonthInfo = getLunarMonthNameWithAdhik(ahar);
+    var purnimantaInfo = calculate(date);
     return {
         ahar: ahar,
-        lunarMonthName: lunarMonthInfo.monthName,
-        isAdhika: lunarMonthInfo.isAdhika,
-        paksha: paksha,
-        tithiName: tithiName,
-        tithiDay: tithiDay
+        lunarMonthName: purnimantaInfo.lunarMonth.replace("अधिक ", ""),
+        isAdhika: purnimantaInfo.adhikaMasa.startsWith("अधिक"),
+        paksha: purnimantaInfo.paksha,
+        tithiName: purnimantaInfo.tithi,
+        tithiDay: purnimantaInfo.tithiDay
     };
 }
 
-function getEventsForDate(date, bsYear, bsMonthIndex, bsDay) {
+
+function getEventsForDate(date, bsInfo, lunarInfo) {
     var events = [];
     var gregorianYear = date.getUTCFullYear();
     var gregorianMonth = date.getUTCMonth() + 1;
     var gregorianDay = date.getUTCDate();
     var formattedGregorianDate = formatMonthDay(gregorianMonth, gregorianDay);
-    var formattedBikramRecurringDate = formatMonthDay(bsMonthIndex + 1, bsDay);
+    var formattedBikramRecurringDate = formatMonthDay(bsInfo.monthIndex + 1, bsInfo.day);
 
     // Handle Gregorian events
     if (EventsData.gregorianEvents) {
         for (var i = 0; i < EventsData.gregorianEvents.length; i++) {
             var event = EventsData.gregorianEvents[i];
-            // Check year constraints using Gregorian year
             if (event.startYear && gregorianYear < event.startYear) continue;
             if (event.endYear && gregorianYear > event.endYear) continue;
-
             if (event.date === formattedGregorianDate) {
                 events.push({ name: event.event, detail: event.detail, holiday: event.holiday });
             }
@@ -367,10 +375,8 @@ function getEventsForDate(date, bsYear, bsMonthIndex, bsDay) {
     if (EventsData.bikramRecurringEvents) {
         for (var j = 0; j < EventsData.bikramRecurringEvents.length; j++) {
             let event = EventsData.bikramRecurringEvents[j];
-            // Check year constraints using BS year
-            if (event.startYear && bsYear < event.startYear) continue;
-            if (event.endYear && bsYear > event.endYear) continue;
-
+            if (event.startYear && bsInfo.year < event.startYear) continue;
+            if (event.endYear && bsInfo.year > event.endYear) continue;
             if (event.date === formattedBikramRecurringDate) {
                 events.push({ name: event.event, detail: event.detail, holiday: event.holiday });
             }
@@ -379,8 +385,8 @@ function getEventsForDate(date, bsYear, bsMonthIndex, bsDay) {
 
     // Handle Bikram fixed events
     if (EventsData.bikramFixedEvents) {
-        var formattedFixedDate = bsYear + "/" + formatMonthDay(bsMonthIndex + 1, bsDay);
-        for(let i = 0; i < EventsData.bikramFixedEvents.length; i++) {
+        var formattedFixedDate = bsInfo.year + "/" + formatMonthDay(bsInfo.monthIndex + 1, bsInfo.day);
+        for (let i = 0; i < EventsData.bikramFixedEvents.length; i++) {
             let event = EventsData.bikramFixedEvents[i];
             if (event.date === formattedFixedDate) {
                 events.push({ name: event.event, detail: event.detail, holiday: event.holiday });
@@ -389,58 +395,32 @@ function getEventsForDate(date, bsYear, bsMonthIndex, bsDay) {
     }
 
     // Handle Lunar events
-    if (EventsData.lunarEvents) {
-        var todayInfo = _getPanchangaBasics(date);
-        if (todayInfo.isAdhika) {
+    if (EventsData.lunarEvents && lunarInfo) {
+        if (lunarInfo.isAdhika) {
             return events; // Assuming no lunar events in Adhika masa
-        }
-
-        var yesterday = new Date(date.getTime() - 86400000);
-        var yesterdayInfo = _getPanchangaBasics(yesterday);
-
-        // Check if the *previous* lunar month was a kshaya month. If so, its events are observed in the current month.
-        var prevLunarMonthAhar = todayInfo.ahar - 29.53;
-        var prevMonthStatus = calculateAdhikaMasa(prevLunarMonthAhar);
-        var kshayaMonthName = null;
-        if (prevMonthStatus.startsWith("क्षय")) {
-            kshayaMonthName = prevMonthStatus.split(" ")[1];
         }
 
         for (var k = 0; k < EventsData.lunarEvents.length; k++) {
             var lunarEvent = EventsData.lunarEvents[k];
+            if (lunarEvent.startYear && bsInfo.year < lunarEvent.startYear) continue;
+            if (lunarEvent.endYear && bsInfo.year > lunarEvent.endYear) continue;
 
-            // Check year constraints using BS year
-            if (lunarEvent.startYear && bsYear < lunarEvent.startYear) continue;
-            if (lunarEvent.endYear && bsYear > lunarEvent.endYear) continue;
-
-            var isEventForToday = (lunarEvent.lunarMonth === todayInfo.lunarMonthName &&
-                                   lunarEvent.paksha === todayInfo.paksha &&
-                                   lunarEvent.tithi === todayInfo.tithiName);
-
-            var isEventFromKshayaMonth = (kshayaMonthName !== null &&
-                                          lunarEvent.lunarMonth === kshayaMonthName &&
-                                          lunarEvent.paksha === todayInfo.paksha &&
-                                          lunarEvent.tithi === todayInfo.tithiName);
-
-            if (isEventForToday || isEventFromKshayaMonth) {
-                var isFirstDayOfTithi = !(yesterdayInfo.lunarMonthName === todayInfo.lunarMonthName &&
-                                          yesterdayInfo.paksha === todayInfo.paksha &&
-                                          yesterdayInfo.tithiName === todayInfo.tithiName);
-
-                if (isFirstDayOfTithi) {
-                    events.push({ name: lunarEvent.event, detail: lunarEvent.detail, holiday: lunarEvent.holiday });
-                }
+            if (lunarEvent.lunarMonth === lunarInfo.lunarMonthName &&
+                lunarEvent.paksha === lunarInfo.paksha &&
+                lunarEvent.tithi === lunarInfo.tithiName) {
+                events.push({ name: lunarEvent.event, detail: lunarEvent.detail, holiday: lunarEvent.holiday });
             }
         }
     }
     return events;
 }
 
-
-// Main calculations
+// Main Calculation Function
 function calculate(date, lat, lon, tz) {
     var cacheKey = "panchanga_" + date.getTime();
     if (calculationCache[cacheKey]) return calculationCache[cacheKey];
+
+    // --- Step 1: Basic Astronomical Calculations for the Given Day ---
     var jd = toJulianDay(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
     var ahar = jd - KaliEpoch + 0.25 + (((lon || 85.3240) / 15 - (tz || 5.75)) / 24);
     var sunLong = trueLongitudeSun(ahar);
@@ -450,16 +430,48 @@ function calculate(date, lat, lon, tz) {
     var paksha = tithiNum <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
     var tithiDay = tithiNum > 15 ? tithiNum - 15 : tithiNum;
     var tithiName = resolveTithiName(tithiDay, paksha);
-    var karanaIdx = Math.floor(2 * tithiVal);
-    var karanaName = karanaIdx > 0 ? (karanaIdx < 57 ? karanas[(karanaIdx-1) % 7 + 1] : karanas[karanaIdx - 57 + 8]) : karanas[0];
+
+    // --- Step 2: Definitive Purnimanta Month Calculation ---
+    // a. Find the Purnima that ENDS the current Purnimanta month.
+    var purnima_end_of_month = findPurnima(ahar);
+    if (purnima_end_of_month < ahar) {
+        // If the Purnima for this cycle has already passed, we are in the Krishna Paksha
+        // of a month that ends at the *next* Purnima.
+        purnima_end_of_month = findPurnima(ahar + 29.53);
+    }
+
+    // b. The Amavasya for this Purnimanta month occurred roughly 14.7 days before its ending Purnima.
+    var amavasya_of_this_month = findNewMoon(purnima_end_of_month - 14.7);
+
+    // c. The entire Purnimanta month is named based on the Sun's position at THAT Amavasya.
+    var sunLongAtAmavasya = trueLongitudeSun(amavasya_of_this_month);
+    var nameSign = Math.floor(sunLongAtAmavasya / 30);
+    var purnimantaMonthName = solarMonths[nameSign];
+
+    // d. Check for Adhika Masa.
+    var adhikaMasaStatus = calculateAdhikaMasa(ahar);
+    var isAdhika = adhikaMasaStatus.startsWith("अधिक");
+
+    // e. Construct the final display name.
+    var lunarMonthDisplayName = isAdhika ? "अधिक " + purnimantaMonthName : purnimantaMonthName;
+
+
+    // --- Step 3: Calculate Solar Date and Assemble All Final Results ---
     var bsInfo = toBikramSambat(date);
     if (!bsInfo) return { error: "Date out of range" };
-    var lunarMonthInfo = getLunarMonthNameWithAdhik(ahar);
-    var events = getEventsForDate(date, bsInfo.year, bsInfo.monthIndex, bsInfo.day);
-    var lunarMonthDisplayName = lunarMonthInfo.isAdhika ? "अधिक " + lunarMonthInfo.monthName : lunarMonthInfo.monthName;
+
+    var lunarInfo = {
+        lunarMonthName: purnimantaMonthName,
+        paksha: paksha,
+        tithiName: tithiName,
+        isAdhika: isAdhika
+    };
+    var events = getEventsForDate(date, bsInfo, lunarInfo);
+
+    var karanaIdx = Math.floor(2 * tithiVal);
+    var karanaName = karanaIdx > 0 ? (karanaIdx < 57 ? karanas[(karanaIdx - 1) % 7 + 1] : karanas[karanaIdx - 57 + 8]) : karanas[0];
     var sunriseSunset = getSunriseSunset(date, lat, lon, tz);
     var isComputed = bsInfo.isComputed;
-    var adhikaMasa = calculateAdhikaMasa(ahar);
 
     var result = {
         gregorianDate: Qt.formatDateTime(date, "dddd, MMMM d, yyyy"),
@@ -471,6 +483,7 @@ function calculate(date, lat, lon, tz) {
         sunrise: sunriseSunset.sunrise,
         sunset: sunriseSunset.sunset,
         tithi: tithiName,
+        tithiDay: tithiDay, // Added lunar month day
         paksha: paksha,
         lunarMonth: lunarMonthDisplayName,
         nakshatra: nakshatras[Math.floor(moonLong / (360 / 27))],
@@ -480,11 +493,12 @@ function calculate(date, lat, lon, tz) {
         moonRashi: rashis[Math.floor(moonLong / 30)],
         events: events,
         isComputed: isComputed,
-        adhikaMasa: adhikaMasa
+        adhikaMasa: adhikaMasaStatus
     };
     calculationCache[cacheKey] = result;
     return result;
 }
+
 
 function getTslong(ahar) {
     var t1 = (YugaRotation.sun * ahar / YugaCivilDays);
@@ -520,6 +534,7 @@ function getSauraMasaDay(ahar) {
             return { m: yesterday.m, d: yesterday.d + 1 };
         }
     } catch (e) {
+        // Recursive functions can hit stack limits, provide a fallback.
         return { m: 0, d: 1 };
     }
 }
@@ -553,65 +568,19 @@ function calculateAdhikaMasa(ahar) {
     var sunLongEnd = trueLongitudeSun(lunarMonthEnd);
     var startSign = Math.floor(sunLongStart / 30);
     var endSign = Math.floor(sunLongEnd / 30);
-    var signCrossings = 0;
-    var currentSign = startSign;
-    for (var i = 1; i <= 29; i++) {
-        var checkAhar = lunarMonthStart + i;
-        var checkSunLong = trueLongitudeSun(checkAhar);
-        var checkSign = Math.floor(checkSunLong / 30);
-        if (checkSign < currentSign) {
-            checkSign += 12;
-        }
-        if (checkSign > currentSign) {
-            signCrossings += (checkSign - currentSign);
-            currentSign = checkSign % 12;
-        }
+
+    if (endSign < startSign) endSign += 12; // Handle wrap-around from Pisces to Aries
+
+    if (endSign === startSign) {
+        return "अधिक " + solarMonths[startSign % 12];
     }
-    if (endSign < currentSign) {
-        endSign += 12;
-    }
-    if (endSign > currentSign) {
-        signCrossings += (endSign - currentSign);
-    }
-    if (signCrossings === 0) {
-        return "अधिक " + solarMonths[startSign];
-    }
-    if (signCrossings >= 2) {
+    if (endSign > startSign + 1) {
         var skippedSign = (startSign + 1) % 12;
         return "क्षय " + solarMonths[skippedSign];
     }
     return "छैन";
 }
 
-function getLunarMonthNameWithAdhik(ahar) {
-    var lunarMonthStart = findNewMoon(ahar);
-    if (lunarMonthStart > ahar) {
-        lunarMonthStart = findNewMoon(lunarMonthStart - 29.53);
-    }
-    var purnima = findPurnima(lunarMonthStart + 14.77);
-    var sunLongPurnima = trueLongitudeSun(purnima);
-    var purnimaSign = Math.floor(sunLongPurnima / 30);
-    var signCrossings = 0;
-    var currentSign = Math.floor(trueLongitudeSun(lunarMonthStart) / 30);
-    for (var i = 1; i <= 29; i++) {
-        var checkAhar = lunarMonthStart + i;
-        var checkSunLong = trueLongitudeSun(checkAhar);
-        var checkSign = Math.floor(checkSunLong / 30);
-        if (checkSign < currentSign) {
-            checkSign += 12;
-        }
-        if (checkSign > currentSign) {
-            signCrossings += (checkSign - currentSign);
-            currentSign = checkSign % 12;
-        }
-    }
-    var isAdhika = (signCrossings === 0);
-    var result = {
-        monthName: solarMonths[purnimaSign],
-        isAdhika: isAdhika
-    };
-    return result;
-}
 
 // Debug calculations
 function generateDebugInfo(date, lat, lon, tz) {
@@ -627,10 +596,10 @@ function generateDebugInfo(date, lat, lon, tz) {
     }
 
     var jd = toJulianDay(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate()
-                );
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate()
+    );
     var ahar = jd - KaliEpoch + 0.25 + ((lon / 15 - tz) / 24);
     var sunLong = trueLongitudeSun(ahar);
     var moonLong = trueLongitudeMoon(ahar);
@@ -644,15 +613,15 @@ function generateDebugInfo(date, lat, lon, tz) {
     var karanaName = karanaIdx > 0 ? (karanaIdx < 57 ? karanas[(karanaIdx - 1) % 7 + 1] : karanas[karanaIdx - 57 + 8]) : karanas[0];
 
     var bsInfoCalc = fromGregorianAstronomical(
-                date.getUTCFullYear(),
-                date.getUTCMonth() + 1,
-                date.getUTCDate()
-                );
+        date.getUTCFullYear(),
+        date.getUTCMonth() + 1,
+        date.getUTCDate()
+    );
     var dayDifference = 0;
     var gregFromAstronomical_Today = fromBikramSambat(
-                bsInfoCalc.year,
-                bsInfoCalc.monthIndex,
-                bsInfoCalc.day
+        bsInfoCalc.year,
+        bsInfoCalc.monthIndex,
+        bsInfoCalc.day
     );
 
     if (gregFromAstronomical_Today) {
@@ -710,8 +679,8 @@ function generateDebugInfo(date, lat, lon, tz) {
         dataDrivenInfo = `<span style="font-size: 10pt; color: #FF6347;">Debug Information\n(Astronomical Calculation - outside data range):</span>\n` + "Gregorian Date: " + date + "\n" + "accepted BS Date: " + acceptedBsDate + "\n" + "(panchanga is based on astronomical computation)\n";
     }
 
-    var lunarMonthInfo = getLunarMonthNameWithAdhik(ahar);
-    var lunarMonthDisplay = lunarMonthInfo.isAdhika ? "अधिक " + lunarMonthInfo.monthName + " " + paksha : lunarMonthInfo.monthName + " " + paksha;
+    var fullPanchanga = calculate(date, lat, lon, tz);
+    var lunarMonthDisplay = fullPanchanga.lunarMonth + " " + fullPanchanga.paksha;
 
     var debugOutput =
         '<pre style="font-family: monospace; font-size: 8pt; color: white; white-space: pre; line-height: 1.2;">' +
