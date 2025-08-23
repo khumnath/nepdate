@@ -17,7 +17,7 @@ QtObject {
     readonly property color accentText: isDark ? "#67e8f9" : "#0e7490"
 
     // === Calendar Specific ===
-    readonly property color saturdayText: isDark ? "#fecaca" : "#F86262"
+    readonly property color saturdayText: isDark ? "#f8aaca" : "#F86262"
     readonly property color purnimaText: isDark ? "#fde68a" : "#92400e"
 
     // === Headers ===
@@ -34,11 +34,13 @@ QtObject {
     // === Borders ===
     readonly property color borderColor: isDark ? "#334155" : "#e2e8f0"
     readonly property color todayBorder: isDark ? "#0ea5e9" : "#0284c7"
-    readonly property color saturdayBorder: isDark ? "#334155" : "#fda4af"
+    readonly property color holidayBorder: isDark ? "#C58F69" : "#FF9101"
+    readonly property color saturdayBorder: isDark ? "#7A7C7B" : "#0369a1"
 
     // === Highlighted Days ===
     readonly property color todayBg: isDark ? "#082f49" : "#f0f9ff"
     readonly property color saturdayBg: isDark ? "#6E3233" : "#FEDDDF"
+    //readonly property color holidayBg: isDark ? "#6E3233" : "#FEDDDF"
     readonly property color adDayText: isDark ? "#BBCFFA" : "#6E9BFD"
 
     // === Modal / Dialogs ===
