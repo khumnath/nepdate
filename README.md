@@ -77,7 +77,6 @@ First, update your package list, then install the essential build tools and Qt 6
     sudo apt update
     sudo apt install build-essential \
     qt6-base-dev \
-    qt6-dev-tools \
     qt6-declarative-dev \
     qt6-declarative-dev-tools \
     qt6-tools-dev \
@@ -85,7 +84,6 @@ First, update your package list, then install the essential build tools and Qt 6
     qt6-shadertools-dev \
     libqt6printsupport6 \
     qml6-module-qtquick-controls \
-    qml6-module-qtquick-controls2 \
     qml6-module-qtquick-layouts \
     qml6-module-qtquick-window \
     qml6-module-qtcore
