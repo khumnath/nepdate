@@ -15,6 +15,22 @@ ApplicationWindow {
     // Initial flags, StayOnTopHint will be managed dynamically
    flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification | Qt.BypassWindowManagerHint
     color: "transparent"
+    background: Rectangle {
+        id: widgetBgRect
+        color: {
+            if (backgroundColorName === "none" && compositorSupportsTransparency) {
+                return "transparent";
+            }
+            var parsed = Qt.color(backgroundColorName === "none" ? "#2c2c2c" : backgroundColorName);
+            if (!compositorSupportsTransparency) {
+                return Qt.rgba(parsed.r, parsed.g, parsed.b, 1.0);
+            }
+            return parsed;
+        }
+        radius: 6
+        border.color: "transparent"
+        border.width: 0
+    }
 
     // Settings Component
     Settings {
@@ -25,6 +41,7 @@ ApplicationWindow {
     // App Settings Properties
     property int fontSize: 12
     property color fontColor: "green"
+    property string backgroundColorName: "none"
     property real latitude: 27.71
     property real longitude: 85.32
     property bool showIcon: true
@@ -287,7 +304,8 @@ ApplicationWindow {
                 settingsWindow = settingsComponent.createObject(widgetWindow, {
                     "initialFontSize": fontSize,
                     "showIcon": showIcon,
-                    "screenontop": screenontop
+                    "screenontop": screenontop,
+                    "backgroundColorName": backgroundColorName
                 });
 
                 if (settingsWindow) {
@@ -303,16 +321,22 @@ ApplicationWindow {
                     });
                     settingsWindow.fontSizeChanged.connect(function(newSize) {
                         updateFontSize(newSize);
-                        appSettings.setValue("fontSize", parseInt(newSize));
                     });
                     settingsWindow.fontColorChanged.connect(function(newColorName) {
                         fontColor = newColorName;
-                        appSettings.setValue("fontColor", newColorName);
+                    });
+                    settingsWindow.backgroundColorChanged.connect(function(newBgColorName) {
+                        backgroundColorName = newBgColorName;
                     });
                     settingsWindow.exitRequested.connect(function() {
                         Qt.quit();
                     });
                     settingsWindow.closing.connect(() => {
+                        // Save drag-dependent settings once on window close for smooth sliding performance
+                        appSettings.setValue("fontSize", parseInt(fontSize));
+                        appSettings.setValue("fontColor", fontColor.toString());
+                        appSettings.setValue("backgroundColor", backgroundColorName);
+
                         settingsWindow.destroy();
                         settingsWindow = null;
                     });
@@ -400,16 +424,19 @@ ApplicationWindow {
             const defaultFontColor = "magenta";
             const defaultShowIcon = true;
             const defaultScreenOnTop = true;
+            const defaultBgColor = compositorSupportsTransparency ? "none" : "#2c2c2c";
 
             updateFontSize(defaultFontSize);
             fontColor = defaultFontColor;
             showIcon = defaultShowIcon;
             screenontop = defaultScreenOnTop;
+            backgroundColorName = defaultBgColor;
 
             appSettings.setValue("fontSize", defaultFontSize);
             appSettings.setValue("fontColor", defaultFontColor);
             appSettings.setValue("showIcon", defaultShowIcon);
             appSettings.setValue("screenontop", defaultScreenOnTop);
+            appSettings.setValue("backgroundColor", defaultBgColor);
         }
 
         function loadAndValidateSettings() {
@@ -435,11 +462,20 @@ ApplicationWindow {
                 settingsValid = false;
             }
 
+            const savedBgColor = appSettings.value("backgroundColor");
+            if (settingsValid && (savedBgColor === undefined || typeof savedBgColor.toString() !== 'string' || savedBgColor.toString().length === 0)) {
+                settingsValid = false;
+            }
+            if (settingsValid && !compositorSupportsTransparency && savedBgColor.toString() === "none") {
+                settingsValid = false;
+            }
+
             if (settingsValid) {
                 updateFontSize(appSettings.value("fontSize", 14));
                 fontColor = appSettings.value("fontColor", "magenta");
                 showIcon = appSettings.value("showIcon", true).toString() === "true";
                 screenontop = appSettings.value("screenontop", true).toString() === "true";
+                backgroundColorName = appSettings.value("backgroundColor", compositorSupportsTransparency ? "none" : "#2c2c2c");
             } else {
                 resetAndSaveDefaultSettings();
             }

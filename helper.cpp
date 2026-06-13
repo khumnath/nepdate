@@ -9,6 +9,8 @@
 #include <QImage>
 #include <QQuickItemGrabResult>
 #include <QSharedPointer>
+#include <QGuiApplication>
+#include <QPalette>
 Printer::Printer(QObject *parent) : QObject(parent)
 {
 
@@ -55,4 +57,14 @@ void Printer::print(QQuickWindow* window)
 
     painter.drawPixmap(QRect(x, y, imageSize.width(), imageSize.height()), pixmap);
     painter.end();
+}
+
+bool Printer::isSystemDark() const
+{
+    QColor windowColor = QGuiApplication::palette().color(QPalette::Window);
+    // Relative luminance formula: Y = 0.2126 * R + 0.7152 * G + 0.0722 * B
+    double luminance = 0.2126 * windowColor.redF() + 
+                       0.7152 * windowColor.greenF() + 
+                       0.0722 * windowColor.blueF();
+    return luminance < 0.5;
 }
