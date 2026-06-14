@@ -639,6 +639,7 @@ ApplicationWindow {
 
                                     Rectangle {
                                         anchors.fill: parent
+                                        anchors.margins: 1
                                         radius: 11
                                         gradient: Gradient {
                                             orientation: Gradient.Vertical
@@ -756,6 +757,7 @@ ApplicationWindow {
 
                                     Rectangle {
                                         anchors.fill: parent
+                                        anchors.margins: 1
                                         radius: 11
                                         gradient: Gradient {
                                             orientation: Gradient.Vertical
