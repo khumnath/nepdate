@@ -92,10 +92,18 @@ int BikramCalendar::getBsYearFromAhar(const PanchangaCalculator* calc, double ah
   return yearSaka + 135;
 }
 
+int BikramCalendar::getBsYearFromAharAndMonth(double ahar, int m) {
+  double aharForYearCalc = ahar + (4 - m) * 30.0;
+  int yearKali = static_cast<int>(std::floor(aharForYearCalc / SOLAR_YEAR_IN_DAYS));
+  int yearSaka = yearKali - 3179;
+  return yearSaka + 135;
+}
+
 double BikramCalendar::findAharForBsDate(const PanchangaCalculator* calc, int bsYear, int monthIndex, int day) {
   int yearSaka = bsYear - 135;
   int yearKali = yearSaka + 3179;
   double ahar = std::floor(yearKali * SOLAR_YEAR_IN_DAYS);
+  
   for (int i = 0; i < 5; i++) {
     int foundBsYear = getBsYearFromAhar(calc, ahar);
     int yearDifference = bsYear - foundBsYear;
@@ -103,14 +111,29 @@ double BikramCalendar::findAharForBsDate(const PanchangaCalculator* calc, int bs
       break;
     ahar += std::round(yearDifference * SOLAR_YEAR_IN_DAYS);
   }
+  
   int m, d;
   getSauraMasaDay(calc, ahar, m, d);
   double dayDifference = std::round((monthIndex * 30.5 + day) - (m * 30.5 + d));
   ahar += dayDifference;
   getSauraMasaDay(calc, ahar, m, d);
+  
   int safetyCounter = 0;
-  while ((m != monthIndex || d != day) && safetyCounter < 45) {
-    ahar += ((m < monthIndex) || (m == monthIndex && d < day)) ? 1.0 : -1.0;
+  while (safetyCounter < 400) {
+    int currentYear = getBsYearFromAharAndMonth(ahar, m);
+    if (currentYear == bsYear && m == monthIndex && d == day) {
+        break;
+    }
+    
+    long currentTotal = currentYear * 12 + m;
+    long targetTotal = bsYear * 12 + monthIndex;
+    
+    if (currentTotal < targetTotal || (currentTotal == targetTotal && d < day)) {
+        ahar += 1.0;
+    } else {
+        ahar -= 1.0;
+    }
+    
     getSauraMasaDay(calc, ahar, m, d);
     safetyCounter++;
   }

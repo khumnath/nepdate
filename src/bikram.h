@@ -43,6 +43,7 @@ private:
   static void getSauraMasaDay(const PanchangaCalculator *calc, double ahar,
                               int &month, int &day);
   static int getBsYearFromAhar(const PanchangaCalculator *calc, double ahar);
+  static int getBsYearFromAharAndMonth(double ahar, int m);
   static double findAharForBsDate(const PanchangaCalculator *calc, int bsYear,
                                   int monthIndex, int day);
 };
