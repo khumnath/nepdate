@@ -234,6 +234,15 @@ If you need to test the logic against a different date, the test executable acce
 
 ---
 
+## Dual Licensing & Commercial Use
+
+This project is released under the **GNU General Public License v3.0 (GPLv3)** for open-source use. If you wish to use, modify, or embed the NepDate engine in a proprietary or closed-source application without adhering to the terms of the GPL, a **commercial license** is available. Please contact the repository owner for commercial licensing options.
+
+## Related Projects
+
+The core calculation engine of NepDate is also available in modern Web and Android applications.
+- **Web App Source Code:** The React-based web application is maintained in a separate repository (or branch).
+- **Android App:** Available on the Google Play Store as "NepDate".
 
 ## Contributing
 

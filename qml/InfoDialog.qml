@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "qrc:/qml/"
@@ -75,9 +92,13 @@ Dialog {
             width: parent.width
             wrapMode: Text.WordWrap
             color: theme ? theme.primaryText : "black"
-            text: "A lightweight Nepali calendar (Bikram Sambat) with daily Panchanga details written in QML.\n\n" +
-                  "All calculations are based on Kathmandu, Nepal and Nepal Standard Time (UTC+5:45).\n" +
-                  "For years between B.S. 2000–2089, the calendar uses pre-compiled official data.\n" +
+            text: "A lightweight Nepali calendar (Bikram Sambat) with daily Panchanga details written in QML.
+
+" +
+                  "All calculations are based on Kathmandu, Nepal and Nepal Standard Time (UTC+5:45).
+" +
+                  "For years between B.S. 2000–2089, the calendar uses pre-compiled official data.
+" +
                   "All other dates are calculated using high-precision ephemeris via the Astronomy Engine (MIT License) combined with traditional Vedic rules."
         }
 

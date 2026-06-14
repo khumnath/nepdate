@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -229,7 +246,8 @@ Dialog {
                     } else {
                         str += t.name;
                     }
-                    if (j < elements.length - 1) str += "\n";
+                    if (j < elements.length - 1) str += "
+";
                 }
                 return str;
             };
@@ -255,7 +273,8 @@ Dialog {
                     ];
 
             if (panchangaData.bhadra && panchangaData.bhadra.isActive) {
-                var bhadraText = "बास: " + panchangaData.bhadra.residence + "\n" + panchangaData.bhadra.status;
+                var bhadraText = "बास: " + panchangaData.bhadra.residence + "
+" + panchangaData.bhadra.status;
                 details.push(createDetailRow("भद्रा", bhadraText));
             }
 
@@ -311,11 +330,13 @@ Dialog {
                 var debugInfo = PanchangaNative.generateDebugInfo(debugDate);
                 currentDebugInfo = debugInfo.debug || "Debug information not available";
             } else {
-                currentDebugInfo = "Debug Information:\n  Error: Could not parse date for debug information";
+                currentDebugInfo = "Debug Information:
+  Error: Could not parse date for debug information";
             }
         } catch (e) {
             console.error("Error generating debug info:", e);
-            currentDebugInfo = "Debug Information:\n  Error: " + e.message;
+            currentDebugInfo = "Debug Information:
+  Error: " + e.message;
         }
     }
 

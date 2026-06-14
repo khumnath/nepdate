@@ -35,7 +35,7 @@ public:
   static QString toDevanagari(const QString &numStr);
   static QString fromDevanagari(const QString &devanagariStr);
 
-private:
+public:
   static QDate fromBikramSambatAlgorithmic(const PanchangaCalculator *calc,
                                            int year, int monthIndex, int day);
   static bool todaySauraMasaFirstP(const PanchangaCalculator *calc,
