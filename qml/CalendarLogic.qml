@@ -217,6 +217,7 @@ Item {
         currentAdYear = year;
         currentAdMonth = monthIndex;
         var date = new Date(Date.UTC(year, monthIndex, 1));
+        if (year >= 0 && year < 100) date.setUTCFullYear(year);
         var bsInfo = PanchangaNative.calculate(date);
         renderCalendarByBs(bsInfo.bsYear, bsInfo.bsMonthIndex, true);
     }
