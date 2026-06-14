@@ -305,7 +305,9 @@ Dialog {
             var year = parseInt(dateParts[3]);
 
             if (monthIndex !== -1) {
-                var debugDate = new Date(Date.UTC(year, monthIndex, day));
+                var debugDate = new Date(0);
+                debugDate.setUTCFullYear(year, monthIndex, day);
+                debugDate.setUTCHours(0, 0, 0, 0);
                 var debugInfo = PanchangaNative.generateDebugInfo(debugDate);
                 currentDebugInfo = debugInfo.debug || "Debug information not available";
             } else {

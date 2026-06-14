@@ -93,7 +93,9 @@ Item {
             var startAdMonth = bsMonthStartDate.getUTCMonth();
             var nextAdMonth = (startAdMonth + 1) % 12;
             var nextAdYear = (startAdMonth === 11) ? startAdYear + 1 : startAdYear;
-            var firstOfNextAdMonth = new Date(Date.UTC(nextAdYear, nextAdMonth, 1));
+            var firstOfNextAdMonth = new Date(0);
+            firstOfNextAdMonth.setUTCFullYear(nextAdYear, nextAdMonth, 1);
+            firstOfNextAdMonth.setUTCHours(0, 0, 0, 0);
             var bsMonthEndDate = PanchangaNative.fromBikramSambat(year, monthIndex, info.totalDays);
 
             if (firstOfNextAdMonth <= bsMonthEndDate) {
