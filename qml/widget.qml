@@ -2,7 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
-import "qrc:/PanchangaCalculator.js" as Panchanga
 import QtCore
 
 // widget.qml(main window for the small desktop widget)
@@ -69,15 +68,15 @@ ApplicationWindow {
     }
 
     function updateDate() {
-        const now = new Date();
-        const result = Panchanga.calculate(now, latitude, longitude);
-        const nepaliYear = Panchanga.toDevanagari(result.bsYear);
-        const nepaliDay = Panchanga.toDevanagari(result.bsDay);
-        const nepaliMonthName = Panchanga.solarMonths[result.bsMonthIndex];
+        const now = PanchangaNative.getLocalDate();
+        const result = PanchangaNative.calculate(now, latitude, longitude);
+        const nepaliYear = PanchangaNative.toDevanagari(result.bsYear);
+        const nepaliDay = PanchangaNative.toDevanagari(result.bsDay);
+        const nepaliMonthName = PanchangaNative.solarMonths[result.bsMonthIndex];
         const nepaliDate = `${nepaliYear} ${nepaliMonthName} ${nepaliDay} गते`;
         const nepaliWeekday = result.weekday;
         displayedDate = `${nepaliDate} ${nepaliWeekday}`;
-        tooltipDate = `${displayedDate}\n${result.paksha} ${result.tithi}`;
+        tooltipDate = `${displayedDate}\n${result.lunarMonth} ${result.paksha} ${result.tithi}`;
     }
 
     // Main UI Button
@@ -247,7 +246,7 @@ ApplicationWindow {
             calendarWindow = calendarComponent.createObject(widgetWindow);
             if (calendarWindow) {
                calendarWindow.closing.connect(() => {
-                    Panchanga.clearCache();
+                    PanchangaNative.clearCache();
                     calendarWindow.destroy();
                     calendarWindow = null;
                 });

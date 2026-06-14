@@ -1,0 +1,95 @@
+{
+    "adhikaMasa": "छैन",
+    "bhadra": {
+        "isActive": true,
+        "isActiveCivil": true,
+        "isHarmful": true,
+        "residence": "पृथ्वी लोक (मृत्युलोक)",
+        "status": "अशुभ — भद्रा पृथ्वी लोकमा हुँदा अत्यन्त अशुभ मानिन्छ। विवाह, नयाँ कार्य र यात्रा जस्ता शुभ कार्य पूर्णतः वर्जित छन्।"
+    },
+    "bsDay": 32,
+    "bsMonthIndex": 1,
+    "bsYear": 2081,
+    "dailyTransits": {
+        "karanas": [
+            {
+                "endTime": "11:03 AM",
+                "index": 14,
+                "name": "विष्टि(भद्रा)",
+                "startTime": "09:48 PM"
+            },
+            {
+                "endTime": "12:19 AM",
+                "index": 15,
+                "name": "बव",
+                "startTime": "11:03 AM"
+            },
+            {
+                "endTime": "01:34 PM",
+                "index": 16,
+                "name": "बालव",
+                "startTime": "12:19 AM"
+            }
+        ],
+        "nakshatras": [
+            {
+                "endTime": "05:24 AM",
+                "index": 10,
+                "name": "पूर्व फाल्गुनी",
+                "startTime": "02:27 AM"
+            },
+            {
+                "endTime": "08:29 AM",
+                "index": 11,
+                "name": "उत्तर फाल्गुनी",
+                "startTime": "05:24 AM"
+            }
+        ],
+        "tithis": [
+            {
+                "endTime": "12:19 AM",
+                "index": 7,
+                "name": "अष्टमी",
+                "startTime": "09:48 PM"
+            },
+            {
+                "endTime": "02:47 AM",
+                "index": 8,
+                "name": "नवमी",
+                "startTime": "12:19 AM"
+            }
+        ],
+        "yogas": [
+            {
+                "endTime": "07:23 PM",
+                "index": 15,
+                "name": "सिद्धि",
+                "startTime": "06:20 PM"
+            },
+            {
+                "endTime": "08:25 PM",
+                "index": 16,
+                "name": "व्यतिपात",
+                "startTime": "07:23 PM"
+            }
+        ]
+    },
+    "events": [
+    ],
+    "gregorianDate": "Friday, June 14, 2024",
+    "isComputed": false,
+    "isUnverified": false,
+    "karana": "विष्टि(भद्रा)",
+    "lunarMonth": "ज्येष्ठ",
+    "monthName": "ज्येष्ठ",
+    "moonRashi": "सिंह",
+    "nakshatra": "पूर्व फाल्गुनी",
+    "paksha": "शुक्ल पक्ष",
+    "statusMessage": "",
+    "sunRashi": "वृषभ",
+    "sunrise": "05:07",
+    "sunset": "19:00",
+    "tithi": "अष्टमी",
+    "weekday": "शुक्रबार",
+    "yoga": "सिद्धि"
+}

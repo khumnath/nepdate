@@ -716,17 +716,40 @@ ApplicationWindow {
                                     clip: true
 
                                     // Checkerboard pattern representing transparency
-                                    Grid {
+                                    Canvas {
                                         anchors.fill: parent
-                                        columns: 2
-                                        rows: 20
-                                        clip: true
-                                        Repeater {
-                                            model: 40
-                                            Rectangle {
-                                                width: alphaSliderTrack.width / 2
-                                                height: alphaSliderTrack.height / 20
-                                                color: (index + Math.floor(index / 2)) % 2 === 0 ? "#ffffff" : "#cccccc"
+                                        anchors.margins: 1
+                                        onPaint: {
+                                            var ctx = getContext("2d");
+                                            ctx.reset();
+                                            var w = width;
+                                            var h = height;
+                                            var r = 11;
+
+                                            // Create rounded clip path
+                                            ctx.beginPath();
+                                            ctx.moveTo(r, 0);
+                                            ctx.lineTo(w - r, 0);
+                                            ctx.arcTo(w, 0, w, r, r);
+                                            ctx.lineTo(w, h - r);
+                                            ctx.arcTo(w, h, w - r, h, r);
+                                            ctx.lineTo(r, h);
+                                            ctx.arcTo(0, h, 0, h - r, r);
+                                            ctx.lineTo(0, r);
+                                            ctx.arcTo(0, 0, r, 0, r);
+                                            ctx.closePath();
+                                            ctx.clip();
+
+                                            // Draw checkerboard
+                                            var cols = 2;
+                                            var rows = 20;
+                                            var cellW = w / cols;
+                                            var cellH = h / rows;
+                                            for (var row = 0; row < rows; row++) {
+                                                for (var col = 0; col < cols; col++) {
+                                                    ctx.fillStyle = (row + col) % 2 === 0 ? "#ffffff" : "#cccccc";
+                                                    ctx.fillRect(col * cellW, row * cellH, cellW, cellH);
+                                                }
                                             }
                                         }
                                     }

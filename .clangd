@@ -1,0 +1,9 @@
+CompileFlags:
+  Add:
+    - "-isystem/usr/include/c++/12"
+    - "-isystem/usr/include/x86_64-linux-gnu/c++/12"
+    - "-isystem/usr/include/c++/12/backward"
+    - "-isystem/usr/lib/gcc/x86_64-linux-gnu/12/include"
+    - "-isystem/usr/local/include"
+    - "-isystem/usr/include/x86_64-linux-gnu"
+    - "-isystem/usr/include"

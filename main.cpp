@@ -1,6 +1,7 @@
 #include "autostartmanager.h"
 #include "helper.h"
 #include "tooltipmanager.h"
+#include "src/panchangacalculator.h"
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QDir>
@@ -207,6 +208,9 @@ int main(int argc, char *argv[]) {
   engine.rootContext()->setContextProperty("autostartManager",
                                            &autostartManager);
   engine.rootContext()->setContextProperty("tooltipManager", &tooltipManager);
+
+  PanchangaCalculator panchangaCalculator;
+  engine.rootContext()->setContextProperty("PanchangaNative", &panchangaCalculator);
 
   const QUrl url(QStringLiteral("qrc:/qml/widget.qml"));
   QObject::connect(

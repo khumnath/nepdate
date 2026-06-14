@@ -89,14 +89,17 @@ ColumnLayout {
     Rectangle {
         id: eventFooter
         Layout.fillWidth: true
-        implicitHeight: eventLabel.paintedHeight + 20
+        Layout.maximumWidth: calendarGridRoot.width
+        implicitHeight: eventLabel.contentHeight + 20
         color: theme.secondaryBg
         radius: 6
         visible: eventLabel.eventModel && eventLabel.eventModel.length > 0
 
         Label {
             id: eventLabel
-            anchors.fill: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
             anchors.margins: 10
 
             property var eventModel: [] // Model reference
@@ -152,7 +155,11 @@ ColumnLayout {
                 color: (cellIndex === 6) ? "#E4080A" : theme.accentText
                 font.bold: true
                 font.pixelSize: 14
-                anchors.centerIn: parent
+                anchors.fill: parent
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                fontSizeMode: Text.Fit
+                minimumPixelSize: 10
             }
         }
     }

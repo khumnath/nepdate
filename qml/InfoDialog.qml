@@ -10,7 +10,7 @@ Dialog {
     width: Math.min(parent.width * 0.9, 700)
     x: parent ? (parent.width - width) / 2 : 0
     y: parent ? (parent.height - height) / 2 : 0
-    height: Math.min(implicitHeight, parent.height * 0.9)
+    height: Math.min(implicitHeight, parent.height * 0.95)
 
     property var theme
 
@@ -22,14 +22,20 @@ Dialog {
     }
 
     footer: null
+    bottomPadding: 5
+    topPadding: 5
 
     onAccepted: infoDialog.close()
 
-    contentItem: Column {
-        id: contentColumn
-        width: parent.width
-        spacing: 25
-        anchors.horizontalCenter: parent.horizontalCenter
+    contentItem: ScrollView {
+        id: scrollView
+        contentWidth: availableWidth
+        clip: true
+
+        Column {
+            id: contentColumn
+            width: scrollView.availableWidth
+            spacing: 25
 
         Column {
             width: parent.width
@@ -71,8 +77,8 @@ Dialog {
             color: theme ? theme.primaryText : "black"
             text: "A lightweight Nepali calendar (Bikram Sambat) with daily Panchanga details written in QML.\n\n" +
                   "All calculations are based on Kathmandu, Nepal and Nepal Standard Time (UTC+5:45).\n" +
-                  "For years between B.S. 2000–2089, the calendar uses pre-compiled data.\n" +
-                  "All other dates are calculated using traditional astronomical algorithms based on the Surya Siddhanta."
+                  "For years between B.S. 2000–2089, the calendar uses pre-compiled official data.\n" +
+                  "All other dates are calculated using high-precision ephemeris via the Astronomy Engine (MIT License) combined with traditional Vedic rules."
         }
 
         Rectangle {
@@ -80,27 +86,32 @@ Dialog {
             color: theme ? theme.tertiaryBg : "lightgrey"
             implicitHeight: warningRow.implicitHeight + 12
 
-            Row {
+            Item {
                 id: warningRow
-                spacing: 10
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.margins: 10
+                implicitHeight: Math.max(warnIcon.implicitHeight, warnText.implicitHeight)
 
                 Text {
+                    id: warnIcon
                     text: "⚠️"
                     font.pixelSize: 22
                     color: "#DAA520"
                     style: Text.Outline
                     styleColor: "#000"
+                    anchors.left: parent.left
                 }
 
                 Text {
-                    text: "Warning: Dates, even those with available data, can have calculation errors." +
+                    id: warnText
+                    text: "Warning: Dates, even those with available data, can have calculation errors. " +
                           "Always check with an official calendar approved by the Nepal Panchanga Nirnayak Samiti."
                     wrapMode: Text.AlignJustify
                     color: theme ? theme.saturdayText : "red"
-                    width: parent.width
+                    anchors.left: warnIcon.right
+                    anchors.leftMargin: 10
+                    anchors.right: parent.right
                 }
             }
         }
@@ -110,8 +121,7 @@ Dialog {
             width: parent.width
 
             Text {
-                text: "This is a free and open-source project. The project started as a Qt C++ application, " +
-                      "then a JavaScript version was created. You are running this application using JavaScript with QML now."
+                text: "This is a free and open-source project. The core logic is powered by a high-performance C++ backend utilizing the Astronomy Engine library for modern Drik-Siddhanta calculations."
                 color: theme ? theme.primaryText : "black"
                 width: parent.width
                 wrapMode: Text.WordWrap
@@ -177,5 +187,8 @@ Dialog {
                 padding: 5
             }
         }
+
+
     }
+}
 }

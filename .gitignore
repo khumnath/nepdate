@@ -47,3 +47,5 @@ compile_commands.json
 # pkgbuild files
 PKGBUILD/*
 !PKGBUILD/PKGBUILD
+.cache/
+scripts/

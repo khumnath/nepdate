@@ -22,7 +22,7 @@ Rectangle {
     signal themeToggleClicked()
 
     // Use the passed-in theme object for styling
-    color: theme ? theme.headerBg : "white"
+    color: theme ? theme.secondaryBg : "white"
     border.color: theme && theme.isDark ? "transparent" : (theme ? theme.borderColor : "grey")
 
     ColumnLayout {
@@ -33,7 +33,7 @@ Rectangle {
             text: "नेपाली क्यालेण्डर"
             font.pixelSize: 24
             font.bold: true
-            color: theme ? theme.headerPrimaryText : "black"
+            color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             Layout.alignment: Qt.AlignHCenter
         }
@@ -46,21 +46,21 @@ Rectangle {
                 id: bsLabel
                 text: "<b>बि.सं.</b> " + currentBsLabelStr
                 renderType: Text.NativeRendering
-                color: theme ? theme.headerSecondaryText : "grey"
+                color: theme ? theme.secondaryText : "grey"
                 font.pixelSize: 16
             }
 
             Rectangle {
                 width: 1
                 height: 20
-                color: theme ? theme.headerDivider : "lightgrey"
+                color: theme ? theme.borderColor : "lightgrey"
             }
 
             Label {
                 id: adLabel
                 text: currentAdLabelStr
                 renderType: Text.NativeRendering
-                color: theme ? theme.headerSecondaryText : "grey"
+                color: theme ? theme.secondaryText : "grey"
                 font.pixelSize: 16
             }
         }
@@ -85,7 +85,7 @@ Rectangle {
         contentItem: Text {
             text: parent.text
             font: parent.font
-            color: theme ? theme.headerPrimaryText : "black"
+            color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             scale: parent.hovered ? 1.2 : 1.0
@@ -115,7 +115,7 @@ Rectangle {
         contentItem: Text {
             text: parent.text
             font: parent.font
-            color: theme ? theme.headerPrimaryText : "black"
+            color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             scale: parent.hovered ? 1.2 : 1.0

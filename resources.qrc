@@ -4,8 +4,6 @@
         <file>qml/widget.qml</file>
         <file>qml/Settings.qml</file>
         <file>resources/flag.png</file>
-        <file alias="PanchangaCalculator.js">resources/PanchangaCalculator.js</file>
-        <file>resources/PreCalculated_Data.js</file>
         <file>resources/version.conf</file>
         <file>qml/CalendarGrid.qml</file>
         <file>qml/CalendarLogic.qml</file>
@@ -15,8 +13,11 @@
         <file>qml/NavigationBar.qml</file>
         <file>qml/PanchangaDetailDialog.qml</file>
         <file>qml/Theme.qml</file>
-        <file>resources/EventData.js</file>
         <file>qml/EventDisplay.qml</file>
         <file>resources/build_info.conf</file>
+        <file>resources/icons/chevron-left.svg</file>
+        <file>resources/icons/chevron-right.svg</file>
+        <file>resources/icons/chevrons-left.svg</file>
+        <file>resources/icons/chevrons-right.svg</file>
     </qresource>
 </RCC>

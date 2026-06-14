@@ -1,7 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import "qrc:/PanchangaCalculator.js" as Panchanga
 import "qrc:/qml/"
 
 // PanchangaDetailDialog.qml
@@ -202,6 +201,10 @@ Dialog {
             clearPanchangaDetails();
             modalTitle.text = panchangaData.gregorianDate;
 
+            if (panchangaData.statusMessage && panchangaData.statusMessage !== "") {
+                createDetailRow("जानकारी", panchangaData.statusMessage).parent = panchangaDetails;
+            }
+
             var eventComponent = Qt.createComponent("EventDisplay.qml");
             if (eventComponent.status === Component.Ready) {
                 var eventObj = eventComponent.createObject(panchangaDetails, {
@@ -212,19 +215,50 @@ Dialog {
                 console.log("Error creating event component:", eventComponent.errorString());
             }
 
+            var formatElements = function(elements) {
+                if (!elements || elements.length === 0) return "";
+                var str = "";
+                for (var j = 0; j < elements.length; j++) {
+                    var t = elements[j];
+                    if (t.startTime !== "N/A" && t.endTime !== "N/A") {
+                        str += t.name + " (" + t.startTime + " - " + t.endTime + ")";
+                    } else if (t.startTime !== "N/A") {
+                        str += t.name + " (" + t.startTime + " देखि)";
+                    } else if (t.endTime !== "N/A") {
+                        str += t.name + " (" + t.endTime + " सम्म)";
+                    } else {
+                        str += t.name;
+                    }
+                    if (j < elements.length - 1) str += "\n";
+                }
+                return str;
+            };
+
+            var transits = panchangaData.dailyTransits || {};
+            var tithiDisplay = formatElements(transits.tithis) || (panchangaData.tithi + " (" + panchangaData.paksha + ")");
+            var nakshatraDisplay = formatElements(transits.nakshatras) || panchangaData.nakshatra;
+            var yogaDisplay = formatElements(transits.yogas) || panchangaData.yoga;
+            var karanaDisplay = formatElements(transits.karanas) || panchangaData.karana;
+
             var details = [
-                        createDetailRow("बिक्रम संवत", toDevanagari(panchangaData.bsYear) + " " + panchangaData.monthName + " " + toDevanagari(panchangaData.bsDay)),
-                        createDetailRow("वार", panchangaData.weekday),
-                        createDetailRow("तिथि", panchangaData.tithi + " (" + panchangaData.paksha + ")"),
-                        createDetailRow("नक्षत्र", panchangaData.nakshatra),
-                        createDetailRow("योग", panchangaData.yoga),
-                        createDetailRow("करण", panchangaData.karana),
-                        createDetailRow("सूर्य राशि", panchangaData.sunRashi),
-                        createDetailRow("चन्द्र राशि", panchangaData.moonRashi),
-                        createDetailRow("उदयास्त", "सूर्योदय " + panchangaData.sunrise + " | सूर्यास्त " + panchangaData.sunset),
-                        createDetailRow("अधिक/क्षय मास", panchangaData.adhikaMasa),
-                        createDetailRow("चन्द्रमास",  panchangaData.lunarMonth)
+                        createDetailRow("बिक्रम संवत", toDevanagari(panchangaData.bsYear || "") + " " + (panchangaData.monthName || "") + " " + toDevanagari(panchangaData.bsDay || "")),
+                        createDetailRow("वार", panchangaData.weekday || ""),
+                        createDetailRow("तिथि", tithiDisplay),
+                        createDetailRow("नक्षत्र", nakshatraDisplay),
+                        createDetailRow("योग", yogaDisplay),
+                        createDetailRow("करण", karanaDisplay),
+                        createDetailRow("सूर्य राशि", panchangaData.sunRashi || ""),
+                        createDetailRow("चन्द्र राशि", panchangaData.moonRashi || ""),
+                        createDetailRow("उदयास्त", "सूर्योदय " + (panchangaData.sunrise || "--:--") + " | सूर्यास्त " + (panchangaData.sunset || "--:--")),
+                        createDetailRow("अधिक/क्षय मास", panchangaData.adhikaMasa || "छैन"),
+                        createDetailRow("चन्द्रमास",  panchangaData.lunarMonth || "")
                     ];
+
+            if (panchangaData.bhadra && panchangaData.bhadra.isActive) {
+                var bhadraText = "बास: " + panchangaData.bhadra.residence + "\n" + panchangaData.bhadra.status;
+                details.push(createDetailRow("भद्रा", bhadraText));
+            }
+
             for (var i = 0; i < details.length; ++i) {
                 details[i].parent = panchangaDetails;
             }
@@ -234,7 +268,7 @@ Dialog {
 
     onClosed: {
         clearPanchangaDetails();
-        Panchanga.clearCache();
+        PanchangaNative.clearCache();
         debugVisible = false;
     }
 
@@ -272,7 +306,7 @@ Dialog {
 
             if (monthIndex !== -1) {
                 var debugDate = new Date(Date.UTC(year, monthIndex, day));
-                var debugInfo = Panchanga.generateDebugInfo(debugDate);
+                var debugInfo = PanchangaNative.generateDebugInfo(debugDate);
                 currentDebugInfo = debugInfo.debug || "Debug information not available";
             } else {
                 currentDebugInfo = "Debug Information:\n  Error: Could not parse date for debug information";
@@ -284,6 +318,6 @@ Dialog {
     }
 
     function toDevanagari(num) {
-        return Panchanga.toDevanagari(num);
+        return PanchangaNative.toDevanagari(num);
     }
 }
