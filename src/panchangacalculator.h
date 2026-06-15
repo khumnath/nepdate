@@ -34,11 +34,11 @@ class PanchangaCalculator : public QObject {
 public:
     explicit PanchangaCalculator(QObject *parent = nullptr);
 
-    Q_INVOKABLE QVariantMap calculate(const QDate &date, double lat = 27.7172, double lon = 85.3240, double tz = 5.75);
+    Q_INVOKABLE QVariantMap calculate(const QDate &date, double lat = 27.7172, double lon = 85.3240, double tz = 5.75, bool isBikramSambat = true);
     Q_INVOKABLE QDate fromBikramSambat(int year, int monthIndex, int day);
     Q_INVOKABLE QVariantMap getBikramMonthInfo(int year, int monthIndex);
-    Q_INVOKABLE QString toDevanagari(const QString &numStr);
-    Q_INVOKABLE QString fromDevanagari(const QString &devanagariStr);
+    Q_INVOKABLE QString toDevanagari(const QString &numStr) const;
+    Q_INVOKABLE QString fromDevanagari(const QString &devanagariStr) const;
     
     Q_INVOKABLE QVariantMap generateDebugInfo(const QDate &date, double lat = 27.7172, double lon = 85.3240, double tz = 5.75);
     Q_INVOKABLE QDate getLocalDate(double tz = 5.75) const;
@@ -102,15 +102,15 @@ public:
     
     // Transits and Timings
     double findTransit(double searchStartAhar, 
-                       std::function<double(double)> getValueFunc,
-                       double targetValue, double maxDays = 2.0) const;
-    QVariantList findElementsForDay(double startAhar, double endAhar, 
-                                    std::function<double(double)> getValueFunc,
-                                    double divisor, const QStringList &nameArray,
-                                    double sunriseAhar, const QString& sunriseStr,
-                                    std::function<QString(int)> getSpecialName = nullptr) const;
-    QVariantMap getDailyElementsAndTimings(double ahar, double lat, double lon, double tz, const QString& sunriseStr) const;
-    QString formatAharTime(double ahar, double sunriseAhar, const QString& sunriseStr) const;
+                       std::function<double(double)> getValueFunc, 
+                       double targetValue, double maxDays, double wrapValue = 360.0) const;
+    QVariantList findElementsForDay(double startAhar, double endAhar,
+      std::function<double(double)> getValueFunc, double divisor,
+      const QStringList &nameArray, const QDate &baseDate, double lon,
+      double tz, bool isBikramSambat, std::function<QString(int)> getSpecialName,
+      double sunriseAhar = -1.0, double nextSunriseAhar = -1.0, double explicitWrapValue = -1.0) const;
+    QVariantMap getDailyElementsAndTimings(double ahar, const QDate &baseDate, double lat, double lon, double tz, double sunriseMinutes, bool isBikramSambat) const;
+    QString formatAharTime(double ahar, const QDate &baseDate, double lon, double tz, bool isBikramSambat, double nextSunriseAhar = -1.0) const;
     
     double findNewMoon(double ahar) const;
     double findPurnima(double ahar) const;

@@ -77,46 +77,20 @@ QStringList PanchangaCalculator::getNepaliGregorianMonths() const {
   return nepaliGregorianList;
 }
 
-QString PanchangaCalculator::toDevanagari(const QString &numStr) {
+QString PanchangaCalculator::toDevanagari(const QString &numStr) const {
   return BikramCalendar::toDevanagari(numStr);
 }
 
-QString PanchangaCalculator::fromDevanagari(const QString &devanagariStr) {
+QString PanchangaCalculator::fromDevanagari(const QString &devanagariStr) const {
   return BikramCalendar::fromDevanagari(devanagariStr);
 }
 
 double PanchangaCalculator::getJulianDay(int year, int month, int day) const {
-  int m = month + 1;
-  int y = year;
-  if (m <= 2) {
-    y--;
-    m += 12;
-  }
-  int a = y / 100;
-  int b = 2 - a + a / 4;
-  return std::floor(365.25 * (y + 4716)) + std::floor(30.6001 * (m + 1)) + day +
-         b - 1524.5;
+  return BikramCalendar::toJulianDay(year, month, day);
 }
 
 QDate PanchangaCalculator::fromJulianDay(double jd) const {
-  jd += 0.5;
-  double z = std::floor(jd);
-  double f = jd - z;
-  double a;
-  if (z < 2299161) {
-    a = z;
-  } else {
-    double alpha = std::floor((z - 1867216.25) / 36524.25);
-    a = z + 1 + alpha - std::floor(alpha / 4);
-  }
-  double b = a + 1524;
-  double c = std::floor((b - 122.1) / 365.25);
-  double d = std::floor(365.25 * c);
-  double e = std::floor((b - d) / 30.6001);
-  int day = std::floor(b - d - std::floor(30.6001 * e) + f);
-  int month = (e < 14) ? e - 1 : e - 13;
-  int year = (month > 2) ? c - 4716 : c - 4715;
-  return QDate(year, month, day);
+  return BikramCalendar::fromJulianDay(jd);
 }
 
 double PanchangaCalculator::getAhar(const QDate &date, double lon,
@@ -368,7 +342,7 @@ QVariantList PanchangaCalculator::getEventsForDate(
     events.append(ev);
   }
 
-  int weekday = date.dayOfWeek() % 7; // Qt: 1=Monday, ..., 7=Sunday -> 0=Sunday
+  int weekday = BikramCalendar::getHistoricalWeekday(date); // 0=Sunday..6=Saturday
 
   if (weekday == 2 && udayaTithi == "चतुर्थी" && udayaPaksha == "कृष्ण पक्ष") {
     QVariantMap ev;
@@ -451,8 +425,8 @@ QVariantMap PanchangaCalculator::getSunriseSunset(const QDate &date, double lat,
                                                   double lon) const {
   QVariantMap res;
 
-  int jdInt = date.toJulianDay();
-  double jd = static_cast<double>(jdInt);
+  double jd = BikramCalendar::toJulianDay(date);
+  int jdInt = static_cast<int>(std::floor(jd + 0.5));
 
   // Julian Century
   double t = (jd - 2451545.0) / 36525.0;
@@ -486,6 +460,8 @@ QVariantMap PanchangaCalculator::getSunriseSunset(const QDate &date, double lat,
 
   res["sunrise"] = srStr;
   res["sunset"] = ssStr;
+  res["sunriseMinutes"] = sunriseMinutes;
+  res["sunsetMinutes"] = sunsetMinutes;
 
   return res;
 }
@@ -618,7 +594,7 @@ double PanchangaCalculator::findNewMoon(double ahar) const {
 }
 
 QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
-                                           double lon, double tz) {
+                                           double lon, double tz, bool isBikramSambat) {
   QVariantMap result;
 
   // Find Bikram Sambat date safely
@@ -645,12 +621,21 @@ QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
 
   // Calculate Ahar at Sunrise
   double ahar = getAhar(date, lon, tz); // base
-  if (sunriseStr != "N/A" && sunriseStr.contains(":")) {
+  double sunriseMinutes = sunriseSunset["sunriseMinutes"].toDouble();
+  if (sunriseMinutes > 0) {
+    // getAhar normally gives Ahar at Midnight local time + Deshantara.
+    // We want exact Ahar at Sunrise local time.
+    double localFraction = sunriseMinutes / 1440.0; // Minutes to days
+    double jd0 =
+        getJulianDay(date.year(), date.month() - 1, date.day()); // Midnight UTC
+    double aharAtUtcMidnight = jd0 - KaliEpoch;
+    // Local time = UTC + tz -> UTC = Local time - tz
+    double utcFraction = localFraction - (tz / 24.0);
+    ahar = aharAtUtcMidnight + utcFraction + (lon / 360.0);
+  } else if (sunriseStr != "N/A" && sunriseStr.contains(":")) {
     QStringList parts = sunriseStr.split(":");
     int h = parts[0].toInt();
     int m = parts[1].toInt();
-    // getAhar normally gives Ahar at Midnight local time + Deshantara.
-    // We want Ahar at Sunrise local time.
     double utcFraction = ((h - tz) * 3600.0 + m * 60.0) / 86400.0;
     double jd0 =
         getJulianDay(date.year(), date.month() - 1, date.day()); // Midnight UTC
@@ -695,8 +680,19 @@ QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
                            : karanas[0];
   result["karana"] = karanaName;
 
-  result["weekday"] = weekdaysList[date.dayOfWeek() % 7];
-  result["gregorianDate"] = date.toString("dddd, MMMM d, yyyy");
+  result["weekday"] = weekdaysList[BikramCalendar::getHistoricalWeekday(date)];
+
+  // Custom Gregorian formatting: add Julian suffix for pre-1582 dates
+  int adYear = date.year();
+  QString yearStr;
+  if (adYear <= 0) {
+    yearStr = QString::number(std::abs(adYear - 1)) + " BCE (Julian)";
+  } else if (adYear < 1582) {
+    yearStr = QString::number(adYear) + " (Julian)";
+  } else {
+    yearStr = QString::number(adYear);
+  }
+  result["gregorianDate"] = date.toString("dddd, MMMM d, ") + yearStr;
 
   // Lunar Month and Adhika Masa
   double lunarMonthStart = findNewMoon(ahar);
@@ -759,7 +755,7 @@ QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
 
   // Append Daily Transits
   QVariantMap transits =
-      getDailyElementsAndTimings(ahar, lat, lon, tz, sunriseStr);
+      getDailyElementsAndTimings(ahar, date, lat, lon, tz, sunriseMinutes, isBikramSambat);
   result["dailyTransits"] = transits;
 
   // Calculate Bhadra
@@ -819,9 +815,17 @@ QVariantMap PanchangaCalculator::generateDebugInfo(const QDate &date,
 
   QVariantMap sunriseSunset = getSunriseSunset(date, lat, lon);
   QString sunriseStr = sunriseSunset["sunrise"].toString();
+  double sunriseMinutes = sunriseSunset["sunriseMinutes"].toDouble();
 
   double ahar = getAhar(date, lon, tz); // base
-  if (sunriseStr != "N/A" && sunriseStr.contains(":")) {
+  if (sunriseMinutes > 0) {
+    double localFraction = sunriseMinutes / 1440.0;
+    double jd0 =
+        getJulianDay(date.year(), date.month() - 1, date.day()); // Midnight UTC
+    double aharAtUtcMidnight = jd0 - KaliEpoch;
+    double utcFraction = localFraction - (tz / 24.0);
+    ahar = aharAtUtcMidnight + utcFraction + (lon / 360.0);
+  } else if (sunriseStr != "N/A" && sunriseStr.contains(":")) {
     QStringList parts = sunriseStr.split(":");
     int h = parts[0].toInt();
     int m = parts[1].toInt();
@@ -962,52 +966,123 @@ void PanchangaCalculator::clearCache() { calculationCache.clear(); }
 // Transits and Timings
 // -----------------------------------------------------------------------------
 
-QString PanchangaCalculator::formatAharTime(double ahar, double sunriseAhar,
-                                            const QString &sunriseStr) const {
+QString PanchangaCalculator::formatAharTime(double ahar, const QDate &baseDate,
+                                            double lon, double tz, bool isBikramSambat,
+                                            double nextSunriseAhar) const {
   if (ahar == -1.0)
     return "N/A";
-  if (sunriseStr == "N/A" || !sunriseStr.contains(":"))
-    return "N/A";
 
-  // Parse sunrise string (e.g. "05:07" or "05:07 AM")
-  QStringList parts = sunriseStr.split(":");
-  int h = parts[0].toInt();
-  int m =
-      parts[1].left(2).toInt(); // safe even if "AM/PM" is not there, but
-                                // getSunriseSunset formats as HH:MM 24h or 12h?
-  // getSunriseSunset returns 24-hour format string padded with zeroes, e.g.
-  // "05:07" or "19:00".
+  double jdUTC = ahar + KaliEpoch - (lon / 360.0);
+  double jdLocal = jdUTC + (tz / 24.0);
 
-  double dayFraction = ahar - sunriseAhar;
-  double totalSeconds = dayFraction * 86400.0;
+  double jdnDouble = std::floor(jdLocal + 0.5);
+  double fraction = (jdLocal + 0.5) - jdnDouble;
+  
+  double totalSeconds = fraction * 86400.0;
+  int displaySeconds = static_cast<int>(std::floor(totalSeconds));
+  displaySeconds = (displaySeconds % 86400 + 86400) % 86400;
 
-  QTime srTime(h, m);
-  QTime targetTime = srTime.addSecs(static_cast<int>(std::round(totalSeconds)));
+  QTime targetTime = QTime(0, 0).addSecs(displaySeconds);
+  
+  QString timeStr;
+  if (isBikramSambat) {
+      int h = targetTime.hour();
+      int m = targetTime.minute();
+      int s = targetTime.second();
+      
+      QString period;
+      if (h < 12) period = "बिहान";
+      else if (h < 17) period = "दिउँसो";
+      else if (h < 20) period = "साँझ";
+      else period = "राति";
+      
+      int displayH = h % 12;
+      if (displayH == 0) displayH = 12;
+      
+      timeStr = toDevanagari(QString::number(displayH)) + ":" +
+                toDevanagari(QString("%1").arg(m, 2, 10, QChar('0'))) + ":" +
+                toDevanagari(QString("%1").arg(s, 2, 10, QChar('0'))) + " " + period;
+  } else {
+      timeStr = targetTime.toString("hh:mm:ss AP");
+  }
+  
+  QDate targetDate = fromJulianDay(jdLocal);
 
-  // We format as 12-hour AM/PM since we don't have date crossover info easily
-  // in QTime, but QTime handles wrapping
-  return targetTime.toString("hh:mm AP");
+  if (targetDate > baseDate) {
+      bool isPostMidnightVedic = false;
+      if (nextSunriseAhar != -1.0) {
+          isPostMidnightVedic = (ahar < nextSunriseAhar);
+      } else {
+          isPostMidnightVedic = targetTime.hour() < 6;
+      }
+
+      if (isPostMidnightVedic) {
+          int daysDiff = baseDate.daysTo(targetDate);
+          int extendedHour = targetTime.hour() + daysDiff * 24;
+          QString extendedStr = QString("(%1:%2:%3)")
+                                    .arg(extendedHour)
+                                    .arg(targetTime.minute(), 2, 10, QChar('0'))
+                                    .arg(targetTime.second(), 2, 10, QChar('0'));
+          if (isBikramSambat) {
+              extendedStr = toDevanagari(extendedStr);
+          }
+          timeStr += " " + extendedStr;
+      }
+  }
+
+  if (targetDate != baseDate) {
+      if (isBikramSambat) {
+          QVariantMap bsTarget = toBikramSambat(targetDate);
+          QVariantMap bsBase = toBikramSambat(baseDate);
+          int targetMonthIdx = bsTarget["monthIndex"].toInt();
+          int targetDay = bsTarget["day"].toInt();
+          int baseMonthIdx = bsBase["monthIndex"].toInt();
+          
+          QString dayStr = toDevanagari(QString::number(targetDay));
+          if (targetMonthIdx != baseMonthIdx) {
+              QStringList nepaliMonths = getSolarMonths();
+              QString monthName = (targetMonthIdx >= 0 && targetMonthIdx < nepaliMonths.size())
+                                      ? nepaliMonths[targetMonthIdx]
+                                      : "";
+              return monthName + " " + dayStr + " गते " + timeStr;
+          } else {
+              return dayStr + " गते " + timeStr;
+          }
+      } else {
+          int targetMonth = targetDate.month();
+          int baseMonth = baseDate.month();
+          int targetDay = targetDate.day();
+          if (targetMonth != baseMonth) {
+              QString monthName = QLocale::system().monthName(targetMonth, QLocale::ShortFormat);
+              return monthName + " " + QString::number(targetDay) + " " + timeStr;
+          } else {
+              return QString::number(targetDay) + " " + timeStr;
+          }
+      }
+  }
+  return timeStr;
 }
 
 double
 PanchangaCalculator::findTransit(double searchStartAhar,
                                  std::function<double(double)> getValueFunc,
-                                 double targetValue, double maxDays) const {
+                                 double targetValue, double maxDays, double wrapValue) const {
   double v0 = getValueFunc(searchStartAhar);
+  double halfWrap = wrapValue / 2.0;
   auto getUnwrapped = [&](double ah) {
     double v = getValueFunc(ah);
-    while (v < v0 - 180.0)
-      v += 360.0;
-    while (v > v0 + 180.0)
-      v -= 360.0;
+    while (v < v0 - halfWrap)
+      v += wrapValue;
+    while (v > v0 + halfWrap)
+      v -= wrapValue;
     return v;
   };
 
   double target = targetValue;
-  while (target < v0 - 180.0)
-    target += 360.0;
-  while (target > v0 + 180.0)
-    target -= 360.0;
+  while (target < v0 - halfWrap)
+    target += wrapValue;
+  while (target > v0 + halfWrap)
+    target -= wrapValue;
 
   double low = searchStartAhar;
   double high = searchStartAhar + maxDays;
@@ -1042,8 +1117,9 @@ PanchangaCalculator::findTransit(double searchStartAhar,
 QVariantList PanchangaCalculator::findElementsForDay(
     double startAhar, double endAhar,
     std::function<double(double)> getValueFunc, double divisor,
-    const QStringList &nameArray, double sunriseAhar, const QString &sunriseStr,
-    std::function<QString(int)> getSpecialName) const {
+    const QStringList &nameArray, const QDate &baseDate, double lon, double tz, bool isBikramSambat,
+    std::function<QString(int)> getSpecialName,
+    double sunriseAhar, double nextSunriseAhar, double explicitWrapValue) const {
 
   QVariantList elements;
 
@@ -1051,20 +1127,30 @@ QVariantList PanchangaCalculator::findElementsForDay(
   int currentIndex = static_cast<int>(std::floor(valAtStart / divisor));
   double targetEndValue = (currentIndex + 1) * divisor;
 
+  double wrapValue = (explicitWrapValue != -1.0) ? explicitWrapValue : (nameArray.size() * divisor);
+  
   double startTimeAhar =
-      findTransit(startAhar, getValueFunc, currentIndex * divisor, 2.0);
+      findTransit(startAhar, getValueFunc, currentIndex * divisor, 2.0, wrapValue);
   double endTimeAhar =
       findTransit(startTimeAhar != -1.0 ? startTimeAhar : startAhar,
-                  getValueFunc, targetEndValue, 2.0);
+                  getValueFunc, targetEndValue, 2.0, wrapValue);
 
   QString name = getSpecialName ? getSpecialName(currentIndex)
                                 : nameArray[currentIndex % nameArray.size()];
 
+  if (sunriseAhar != -1.0 && nextSunriseAhar != -1.0) {
+      if (startTimeAhar > sunriseAhar && endTimeAhar < nextSunriseAhar) {
+          name += " <span style=\"color:#ef4444\">(क्षय)</span>";
+      } else if (startTimeAhar < sunriseAhar && endTimeAhar > nextSunriseAhar) {
+          name += " (वृद्धि)";
+      }
+  }
+
   QVariantMap el;
   el["index"] = currentIndex;
   el["name"] = name;
-  el["startTime"] = formatAharTime(startTimeAhar, sunriseAhar, sunriseStr);
-  el["endTime"] = formatAharTime(endTimeAhar, sunriseAhar, sunriseStr);
+  el["startTime"] = formatAharTime(startTimeAhar, baseDate, lon, tz, isBikramSambat, nextSunriseAhar);
+  el["endTime"] = formatAharTime(endTimeAhar, baseDate, lon, tz, isBikramSambat, nextSunriseAhar);
   elements.append(el);
 
   while (endTimeAhar != -1.0 && endTimeAhar < endAhar) {
@@ -1073,17 +1159,25 @@ QVariantList PanchangaCalculator::findElementsForDay(
     targetEndValue = (currentIndex + 1) * divisor;
 
     endTimeAhar =
-        findTransit(currentStartTimeAhar, getValueFunc, targetEndValue, 2.0);
+        findTransit(currentStartTimeAhar, getValueFunc, targetEndValue, 2.0, wrapValue);
     name = getSpecialName ? getSpecialName(currentIndex)
                           : nameArray[currentIndex % nameArray.size()];
+
+    if (sunriseAhar != -1.0 && nextSunriseAhar != -1.0) {
+        if (currentStartTimeAhar > sunriseAhar && endTimeAhar < nextSunriseAhar) {
+            name += " <span style=\"color:#ef4444\">(क्षय)</span>";
+        } else if (currentStartTimeAhar < sunriseAhar && endTimeAhar > nextSunriseAhar) {
+            name += " (वृद्धि)";
+        }
+    }
 
     if (endTimeAhar != -1.0 && endTimeAhar > currentStartTimeAhar) {
       QVariantMap nextEl;
       nextEl["index"] = currentIndex;
       nextEl["name"] = name;
       nextEl["startTime"] =
-          formatAharTime(currentStartTimeAhar, sunriseAhar, sunriseStr);
-      nextEl["endTime"] = formatAharTime(endTimeAhar, sunriseAhar, sunriseStr);
+          formatAharTime(currentStartTimeAhar, baseDate, lon, tz, isBikramSambat, nextSunriseAhar);
+      nextEl["endTime"] = formatAharTime(endTimeAhar, baseDate, lon, tz, isBikramSambat, nextSunriseAhar);
       elements.append(nextEl);
     } else {
       if (!elements.isEmpty() &&
@@ -1092,9 +1186,9 @@ QVariantList PanchangaCalculator::findElementsForDay(
         lastEl["index"] = currentIndex;
         lastEl["name"] = name;
         lastEl["startTime"] =
-            formatAharTime(currentStartTimeAhar, sunriseAhar, sunriseStr);
+            formatAharTime(currentStartTimeAhar, baseDate, lon, tz, isBikramSambat, nextSunriseAhar);
         lastEl["endTime"] =
-            formatAharTime(endTimeAhar, sunriseAhar, sunriseStr);
+            formatAharTime(endTimeAhar, baseDate, lon, tz, isBikramSambat, nextSunriseAhar);
         elements.append(lastEl);
       }
       break;
@@ -1104,44 +1198,22 @@ QVariantList PanchangaCalculator::findElementsForDay(
 }
 
 QVariantMap PanchangaCalculator::getDailyElementsAndTimings(
-    double ahar, double lat, double lon, double tz,
-    const QString &sunriseStr) const {
-  // We assume 'ahar' passed here is exactly the Sunrise Ahar.
-  // To scan the day, we approximate next sunrise Ahar as ahar + 1.0 (or just
-  // pass an endAhar).
-  double startAhar = ahar;
-  double endAhar = ahar + 1.0;
+    double ahar, const QDate &baseDate, double lat, double lon, double tz, double sunriseMinutes, bool isBikramSambat) const {
+  double midnightAhar = ahar - (sunriseMinutes / 1440.0);
+  double startAhar = midnightAhar;
+  double endAhar = ahar + 1.15;
 
   QVariantMap res;
 
-  auto elongationFunc = [&](double ah) {
-    double diff = analyticalMoonLong(ah) - analyticalSunLong(ah);
-    while (diff < 0.0)
-      diff += 360.0;
-    while (diff >= 360.0)
-      diff -= 360.0;
-    return diff;
-  };
-  auto nakshatraValFunc = [&](double ah) {
-    double ml = analyticalMoonLong(ah);
-    while (ml >= 360.0)
-      ml -= 360.0;
-    while (ml < 0.0)
-      ml += 360.0;
-    return ml;
-  };
-  auto yogaValFunc = [&](double ah) {
-    double sum = analyticalSunLong(ah) + analyticalMoonLong(ah);
-    while (sum >= 360.0)
-      sum -= 360.0;
-    while (sum < 0.0)
-      sum += 360.0;
-    return sum;
-  };
+  double nextSunriseMinutes = getSunriseSunset(baseDate.addDays(1), lat, lon)["sunriseMinutes"].toDouble();
+  double nextSunriseAhar = midnightAhar + 1.0 + (nextSunriseMinutes / 1440.0);
 
   res["tithis"] = findElementsForDay(
-      startAhar, endAhar, elongationFunc, 12.0, tithiNamesList, ahar,
-      sunriseStr, [&](int idx) -> QString {
+      startAhar, endAhar,
+      [&](double a) {
+        return getTithi(analyticalSunLong(a), analyticalMoonLong(a));
+      },
+      1.0, tithiNamesList, baseDate, lon, tz, isBikramSambat, [&](int idx) {
         int tNum = std::abs(idx) % 30 + 1;
         int nIdx = (tNum > 15) ? tNum - 16 : tNum - 1;
         if (tNum == 15)
@@ -1149,24 +1221,30 @@ QVariantMap PanchangaCalculator::getDailyElementsAndTimings(
         else if (tNum == 30)
           nIdx = 15;
         return tithiNamesList[nIdx];
-      });
+      }, ahar, nextSunriseAhar, 30.0);
 
-  res["nakshatras"] =
-      findElementsForDay(startAhar, endAhar, nakshatraValFunc, 360.0 / 27.0,
-                         nakshatras, ahar, sunriseStr);
-  res["yogas"] = findElementsForDay(startAhar, endAhar, yogaValFunc,
-                                    360.0 / 27.0, yogas, ahar, sunriseStr);
-  res["karanas"] =
-      findElementsForDay(startAhar, endAhar, elongationFunc, 6.0, karanas, ahar,
-                         sunriseStr, [&](int ki) -> QString {
-                           int raw = ki % 60;
-                           if (raw == 0)
-                             return karanas[0];
-                           else if (raw < 57)
-                             return karanas[(raw - 1) % 7 + 1];
-                           else
-                             return karanas[raw - 57 + 8];
-                         });
+  res["nakshatras"] = findElementsForDay(
+      startAhar, endAhar, [&](double a) { return getNakshatra(analyticalMoonLong(a)); },
+      1.0, nakshatras, baseDate, lon, tz, isBikramSambat, nullptr, -1.0, nextSunriseAhar, 27.0);
+      
+  res["yogas"] = findElementsForDay(
+      startAhar, endAhar,
+      [&](double a) {
+        return getYoga(analyticalSunLong(a), analyticalMoonLong(a));
+      },
+      1.0, yogas, baseDate, lon, tz, isBikramSambat, nullptr, -1.0, nextSunriseAhar, 27.0);
+      
+  res["karanas"] = findElementsForDay(
+      startAhar, endAhar,
+      [&](double a) {
+        return 2.0 * getTithi(analyticalSunLong(a), analyticalMoonLong(a));
+      },
+      1.0, karanas, baseDate, lon, tz, isBikramSambat, [&](int idx) {
+        int nIdx = std::abs(idx) % 60;
+        if (nIdx == 0) return karanas[0];
+        if (nIdx < 57) return karanas[(nIdx - 1) % 7 + 1];
+        return karanas[nIdx - 57 + 8];
+      }, -1.0, nextSunriseAhar, 60.0);
 
   return res;
 }

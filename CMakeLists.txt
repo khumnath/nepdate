@@ -136,3 +136,5 @@ add_custom_target(
     ${CMAKE_BINARY_DIR}/compile_commands.json
     ${CMAKE_SOURCE_DIR}/compile_commands.json
 )
+add_executable(test_bs tests/test_bs.cpp src/bikram.cpp src/bsmonthdata.cpp helper.cpp src/astronomy.c src/panchangacalculator.cpp src/eventsdata.cpp)
+target_link_libraries(test_bs PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Quick Qt6::PrintSupport)

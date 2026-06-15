@@ -37,7 +37,8 @@ public:
 
 public:
   static QDate fromBikramSambatAlgorithmic(const PanchangaCalculator *calc,
-                                           int year, int monthIndex, int day);
+                                           int bsYearInput, int year,
+                                           int monthIndex, int day);
   static bool todaySauraMasaFirstP(const PanchangaCalculator *calc,
                                    double ahar);
   static void getSauraMasaDay(const PanchangaCalculator *calc, double ahar,
@@ -46,6 +47,16 @@ public:
   static int getBsYearFromAharAndMonth(double ahar, int m);
   static double findAharForBsDate(const PanchangaCalculator *calc, int bsYear,
                                   int monthIndex, int day);
+
+  // Custom Julian Day conversions.
+  // toJulianDay: hybrid Julian/Gregorian (Julian before Oct 15 1582, Gregorian after).
+  // fromJulianDay: proleptic Gregorian for all dates (matches JS Date behavior).
+  static double toJulianDay(int year, int month0, int day);
+  static double toJulianDay(const QDate &date);
+  static QDate fromJulianDay(double jd);
+
+  // Historical weekday from our hybrid JDN. Returns 0=Sunday..6=Saturday.
+  static int getHistoricalWeekday(const QDate &date);
 };
 
 #endif // BIKRAM_H

@@ -140,11 +140,23 @@ double BikramCalendar::findAharForBsDate(const PanchangaCalculator* calc, int bs
   return ahar;
 }
 
-QDate BikramCalendar::fromBikramSambatAlgorithmic(const PanchangaCalculator* calc, int year, int monthIndex, int day) {
+QDate BikramCalendar::fromBikramSambatAlgorithmic(const PanchangaCalculator* calc, int bsYearInput, int year, int monthIndex, int day) {
   double ahar = findAharForBsDate(calc, year, monthIndex, day);
   double jd = ahar + KaliEpoch;
-  int jdInt = std::floor(jd + 0.5);
-  return QDate::fromJulianDay(jdInt);
+  QDate adDate = fromJulianDay(jd);
+
+  // Self-correction loop: attempt ±0..±4 day adjustments to find exact match
+  int offsets[] = {0, 1, -1, 2, -2, 3, -3, 4, -4};
+  for (int offset : offsets) {
+    QDate testDate = adDate.addDays(offset);
+    QVariantMap check = toBikramSambat(calc, testDate);
+    int checkYear = check["year"].toInt();
+    // Map the check year back to UI representation for comparison
+    if (checkYear == bsYearInput && check["monthIndex"].toInt() == monthIndex && check["day"].toInt() == day) {
+      return testDate;
+    }
+  }
+  return adDate;
 }
 
 QVariantMap BikramCalendar::toBikramSambat(const PanchangaCalculator* calc, const QDate &date) {
@@ -178,9 +190,9 @@ QVariantMap BikramCalendar::toBikramSambat(const PanchangaCalculator* calc, cons
     }
   }
 
-  // Fallback logic
-  int jd = date.toJulianDay();
-  double ahar = jd - KaliEpoch - 0.5; // at midnight
+  // Fallback logic: custom toJulianDay for consistency
+  double jd = toJulianDay(date);
+  double ahar = jd - KaliEpoch; // jd is already at midnight (xxx.5)
 
   int m, d;
   getSauraMasaDay(calc, ahar, m, d);
@@ -188,6 +200,7 @@ QVariantMap BikramCalendar::toBikramSambat(const PanchangaCalculator* calc, cons
   int yearKali = static_cast<int>(std::floor(aharForYearCalc / SOLAR_YEAR_IN_DAYS));
   int yearSaka = yearKali - 3179;
   int finalBsYear = yearSaka + 135;
+  if (finalBsYear <= 0) finalBsYear -= 1; // Eliminate Year 0 for historical continuity
 
   res["year"] = finalBsYear;
   res["monthIndex"] = m;
@@ -197,10 +210,11 @@ QVariantMap BikramCalendar::toBikramSambat(const PanchangaCalculator* calc, cons
   return res;
 }
 
-QDate BikramCalendar::fromBikramSambat(const PanchangaCalculator* calc, int year, int monthIndex, int day) {
+QDate BikramCalendar::fromBikramSambat(const PanchangaCalculator* calc, int bsYearInput, int monthIndex, int day) {
+  int year = bsYearInput < 0 ? bsYearInput + 1 : bsYearInput; // Map UI Year -1 back to internal Year 0
   int dataYear = year - BsMonthData::BS_START_YEAR;
   if (dataYear < 0 || dataYear >= BsMonthData::NUM_YEARS) {
-    return fromBikramSambatAlgorithmic(calc, year, monthIndex, day);
+    return fromBikramSambatAlgorithmic(calc, bsYearInput, year, monthIndex, day);
   }
   int totalDays = 0;
   for (int y = 0; y < dataYear; y++) {
@@ -233,7 +247,7 @@ QVariantMap BikramCalendar::getBikramMonthInfo(const PanchangaCalculator* calc, 
     info["monthName"] = solarMonthsList[monthIndex];
     info["totalDays"] = days;
     info["startAdDate"] = startDate;
-    info["startDayOfWeek"] = startDate.dayOfWeek() % 7;
+    info["startDayOfWeek"] = getHistoricalWeekday(startDate);
     info["isComputed"] = false;
     return info;
   }
@@ -251,7 +265,54 @@ QVariantMap BikramCalendar::getBikramMonthInfo(const PanchangaCalculator* calc, 
   info["monthName"] = solarMonthsList[monthIndex];
   info["totalDays"] = totalDays;
   info["startAdDate"] = firstDayAd;
-  info["startDayOfWeek"] = firstDayAd.dayOfWeek() % 7;
+  info["startDayOfWeek"] = getHistoricalWeekday(firstDayAd);
   info["isComputed"] = true;
   return info;
+}
+
+// Custom Julian Day conversions.
+
+double BikramCalendar::toJulianDay(int year, int month0, int day) {
+  // month0 is 0-indexed (0=January, 11=December), JS convention.
+  int month1 = month0 + 1;
+  int a = (14 - month1) / 12;
+  // Use long long for intermediate calculations to prevent overflow for negative years
+  long long y = (long long)year + 4800 - a;
+  int m = month1 + 12 * a - 3;
+  long long jdn = day + (153 * m + 2) / 5 + 365 * y + y / 4;
+
+  // Hybrid: Gregorian after Oct 15, 1582; Julian before
+  if (year > 1582 || (year == 1582 && month0 > 9) || (year == 1582 && month0 == 9 && day >= 15)) {
+    jdn = jdn - y / 100 + y / 400 - 32045;
+  } else {
+    jdn = jdn - 32083;
+  }
+  return (double)jdn - 0.5; // midnight
+}
+
+double BikramCalendar::toJulianDay(const QDate &date) {
+  return toJulianDay(date.year(), date.month() - 1, date.day());
+}
+
+QDate BikramCalendar::fromJulianDay(double jd) {
+  // Proleptic Gregorian calendar for all dates
+  jd += 0.5;
+  double z = std::floor(jd);
+  double alpha = std::floor((z - 1867216.25) / 36524.25);
+  double a = z + 1 + alpha - std::floor(alpha / 4);
+  double b = a + 1524;
+  double c = std::floor((b - 122.1) / 365.25);
+  double d = std::floor(365.25 * c);
+  double e = std::floor((b - d) / 30.6001);
+  int day = static_cast<int>(b - d - std::floor(30.6001 * e));
+  int month = (e < 14) ? static_cast<int>(e) - 1 : static_cast<int>(e) - 13;
+  int year = (month > 2) ? static_cast<int>(c) - 4716 : static_cast<int>(c) - 4715;
+  return QDate(year, month, day);
+}
+
+int BikramCalendar::getHistoricalWeekday(const QDate &date) {
+  double jd = toJulianDay(date);
+  int z = static_cast<int>(std::floor(jd + 0.5));
+  int wd = (z + 1) % 7;
+  return wd >= 0 ? wd : wd + 7; // 0=Sunday..6=Saturday
 }

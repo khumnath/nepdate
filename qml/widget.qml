@@ -86,7 +86,7 @@ ApplicationWindow {
 
     function updateDate() {
         const now = PanchangaNative.getLocalDate();
-        const result = PanchangaNative.calculate(now, latitude, longitude);
+        const result = PanchangaNative.calculate(now, latitude, longitude, 5.75, true);
         const nepaliYear = PanchangaNative.toDevanagari(result.bsYear);
         const nepaliDay = PanchangaNative.toDevanagari(result.bsDay);
         const nepaliMonthName = PanchangaNative.solarMonths[result.bsMonthIndex];

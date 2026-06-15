@@ -49,27 +49,50 @@ Dialog {
         border.width: 1
         clip: true
 
-        ColumnLayout {
-            id: contentColumn
-            width: parent.width
+        ScrollView {
+            anchors.fill: parent
+            clip: true
+            contentWidth: availableWidth
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-            // Header section of the dialog.
-            Rectangle {
-                id: modalHeader
-                Layout.fillWidth: true
-                height: 60
-                color: "transparent"
+            ColumnLayout {
+                id: contentColumn
+                width: contentRect.width
 
-                Label {
-                    id: modalTitle
-                    text: "दिनको विवरण"
-                    font.pixelSize: 20
-                    font.bold: true
-                    color: theme ? theme.modalHeaderText : "black"
-                    anchors.centerIn: parent
-                    z: 1
+                // Header section of the dialog.
+                Rectangle {
+                    id: modalHeader
+                    Layout.fillWidth: true
+                    height: 60
+                    color: "transparent"
+
+                    Label {
+                        id: modalTitle
+                        text: "दिनको विवरण"
+                        font.pixelSize: 20
+                        font.bold: true
+                        color: theme ? theme.modalHeaderText : "black"
+                        anchors.centerIn: parent
+                        z: 1
+                    }
+
+                    ToolButton {
+                        text: "✕"
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.rightMargin: 15
+                        font.pixelSize: 20
+                        onClicked: panchangaDetailDialogRoot.close()
+                        contentItem: Text {
+                            text: parent.text
+                            font: parent.font
+                            color: theme ? theme.primaryText : "black"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: null
+                    }
                 }
-            }
 
             // The main content area.
             ColumnLayout {
@@ -179,34 +202,6 @@ Dialog {
                 }
             }
 
-            // Footer section with the close button.
-            Rectangle {
-                id: modalFooter
-                Layout.fillWidth: true
-                height: 65
-                color: "transparent"
-
-                Button {
-                    text: "बन्द गर्नुहोस्"
-                    anchors.centerIn: parent
-                    onClicked: panchangaDetailDialogRoot.close()
-
-                    background: Rectangle {
-                        color: theme ? theme.tertiaryBg : "lightgrey"
-                        border.color: parent.hovered && theme ? theme.accent : "gray"
-                        border.width: parent.hovered ? 2 : 1
-                        radius: 12
-                    }
-
-                    contentItem: Text {
-                        text: parent.text
-                        font: parent.font
-                        color: theme ? theme.primaryText : "black"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        padding: 5
-                    }
-                }
             }
         }
     }
@@ -232,31 +227,40 @@ Dialog {
                 console.log("Error creating event component:", eventComponent.errorString());
             }
 
-            var formatElements = function(elements) {
-                if (!elements || elements.length === 0) return "";
-                var str = "";
-                for (var j = 0; j < elements.length; j++) {
-                    var t = elements[j];
-                    if (t.startTime !== "N/A" && t.endTime !== "N/A") {
-                        str += t.name + " (" + t.startTime + " - " + t.endTime + ")";
-                    } else if (t.startTime !== "N/A") {
-                        str += t.name + " (" + t.startTime + " देखि)";
-                    } else if (t.endTime !== "N/A") {
-                        str += t.name + " (" + t.endTime + " सम्म)";
-                    } else {
-                        str += t.name;
-                    }
-                    if (j < elements.length - 1) str += "
-";
+            var formatElements = function(elements, primaryName) {
+                var out = "";
+                if (primaryName) {
+                    out += "<table width='100%' cellpadding='0' cellspacing='0'><tr><td align='right'><b><font size='4'>" + primaryName + "</font></b></td></tr></table>";
                 }
-                return str;
+                
+                if (!elements || elements.length === 0) {
+                    if (!primaryName) return "-";
+                    return out;
+                }
+                
+                var parts = [];
+                for (var i = 0; i < elements.length; i++) {
+                    var item = elements[i];
+                    var name = item.name;
+                    var startTimeStr = item.startTime !== "N/A" ? item.startTime : "---";
+                    var endTimeStr = item.endTime !== "N/A" ? item.endTime : "---";
+                    
+                    var line = "<b><font size='4'>" + name + "</font></b>";
+                    line += "<table width='100%' cellpadding='0' cellspacing='0'><tr>";
+                    line += "<td align='left'>प्रारम्भ: " + startTimeStr + "</td>";
+                    line += "<td align='right'>अन्त्य: " + endTimeStr + "</td>";
+                    line += "</tr></table>";
+                    parts.push(line);
+                }
+                
+                return out + (primaryName && parts.length > 0 ? "<br>" : "") + parts.join("<br>");
             };
 
             var transits = panchangaData.dailyTransits || {};
-            var tithiDisplay = formatElements(transits.tithis) || (panchangaData.tithi + " (" + panchangaData.paksha + ")");
-            var nakshatraDisplay = formatElements(transits.nakshatras) || panchangaData.nakshatra;
-            var yogaDisplay = formatElements(transits.yogas) || panchangaData.yoga;
-            var karanaDisplay = formatElements(transits.karanas) || panchangaData.karana;
+            var tithiDisplay = formatElements(transits.tithis, panchangaData.tithi + " (" + panchangaData.paksha + ")");
+            var nakshatraDisplay = formatElements(transits.nakshatras, panchangaData.nakshatra);
+            var yogaDisplay = formatElements(transits.yogas, panchangaData.yoga);
+            var karanaDisplay = formatElements(transits.karanas, panchangaData.karana);
 
             var details = [
                         createDetailRow("बिक्रम संवत", toDevanagari(panchangaData.bsYear || "") + " " + (panchangaData.monthName || "") + " " + toDevanagari(panchangaData.bsDay || "")),
@@ -305,13 +309,16 @@ Dialog {
         label1.font.bold = true;
         label1.width = 150;
         label1.font.pixelSize = 14;
+        label1.Layout.alignment = Qt.AlignTop;
 
-        var label2 = Qt.createQmlObject('import QtQuick.Controls 2.15; import QtQuick 2.15; Label {}', rowItem);
+        var label2 = Qt.createQmlObject('import QtQuick.Controls 2.15; import QtQuick 2.15; import QtQuick.Layouts 1.15; Label {}', rowItem);
         label2.text = value;
+        label2.textFormat = Text.RichText;
         label2.color = theme ? theme.primaryText : "black";
         label2.wrapMode = Text.WordWrap;
         label2.font.pixelSize = 14;
         label2.Layout.fillWidth = true;
+        label2.Layout.alignment = Qt.AlignTop;
         return rowItem;
     }
 

@@ -23,6 +23,7 @@ import "qrc:/qml/"
 Rectangle {
     id: dayCell
     radius: 5
+    property bool isAdMode: false
     property int bsDay: 0
     property int adDay: 0
     property string tithi: ""
@@ -56,7 +57,8 @@ Rectangle {
 
     Component.onCompleted: {
         if (cellDate) {
-            var dayInfo = PanchangaNative.calculate(cellDate);
+            var isBikramSambat = !isAdMode;
+            var dayInfo = PanchangaNative.calculate(cellDate, 27.7172, 85.3240, 5.75, isBikramSambat);
             if (dayInfo.events && dayInfo.events.length > 0) {
                 for (var i = 0; i < dayInfo.events.length; i++) {
                     if (dayInfo.events[i].holiday) {
@@ -94,9 +96,9 @@ Rectangle {
         anchors.margins: 6
     }
 
-    // BS Day (Center)
+    // BS / AD Day (Center)
     Label {
-        text: PanchangaNative.toDevanagari(bsDay || 0)
+        text: dayCell.isAdMode ? (adDay || 0) : PanchangaNative.toDevanagari(bsDay || 0)
         font.bold: true
         font.pixelSize: cellMouseArea.containsMouse ? 28 : 24
         scale: cellMouseArea.containsMouse ? 1.1 : 1.0
@@ -124,9 +126,9 @@ Rectangle {
         width: parent.width - eventIndicator.width - 14
     }
 
-    // AD Day (Top Right)
+    // AD / BS Day (Top Right)
     Label {
-        text: adDay || 0
+        text: dayCell.isAdMode ? PanchangaNative.toDevanagari(bsDay || 0) : (adDay || 0)
         font.pixelSize: 11
         color: theme ? theme.adDayText : "grey"
         anchors.right: parent.right

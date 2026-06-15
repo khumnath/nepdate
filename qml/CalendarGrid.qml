@@ -29,6 +29,7 @@ ColumnLayout {
     property alias calendarModel: repeater.model
     property alias eventListModel: eventLabel.eventModel
     property var theme
+    property bool isAdMode: false
 
     // Signals
     signal dayClicked(var panchanga)
@@ -183,7 +184,9 @@ ColumnLayout {
 
     Component {
         id: dayComponent
-        DayCell {}
+        DayCell {
+            isAdMode: calendarGridRoot.isAdMode
+        }
     }
 
     Component {

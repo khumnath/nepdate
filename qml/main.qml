@@ -46,6 +46,12 @@ ApplicationWindow {
         adMonthSelect.currentIndex = calendarLogic.currentAdMonth;
         bsYearInput.internalAsciiValue = calendarLogic.currentBsYear.toString();
         bsMonthSelect.currentIndex = calendarLogic.currentBsMonthIndex;
+        
+        if (activeTabIndex === 0) {
+            calendarLogic.renderCalendarByBs(calendarLogic.currentBsYear, calendarLogic.currentBsMonthIndex);
+        } else {
+            calendarLogic.renderCalendarByAd(calendarLogic.currentAdYear, calendarLogic.currentAdMonth);
+        }
     }
 
     Theme { id: theme }
@@ -366,6 +372,7 @@ ApplicationWindow {
             id: calendar
             Layout.fillWidth: true
             theme: theme
+            isAdMode: window.activeTabIndex === 1
             calendarModel: calendarLogic.calendarModel
             onDayClicked: function(panchanga) {
                 panchangaDetailDialog.panchangaData = panchanga

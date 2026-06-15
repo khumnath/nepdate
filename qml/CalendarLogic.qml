@@ -46,6 +46,32 @@ Item {
     property int _asyncYear: 0
     property int _asyncMonthIndex: 0
     property int _asyncStartDay: 0
+    property bool isAdRenderMode: false
+
+    function getBsRangeForAd(adYear, adMonthIndex) {
+        var first = new Date(Date.UTC(adYear, adMonthIndex, 1));
+        var last = new Date(Date.UTC(adYear, adMonthIndex + 1, 0));
+        if (adYear >= 0 && adYear < 100) {
+            first.setUTCFullYear(adYear);
+            last.setUTCFullYear(adYear);
+        }
+        var isBikramSambat = !isAdRenderMode;
+        var infoFirst = PanchangaNative.calculate(first, 27.7172, 85.3240, 5.75, isBikramSambat);
+        var infoLast = PanchangaNative.calculate(last, 27.7172, 85.3240, 5.75, isBikramSambat);
+        
+        var firstBsMonth = PanchangaNative.solarMonths[infoFirst.bsMonthIndex];
+        var lastBsMonth = PanchangaNative.solarMonths[infoLast.bsMonthIndex];
+        var firstBsYear = infoFirst.bsYear;
+        var lastBsYear = infoLast.bsYear;
+        
+        if (firstBsYear !== lastBsYear) {
+            return firstBsMonth + " " + toDevanagari(firstBsYear) + " – " + lastBsMonth + " " + toDevanagari(lastBsYear);
+        } else if (firstBsMonth !== lastBsMonth) {
+            return firstBsMonth + " - " + lastBsMonth + " " + toDevanagari(firstBsYear);
+        } else {
+            return firstBsMonth + " " + toDevanagari(firstBsYear);
+        }
+    }
 
     Timer {
         id: asyncLoader
@@ -70,7 +96,8 @@ Item {
 
     function initializeApp() {
         var today = PanchangaNative.getLocalDate();
-        var bsInfo = PanchangaNative.calculate(today);
+        var isBikramSambat = !isAdRenderMode;
+        var bsInfo = PanchangaNative.calculate(today, 27.7172, 85.3240, 5.75, isBikramSambat);
         renderCalendarByBs(bsInfo.bsYear, bsInfo.bsMonthIndex);
     }
 
@@ -93,6 +120,7 @@ Item {
     }
 
     function renderCalendarByBs(year, monthIndex, preserveAdState = false) {
+        isAdRenderMode = false;
         var newCalendarModel = [];
         var eventsByDay = {}; // Use an object to group events by day
 
@@ -151,6 +179,12 @@ Item {
             });
         }
 
+        var totalDaySlots = startDay + daysInMonth;
+        var targetSlots = totalDaySlots > 35 ? 42 : 35;
+        for (var p = totalDaySlots; p < targetSlots; ++p) {
+            newCalendarModel.push({ type: "empty" });
+        }
+
         calendarModel = newCalendarModel;
 
         currentBsLabelStr = toDevanagari(year) + " " + info.monthName;
@@ -182,8 +216,15 @@ Item {
             }
 
             var day = _asyncCurrentDay;
-            var adDate = PanchangaNative.fromBikramSambat(_asyncYear, _asyncMonthIndex, day);
-            var result = PanchangaNative.calculate(adDate);
+            var adDate;
+            if (isAdRenderMode) {
+                adDate = new Date(Date.UTC(_asyncYear, _asyncMonthIndex, day));
+                if (_asyncYear >= 0 && _asyncYear < 100) adDate.setUTCFullYear(_asyncYear);
+            } else {
+                adDate = PanchangaNative.fromBikramSambat(_asyncYear, _asyncMonthIndex, day);
+            }
+            
+            var result = PanchangaNative.calculate(adDate, 27.7172, 85.3240, 5.75, !isAdRenderMode);
             if (day === 1) {
                 isCurrentMonthComputed = result.isComputed;
                 isCurrentMonthUnverified = result.isUnverified;
@@ -191,18 +232,23 @@ Item {
             var hasEventForDay = result.events ? (result.events.length > 0) : false;
 
             if (hasEventForDay) {
-                var devanagariDay = toDevanagari(day);
-                if (!_asyncEvents[devanagariDay]) {
-                    _asyncEvents[devanagariDay] = [];
+                var displayDayLabel = isAdRenderMode ? day.toString() : toDevanagari(day);
+                if (!_asyncEvents[displayDayLabel]) {
+                    _asyncEvents[displayDayLabel] = [];
                 }
                 for (var j = 0; j < result.events.length; j++) {
-                    _asyncEvents[devanagariDay].push(result.events[j].name);
+                    _asyncEvents[displayDayLabel].push(result.events[j].name);
                 }
             }
 
-            result.monthName = currentBsLabelStr.split(" ")[1];
-
             var modelIndex = 7 + _asyncStartDay + day - 1;
+            if (isAdRenderMode) {
+                _asyncModel[modelIndex].bsDay = result.bsDay;
+                result.monthName = PanchangaNative.solarMonths[result.bsMonthIndex] || "";
+            } else {
+                result.monthName = currentBsLabelStr.split(" ")[1];
+            }
+            
             _asyncModel[modelIndex].tithi = result.tithi;
             _asyncModel[modelIndex].hasEvent = hasEventForDay;
             _asyncModel[modelIndex].gregorianDate = result.gregorianDate;
@@ -215,14 +261,18 @@ Item {
     function finishAsyncLoading() {
         var newMonthEvents = [];
         var sortedDays = Object.keys(_asyncEvents).sort(function(a, b) {
-            return parseInt(fromDevanagari(a)) - parseInt(fromDevanagari(b));
+            if (isAdRenderMode) {
+                return parseInt(a) - parseInt(b);
+            } else {
+                return parseInt(fromDevanagari(a)) - parseInt(fromDevanagari(b));
+            }
         });
 
         for (var i = 0; i < sortedDays.length; i++) {
-            var bsDay = sortedDays[i];
+            var dayLabel = sortedDays[i];
             newMonthEvents.push({
-                bsDay: bsDay,
-                eventName: _asyncEvents[bsDay].join(", ")
+                bsDay: dayLabel,
+                eventName: _asyncEvents[dayLabel].join(", ")
             });
         }
 
@@ -231,12 +281,59 @@ Item {
     }
 
     function renderCalendarByAd(year, monthIndex) {
+        isAdRenderMode = true;
+        var newCalendarModel = [];
         currentAdYear = year;
         currentAdMonth = monthIndex;
-        var date = new Date(Date.UTC(year, monthIndex, 1));
-        if (year >= 0 && year < 100) date.setUTCFullYear(year);
-        var bsInfo = PanchangaNative.calculate(date);
-        renderCalendarByBs(bsInfo.bsYear, bsInfo.bsMonthIndex, true);
+        
+        var firstDate = new Date(Date.UTC(year, monthIndex, 1));
+        if (year >= 0 && year < 100) firstDate.setUTCFullYear(year);
+        
+        var lastDate = new Date(Date.UTC(year, monthIndex + 1, 0));
+        if (year >= 0 && year < 100) lastDate.setUTCFullYear(year);
+        
+        var daysInMonth = lastDate.getUTCDate();
+        var startDay = firstDate.getUTCDay();
+        var weekdaysAd = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        
+        for (var i = 0; i < 7; ++i) {
+            newCalendarModel.push({ type: "header", text: weekdaysAd[i] });
+        }
+        for (i = 0; i < startDay; ++i) {
+            newCalendarModel.push({ type: "empty" });
+        }
+        for (var day = 1; day <= daysInMonth; ++day) {
+            var iterDate = new Date(Date.UTC(year, monthIndex, day));
+            if (year >= 0 && year < 100) iterDate.setUTCFullYear(year);
+            var isToday = iterDate.toDateString() === PanchangaNative.getLocalDate().toDateString();
+            var isSaturday = (startDay + day - 1) % 7 === 6;
+            
+            newCalendarModel.push({
+                type: "day", bsDay: 0, adDay: day,
+                tithi: "...", isToday: isToday, isSaturday: isSaturday,
+                hasEvent: false, gregorianDate: "", panchanga: null
+            });
+        }
+        
+        var totalDaySlots = startDay + daysInMonth;
+        var targetSlots = totalDaySlots > 35 ? 42 : 35;
+        for (var p = totalDaySlots; p < targetSlots; ++p) {
+            newCalendarModel.push({ type: "empty" });
+        }
+        
+        calendarModel = newCalendarModel;
+        
+        currentAdLabelStr = PanchangaNative.nepaliGregorianMonths[monthIndex] + " " + year;
+        currentBsLabelStr = getBsRangeForAd(year, monthIndex);
+        
+        _asyncModel = newCalendarModel;
+        _asyncEvents = {};
+        _asyncCurrentDay = 1;
+        _asyncDaysInMonth = daysInMonth;
+        _asyncYear = year;
+        _asyncMonthIndex = monthIndex;
+        _asyncStartDay = startDay;
+        asyncLoader.start();
     }
 
     function navigateBsMonth(direction) {
