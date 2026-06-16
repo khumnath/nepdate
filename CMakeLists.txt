@@ -61,6 +61,7 @@ set(SOURCES
     src/bikram.cpp
     src/bsmonthdata.cpp
     src/eventsdata.cpp
+    src/constants.cpp
 )
 
 set(HEADERS
@@ -97,6 +98,7 @@ qt_add_executable(run_test
     src/bikram.cpp
     src/bsmonthdata.cpp
     src/eventsdata.cpp
+    src/constants.cpp
 )
 target_link_libraries(run_test PRIVATE Qt6::Core)
 
@@ -115,8 +117,8 @@ add_test(NAME PanchangaTest COMMAND run_test)
 #=============================================================================
 include(GNUInstallDirs)
 
-if(NOT CMAKE_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "..." FORCE)
 endif()
 
 message(STATUS "Install prefix set to: ${CMAKE_INSTALL_PREFIX}")
@@ -136,5 +138,5 @@ add_custom_target(
     ${CMAKE_BINARY_DIR}/compile_commands.json
     ${CMAKE_SOURCE_DIR}/compile_commands.json
 )
-add_executable(test_bs tests/test_bs.cpp src/bikram.cpp src/bsmonthdata.cpp helper.cpp src/astronomy.c src/panchangacalculator.cpp src/eventsdata.cpp)
-target_link_libraries(test_bs PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Quick Qt6::PrintSupport)
+add_executable(test_bs tests/test_bs.cpp src/bikram.cpp src/bsmonthdata.cpp src/astronomy.c src/panchangacalculator.cpp src/eventsdata.cpp src/constants.cpp)
+target_link_libraries(test_bs PRIVATE Qt6::Core)

@@ -324,13 +324,11 @@ Dialog {
 
     function generateDebugInfo() {
         try {
-            var dateParts = panchangaData.gregorianDate.split(" ");
-            var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            var monthIndex = monthNames.indexOf(dateParts[1]);
-            var day = parseInt(dateParts[2]);
-            var year = parseInt(dateParts[3]);
+            var year = panchangaData.adYear;
+            var monthIndex = panchangaData.adMonth - 1; // 0-based
+            var day = panchangaData.adDay;
 
-            if (monthIndex !== -1) {
+            if (year !== undefined && monthIndex >= 0 && day !== undefined) {
                 var debugDate = new Date(0);
                 debugDate.setUTCFullYear(year, monthIndex, day);
                 debugDate.setUTCHours(0, 0, 0, 0);

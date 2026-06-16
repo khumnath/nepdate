@@ -117,7 +117,7 @@ public:
     int calculateAdhikaMasa(double purnimaAhar) const;
     
     // Sunrise / Sunset
-    QVariantMap getSunriseSunset(const QDate &date, double lat, double lon) const;
+    QVariantMap getSunriseSunset(const QDate &date, double lat, double lon, double tz = 5.75) const;
     
     QVariantMap calculationCache;
 };

@@ -36,7 +36,7 @@ void ensureDesktopFile(const QString &desktopFileName,
       for (const QString &line : content.split('\n')) {
         if (line.startsWith("Exec=")) {
           updatedContent +=
-              "Exec=" + QCoreApplication::applicationFilePath() + "\n";
+              "Exec=\"" + QCoreApplication::applicationFilePath() + "\"\n";
         } else {
           updatedContent += line + "\n";
         }
@@ -54,7 +54,7 @@ void ensureDesktopFile(const QString &desktopFileName,
       out << "Categories=Utility;Calendar;\n";
       out << "Comment=Nepali Calendar Application\n";
       out << "Icon=calendar\n";
-      out << "Exec=" << QCoreApplication::applicationFilePath() << "\n";
+      out << "Exec=\"" << QCoreApplication::applicationFilePath() << "\"\n";
       out << "Name=Nepdate Calendar\n";
       out << "StartupNotify=true\n";
       out << "StartupWMClass=" << startupWMClass << "\n";
@@ -180,6 +180,13 @@ int main(int argc, char *argv[]) {
 
   AutostartManager autostartManager;
   TooltipManager tooltipManager;
+  // Command-line parsing must happen before QML engine load so --help works quickly
+  QCommandLineParser parser;
+  parser.setApplicationDescription("Nepali Calendar Application");
+  parser.addHelpOption();
+  parser.addVersionOption(); // --version and -v
+  parser.process(app);
+
   QQmlApplicationEngine engine;
 
   // C++ Platform Detection
@@ -239,11 +246,5 @@ int main(int argc, char *argv[]) {
                     "}");
   QCoreApplication::setApplicationVersion(baseVersion);
 
-  // Command-line parsing
-  QCommandLineParser parser;
-  parser.setApplicationDescription("Nepali Calendar Application");
-  parser.addHelpOption();
-  parser.addVersionOption(); // --version and -v
-  parser.process(app);
   return app.exec();
 }

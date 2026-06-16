@@ -22,11 +22,8 @@
 #include <QDateTime>
 #include <cmath>
 
-constexpr double KaliEpoch = 588465.5;
+#include "constants.h"
 constexpr double rad = 180.0 / M_PI;
-constexpr double DESHANTARA = (85.3 - 75.7682) / 360.0;
-constexpr double SOLAR_YEAR_IN_DAYS = 365.2587564814815;
-
 static double zero360(double x) { return x - std::floor(x / 360.0) * 360.0; }
 static double deg2rad(double deg) { return deg * M_PI / 180.0; }
 static double rad2deg(double r) { return r * 180.0 / M_PI; }
@@ -52,9 +49,7 @@ static const QStringList karanas = {"किंस्तुघ्न", "बव", 
                                     "शकुनि",   "चतुष्पाद", "नाग"};
 static const QStringList rashis = {"मेष",  "वृषभ",   "मिथुन", "कर्क", "सिंह", "कन्या",
                                    "तुला", "वृश्चिक", "धनु",   "मकर", "कुम्भ", "मीन"};
-static const QStringList solarMonthsList = {
-    "वैशाख",   "ज्येष्ठ",     "आषाढ", "श्रावण", "भाद्रपद", "आश्विन",
-    "कार्तिक", "मार्गशीर्ष", "पौष",  "माघ",   "फाल्गुन",  "चैत्र"};
+
 static const QStringList weekdaysList = {
     "आइतबार", "सोमबार", "मङ्गलबार", "बुधबार", "बिहीबार", "शुक्रबार", "शनिबार"};
 
@@ -422,7 +417,7 @@ double PanchangaCalculator::getKarana(double sunLong, double moonLong) const {
 }
 
 QVariantMap PanchangaCalculator::getSunriseSunset(const QDate &date, double lat,
-                                                  double lon) const {
+                                                  double lon, double tz) const {
   QVariantMap res;
 
   double jd = BikramCalendar::toJulianDay(date);
@@ -435,7 +430,7 @@ QVariantMap PanchangaCalculator::getSunriseSunset(const QDate &date, double lat,
   double solarDec = calcSunDeclination(t);
   double haSunrise = calcHourAngleSunrise(lat, solarDec);
 
-  double tzOffset = 5.75; // Hardcoded to Nepal
+  double tzOffset = tz;
 
   double solarNoonMinutes = 720.0 - (4.0 * lon) - eqTime + (tzOffset * 60.0);
   double sunriseMinutes = solarNoonMinutes - (haSunrise * 4.0);
@@ -595,6 +590,11 @@ double PanchangaCalculator::findNewMoon(double ahar) const {
 
 QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
                                            double lon, double tz, bool isBikramSambat) {
+  QString cacheKey = QString("%1_%2_%3_%4_%5").arg(date.year()).arg(date.month()).arg(date.day()).arg(lat).arg(lon);
+  if (calculationCache.contains(cacheKey)) {
+      return calculationCache.value(cacheKey).toMap();
+  }
+
   QVariantMap result;
 
   // Find Bikram Sambat date safely
@@ -615,7 +615,7 @@ QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
     result["statusMessage"] = "";
   }
 
-  QVariantMap sunriseSunset = getSunriseSunset(date, lat, lon);
+  QVariantMap sunriseSunset = getSunriseSunset(date, lat, lon, tz);
   QString sunriseStr = sunriseSunset["sunrise"].toString();
   QString sunsetStr = sunriseSunset["sunset"].toString();
 
@@ -674,6 +674,7 @@ QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
   result["nakshatra"] = nakshatras[nakshatraIdx];
   result["yoga"] = yogas[yogaIdx];
   int karanaIdx = static_cast<int>(std::floor(2 * tithiVal));
+  karanaIdx = std::max(0, std::min(karanaIdx, 59));
   QString karanaName = karanaIdx > 0
                            ? (karanaIdx < 57 ? karanas[(karanaIdx - 1) % 7 + 1]
                                              : karanas[karanaIdx - 57 + 8])
@@ -805,6 +806,15 @@ QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
     result["bhadra"] = QVariant();
   }
 
+  result["adYear"] = date.year();
+  result["adMonth"] = date.month();
+  result["adDay"] = date.day();
+
+  if (calculationCache.size() > 200) {
+      calculationCache.clear();
+  }
+  calculationCache.insert(cacheKey, result);
+
   return result;
 }
 
@@ -813,7 +823,7 @@ QVariantMap PanchangaCalculator::generateDebugInfo(const QDate &date,
                                                    double tz) {
   QVariantMap res;
 
-  QVariantMap sunriseSunset = getSunriseSunset(date, lat, lon);
+  QVariantMap sunriseSunset = getSunriseSunset(date, lat, lon, tz);
   QString sunriseStr = sunriseSunset["sunrise"].toString();
   double sunriseMinutes = sunriseSunset["sunriseMinutes"].toDouble();
 
@@ -869,6 +879,7 @@ QVariantMap PanchangaCalculator::generateDebugInfo(const QDate &date,
   int nakshatraIdx = static_cast<int>(std::floor(getNakshatra(moonLong))) % 27;
   int yogaIdx = static_cast<int>(std::floor(getYoga(sunLong, moonLong))) % 27;
   int karanaIdx = static_cast<int>(std::floor(2 * tithiVal));
+  karanaIdx = std::max(0, std::min(karanaIdx, 59));
   QString karanaName = karanaIdx > 0
                            ? (karanaIdx < 57 ? karanas[(karanaIdx - 1) % 7 + 1]
                                              : karanas[karanaIdx - 57 + 8])
@@ -1200,13 +1211,15 @@ QVariantList PanchangaCalculator::findElementsForDay(
 QVariantMap PanchangaCalculator::getDailyElementsAndTimings(
     double ahar, const QDate &baseDate, double lat, double lon, double tz, double sunriseMinutes, bool isBikramSambat) const {
   double midnightAhar = ahar - (sunriseMinutes / 1440.0);
-  double startAhar = midnightAhar;
-  double endAhar = ahar + 1.15;
+
+  double nextSunriseMinutes = getSunriseSunset(baseDate.addDays(1), lat, lon, tz)["sunriseMinutes"].toDouble();
+  double nextSunriseAhar = midnightAhar + 1.0 + (nextSunriseMinutes / 1440.0);
+
+  double startAhar = ahar;
+  double endAhar = nextSunriseAhar;
 
   QVariantMap res;
 
-  double nextSunriseMinutes = getSunriseSunset(baseDate.addDays(1), lat, lon)["sunriseMinutes"].toDouble();
-  double nextSunriseAhar = midnightAhar + 1.0 + (nextSunriseMinutes / 1440.0);
 
   res["tithis"] = findElementsForDay(
       startAhar, endAhar,

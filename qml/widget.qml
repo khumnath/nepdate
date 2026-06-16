@@ -77,6 +77,8 @@ ApplicationWindow {
     property string displayedDate: "Loading..."
     property string tooltipDate: "Loading date..."
 
+    property int lastCalculatedDay: -1
+
     Timer {
         interval: 1000
         running: true
@@ -86,6 +88,12 @@ ApplicationWindow {
 
     function updateDate() {
         const now = PanchangaNative.getLocalDate();
+        const currentDay = now.getDate();
+        if (currentDay === lastCalculatedDay) {
+            return;
+        }
+        lastCalculatedDay = currentDay;
+        
         const result = PanchangaNative.calculate(now, latitude, longitude, 5.75, true);
         const nepaliYear = PanchangaNative.toDevanagari(result.bsYear);
         const nepaliDay = PanchangaNative.toDevanagari(result.bsDay);
@@ -274,7 +282,7 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
     }
 
     function updateFontSize(newSize) {
-        var size = parseInt(newSize);
+        var size = parseInt(newSize, 10);
         if (!isNaN(size)) {
             fontSize = size;
             dateText.font.pointSize = size;
@@ -350,7 +358,7 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
                     });
                     settingsWindow.closing.connect(() => {
                         // Save drag-dependent settings once on window close for smooth sliding performance
-                        appSettings.setValue("fontSize", parseInt(fontSize));
+                        appSettings.setValue("fontSize", parseInt(fontSize, 10));
                         appSettings.setValue("fontColor", fontColor.toString());
                         appSettings.setValue("backgroundColor", backgroundColorName);
 
@@ -423,8 +431,8 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
                    var savedY = appSettings.value("widgetPositionY", -1);
 
                    if (savedX !== -1 && savedY !== -1) {
-                       widgetWindow.x = parseInt(savedX);
-                       widgetWindow.y = parseInt(savedY);
+                       widgetWindow.x = parseInt(savedX, 10);
+                       widgetWindow.y = parseInt(savedY, 10);
                    } else if (widgetWindow.screen) {
                        // Center on the primary screen if no position is saved
                        widgetWindow.x = widgetWindow.screen.virtualX + (widgetWindow.screen.virtualWidth - widgetWindow.width) / 2;

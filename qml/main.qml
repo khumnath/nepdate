@@ -220,7 +220,7 @@ ApplicationWindow {
                             }
                         }
                         onAccepted: {
-                            const parsedValue = parseInt(internalAsciiValue) || calendarLogic.currentBsYear
+                            const parsedValue = parseInt(internalAsciiValue, 10) || calendarLogic.currentBsYear
                             calendarLogic.renderCalendarByBs(parsedValue, bsMonthSelect.currentIndex)
                         }
                     }
@@ -272,7 +272,7 @@ ApplicationWindow {
                             }
                         }
                         onActivated: {
-                            const year = parseInt(bsYearInput.internalAsciiValue) || calendarLogic.currentBsYear;
+                            const year = parseInt(bsYearInput.internalAsciiValue, 10) || calendarLogic.currentBsYear;
                             calendarLogic.renderCalendarByBs(year, currentIndex);
                         }
                     }
@@ -298,7 +298,7 @@ ApplicationWindow {
                         horizontalAlignment: TextInput.AlignHCenter
                         background: Rectangle { radius: 8; border.color: theme.borderColor; border.width: 1; color: theme.inputBg }
                         padding: 6
-                        onAccepted: calendarLogic.renderCalendarByAd(parseInt(text), adMonthSelect.currentIndex)
+                        onAccepted: calendarLogic.renderCalendarByAd(parseInt(text, 10), adMonthSelect.currentIndex)
                     }
 
                     ComboBox {
@@ -337,7 +337,7 @@ ApplicationWindow {
                                 }
                             }
                         }
-                        onActivated: calendarLogic.renderCalendarByAd(parseInt(adYearInput.text), currentIndex)
+                        onActivated: calendarLogic.renderCalendarByAd(parseInt(adYearInput.text, 10), currentIndex)
                     }
                 }
             }

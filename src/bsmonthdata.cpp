@@ -16,6 +16,22 @@
  */
 
 #include "bsmonthdata.h"
+#include <cassert>
+
+namespace {
+    struct Validator {
+        Validator() {
+            for (int i = 0; i < BsMonthData::NUM_YEARS; ++i) {
+                int sum = 0;
+                for (int j = 0; j < 12; ++j) {
+                    sum += BsMonthData::NP_MONTHS_DATA[i][j];
+                }
+                assert(sum == BsMonthData::NP_MONTHS_DATA[i][12] && "Invalid BS month data sum");
+            }
+        }
+    } validator;
+}
+
 
 const int BsMonthData::NP_MONTHS_DATA[BsMonthData::NUM_YEARS][13] = {
     {30,32,31,32,31,30,30,30,29,30,29,31,365},

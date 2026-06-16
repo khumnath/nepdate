@@ -10,7 +10,6 @@ class TooltipManager : public QObject
     Q_OBJECT
 public:
     explicit TooltipManager(QObject *parent = nullptr);
-    Q_INVOKABLE void showText(const QPoint &pos, const QString &text);
     Q_INVOKABLE void hide();
 
     Q_INVOKABLE void showAboveOrBelow(QQuickItem *item, const QString &text);

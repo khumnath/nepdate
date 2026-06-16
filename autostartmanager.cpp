@@ -27,10 +27,12 @@ void AutostartManager::setAutostart(bool enabled)
             out << "[Desktop Entry]\n";
             out << "Type=Application\n";
             out << "Name=Nepali Calendar Widget\n";
-            out << "Exec=" << QCoreApplication::applicationFilePath() << "\n";
+            out << "Exec=\"" << QCoreApplication::applicationFilePath() << "\"\n";
             out << "Icon=calendar\n";
             out << "X-GNOME-Autostart-enabled=true\n";
             desktopFile.close();
+        } else {
+            qWarning() << "Couldn't create autostart desktop file:" << m_desktopFile;
         }
     } else {
         QFile::remove(m_desktopFile);

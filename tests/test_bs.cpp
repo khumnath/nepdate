@@ -4,6 +4,8 @@
 #include "../src/panchangacalculator.h"
 #include "../src/bikram.h"
 
+#include <cassert>
+
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
     PanchangaCalculator calc;
@@ -15,6 +17,11 @@ int main(int argc, char *argv[]) {
     std::cout << "C++ BS Date: " << res["bsYear"].toInt() << "-" << res["bsMonthIndex"].toInt() + 1 << "-" << res["bsDay"].toInt() << "\n";
     std::cout << "C++ Weekday: " << res["weekday"].toString().toStdString() << "\n";
     std::cout << "C++ Today Ahargana: " << std::fixed << calc.getAhar(d, 85.3240, 5.75) << "\n";
+
+    assert(res["bsYear"].toInt() == 1);
+    assert(res["bsMonthIndex"].toInt() == 0);
+    assert(res["bsDay"].toInt() == 1);
+    assert(res["weekday"].toString() == "बिहीबार");
 
     return 0;
 }

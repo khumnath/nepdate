@@ -262,9 +262,9 @@ Item {
         var newMonthEvents = [];
         var sortedDays = Object.keys(_asyncEvents).sort(function(a, b) {
             if (isAdRenderMode) {
-                return parseInt(a) - parseInt(b);
+                return parseInt(a, 10) - parseInt(b, 10);
             } else {
-                return parseInt(fromDevanagari(a)) - parseInt(fromDevanagari(b));
+                return parseInt(fromDevanagari(a), 10) - parseInt(fromDevanagari(b), 10);
             }
         });
 

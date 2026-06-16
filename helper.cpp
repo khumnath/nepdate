@@ -11,6 +11,7 @@
 #include <QPrinter>
 #include <QQuickItemGrabResult>
 #include <QSharedPointer>
+#include <QPointer>
 #include <QTimer>
 
 Printer::Printer(QObject *parent) : QObject(parent) {}
@@ -37,8 +38,7 @@ void Printer::print(QQuickWindow *window) {
   QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 
   if (image.isNull()) {
-    if (window)
-      window->setProperty("isPreparingPrint", false);
+    window->setProperty("isPreparingPrint", false);
     qWarning() << "Error: Failed to grab window content.";
     return;
   }
@@ -50,9 +50,10 @@ void Printer::print(QQuickWindow *window) {
   // starts its own nested event loop, this timer fires after 0.5s, which is
   // exactly enough time for the dialog to visually appear on the screen, then
   // hides the overlay!
-  QTimer::singleShot(500, window, [window]() {
-    if (window)
-      window->setProperty("isPreparingPrint", false);
+  QPointer<QQuickWindow> windowGuard(window);
+  QTimer::singleShot(500, window, [windowGuard]() {
+    if (windowGuard)
+      windowGuard->setProperty("isPreparingPrint", false);
   });
 
   if (dialog.exec() != QDialog::Accepted) {

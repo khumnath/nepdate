@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include <QDate>
 #include <iostream>
+#include <cassert>
 
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
@@ -33,6 +34,7 @@ int main(int argc, char *argv[]) {
                   << " dow=" << dayNames[d.dayOfWeek()]
                   << " jd=" << d.toJulianDay()
                   << std::endl;
+        assert(d.isValid());
     }
     return 0;
 }

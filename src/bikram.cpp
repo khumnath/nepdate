@@ -20,13 +20,7 @@
 #include "bsmonthdata.h"
 #include <cmath>
 
-constexpr double KaliEpoch = 588465.5;
-constexpr double DESHANTARA = (85.3 - 75.7682) / 360.0;
-constexpr double SOLAR_YEAR_IN_DAYS = 365.2587564814815;
-
-static const QStringList solarMonthsList = {
-    "वैशाख",   "ज्येष्ठ",     "आषाढ", "श्रावण", "भाद्रपद", "आश्विन",
-    "कार्तिक", "मार्गशीर्ष", "पौष",  "माघ",   "फाल्गुन",  "चैत्र"};
+#include "constants.h"
 
 QString BikramCalendar::toDevanagari(const QString &numStr) {
   QString res;
