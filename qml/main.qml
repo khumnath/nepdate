@@ -1,21 +1,37 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls.Material 2.15
 import QtCore as Core
 import com.calendar.printer 1.0
-import "qrc:/PanchangaCalculator.js" as Panchanga
 import "qrc:/qml/"
 
 // main.qml(main calendar window)
 ApplicationWindow {
     id: window
     visible: true
-    width: 550
-    height: 720
+    width: 590
+    height: 780
     objectName: "printableRoot"
-    minimumWidth: 540
-    minimumHeight: 700
+    minimumWidth: 588
+    minimumHeight: 720
     title: "नेपाली क्यालेण्डर"
     color: theme.primaryBg
     Material.theme: theme.isDark ? Material.Dark : Material.Light
@@ -30,6 +46,12 @@ ApplicationWindow {
         adMonthSelect.currentIndex = calendarLogic.currentAdMonth;
         bsYearInput.internalAsciiValue = calendarLogic.currentBsYear.toString();
         bsMonthSelect.currentIndex = calendarLogic.currentBsMonthIndex;
+        
+        if (activeTabIndex === 0) {
+            calendarLogic.renderCalendarByBs(calendarLogic.currentBsYear, calendarLogic.currentBsMonthIndex);
+        } else {
+            calendarLogic.renderCalendarByAd(calendarLogic.currentAdYear, calendarLogic.currentAdMonth);
+        }
     }
 
     Theme { id: theme }
@@ -76,14 +98,27 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        if (window.width < 400) window.width = 400;
-        if (window.height < 300) window.height = 300;
+        if (window.width < window.minimumWidth) window.width = window.minimumWidth;
+        if (window.height < window.minimumHeight) window.height = window.minimumHeight;
         calendarLogic.initializeApp()
     }
 
+    property bool isPreparingPrint: false
+
     function printCalendar() {
-        console.log("Calling print function...");
-        Printer.print(window);
+        console.log("Preparing to print...");
+        isPreparingPrint = true;
+        printTimer.start();
+    }
+
+    Timer {
+        id: printTimer
+        interval: 100
+        repeat: false
+        onTriggered: {
+            Printer.print(window);
+            isPreparingPrint = false;
+        }
     }
 
     Shortcut {
@@ -91,12 +126,18 @@ ApplicationWindow {
         onActivated: printCalendar()
     }
 
-    ColumnLayout {
+    Item {
         anchors.fill: parent
-        spacing: 0
 
-        Header {
-            id: header
+        ColumnLayout {
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Math.min(parent.width, 850)
+            spacing: 0
+
+            Header {
+                id: header
             theme: theme
             currentBsLabelStr: calendarLogic.currentBsLabelStr
             currentAdLabelStr: calendarLogic.currentAdLabelStr
@@ -179,15 +220,15 @@ ApplicationWindow {
                             }
                         }
                         onAccepted: {
-                            const parsedValue = parseInt(internalAsciiValue) || calendarLogic.currentBsYear
+                            const parsedValue = parseInt(internalAsciiValue, 10) || calendarLogic.currentBsYear
                             calendarLogic.renderCalendarByBs(parsedValue, bsMonthSelect.currentIndex)
                         }
                     }
 
                     ComboBox {
                         id: bsMonthSelect
-                        model: Panchanga.solarMonths || []
-                        currentIndex: calendarLogic.currentBsMonth || 0
+                        model: PanchangaNative.solarMonths || []
+                        currentIndex: calendarLogic.currentBsMonthIndex || 0
                         Layout.fillWidth: true
                         Layout.preferredWidth: parent.width / 2 - parent.spacing / 2
                         font.pixelSize: 14
@@ -231,7 +272,7 @@ ApplicationWindow {
                             }
                         }
                         onActivated: {
-                            const year = parseInt(bsYearInput.internalAsciiValue) || calendarLogic.currentBsYear;
+                            const year = parseInt(bsYearInput.internalAsciiValue, 10) || calendarLogic.currentBsYear;
                             calendarLogic.renderCalendarByBs(year, currentIndex);
                         }
                     }
@@ -248,7 +289,7 @@ ApplicationWindow {
 
                     TextField {
                         id: adYearInput
-                        text: new Date().getFullYear().toString()
+                        text: PanchangaNative.getLocalDate().getFullYear().toString()
                         color: theme.primaryText
                         inputMethodHints: Qt.ImhDigitsOnly
                         font.pixelSize: 14
@@ -257,13 +298,13 @@ ApplicationWindow {
                         horizontalAlignment: TextInput.AlignHCenter
                         background: Rectangle { radius: 8; border.color: theme.borderColor; border.width: 1; color: theme.inputBg }
                         padding: 6
-                        onAccepted: calendarLogic.renderCalendarByAd(parseInt(text), adMonthSelect.currentIndex)
+                        onAccepted: calendarLogic.renderCalendarByAd(parseInt(text, 10), adMonthSelect.currentIndex)
                     }
 
                     ComboBox {
                         id: adMonthSelect
-                        model: Panchanga.nepaliGregorianMonths || ["जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जून", "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"]
-                        currentIndex: new Date().getMonth()
+                        model: PanchangaNative.nepaliGregorianMonths || ["जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जून", "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"]
+                        currentIndex: PanchangaNative.getLocalDate().getMonth()
                         Layout.fillWidth: true
                         Layout.preferredWidth: parent.width / 2 - parent.spacing / 2
                         font.pixelSize: 14
@@ -296,7 +337,7 @@ ApplicationWindow {
                                 }
                             }
                         }
-                        onActivated: calendarLogic.renderCalendarByAd(parseInt(adYearInput.text), currentIndex)
+                        onActivated: calendarLogic.renderCalendarByAd(parseInt(adYearInput.text, 10), currentIndex)
                     }
                 }
             }
@@ -307,6 +348,19 @@ ApplicationWindow {
             visible: calendarLogic.isCurrentMonthComputed
             text: "This date is out of available data. Generated using computation."
             Layout.fillWidth: true
+            Layout.maximumWidth: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            color: theme.secondaryText
+            font.pixelSize: 11
+            font.italic: true
+            Layout.bottomMargin: 5
+        }
+
+        Label {
+            visible: calendarLogic.isCurrentMonthUnverified && !calendarLogic.isCurrentMonthComputed
+            text: "This future date is based on available data but not officially verified."
+            Layout.fillWidth: true
+            Layout.maximumWidth: parent.width
             horizontalAlignment: Text.AlignHCenter
             color: theme.secondaryText
             font.pixelSize: 11
@@ -316,7 +370,9 @@ ApplicationWindow {
 
         CalendarGrid {
             id: calendar
+            Layout.fillWidth: true
             theme: theme
+            isAdMode: window.activeTabIndex === 1
             calendarModel: calendarLogic.calendarModel
             onDayClicked: function(panchanga) {
                 panchangaDetailDialog.panchangaData = panchanga
@@ -344,11 +400,13 @@ ApplicationWindow {
                     width: parent.width
 
                     Label {
-                        text: "पञ्चाङ्ग सूर्य सिद्धान्तमा आधारित | स्थान: काठमाण्डौ | समय: नेपाल मानक समय क्षेत्र।"
+                        text: "पञ्चाङ्ग आधुनिक दृक्-गणित र वैदिक विधिमा आधारित | स्थान: काठमाण्डौ | समय: नेपाल मानक समय क्षेत्र।"
                         font.pixelSize: 12
                         color: theme.secondaryText
                         horizontalAlignment: Text.AlignHCenter
                         anchors.horizontalCenter: parent.horizontalCenter
+                        width: parent.width
+                        wrapMode: Text.WordWrap
                     }
 
                     Label {
@@ -358,45 +416,77 @@ ApplicationWindow {
                         color: theme.secondaryText
                         horizontalAlignment: Text.AlignHCenter
                         anchors.horizontalCenter: parent.horizontalCenter
-                        onLinkActivated: Qt.openUrlExternally(link)
+                        width: parent.width
+                        wrapMode: Text.WordWrap
+                        onLinkActivated: function(link) { Qt.openUrlExternally(link) }
                     }
                 }
 
-                Button {
+                Rectangle {
                     id: info
                     visible: !window.isPrintMode
-                    text: "ⓘ"
-                    font.pixelSize: 15
-                    width: 40
-                    height: 40
+                    width: 30
+                    height: 30
+                    radius: width / 2
+                    color: infoMouseArea.containsMouse ? theme.accent : theme.tertiaryBg
+                    border.color: infoMouseArea.containsMouse ? theme.accent : "gray"
+                    border.width: infoMouseArea.containsMouse ? 2 : 1
+
                     anchors.right: parent.right
                     anchors.rightMargin: 10
-                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 10
 
-                    onClicked: infoDialog.open()
-
-                    background: Rectangle {
-                        radius: 8
-                        color: theme.tertiaryBg
-                        border.color: parent.hovered ?  theme.accent : "gray"
-                        border.width: parent.hovered ? 2 : 1
+                    Text {
+                        text: "i"
+                        font.pixelSize: 18
+                        font.bold: true
+                        font.family: "serif"
+                        color: infoMouseArea.containsMouse ? "white" : theme.primaryText
+                        anchors.centerIn: parent
                     }
 
-                    contentItem: Text {
-                        text: parent.text
-                        font: parent.font
-                        color: theme.primaryText
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
+                    MouseArea {
+                        id: infoMouseArea
                         anchors.fill: parent
-                        scale: parent.hovered ? 1.2 : 1.0
-                        z: parent.hovered ? 1 : 0
-                        Behavior on scale {
-                            NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
-                        }
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: infoDialog.open()
                     }
                 }
             }
+        }
+    }
+}
+
+// Preparing to Print Overlay
+    Rectangle {
+        id: preparingOverlay
+        anchors.fill: parent
+        color: theme.isDark ? Qt.rgba(0, 0, 0, 0.7) : Qt.rgba(1, 1, 1, 0.7)
+        visible: isPreparingPrint && !window.isPrintMode
+        z: 9999
+
+        Column {
+            anchors.centerIn: parent
+            spacing: 20
+
+            BusyIndicator {
+                anchors.horizontalCenter: parent.horizontalCenter
+                running: parent.visible
+            }
+
+            Label {
+                text: "Preparing to print..."
+                color: theme.primaryText
+                font.pixelSize: 18
+                font.bold: true
+            }
+        }
+
+        // Block mouse events while preparing
+        MouseArea {
+            anchors.fill: parent
         }
     }
 

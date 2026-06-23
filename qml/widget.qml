@@ -1,8 +1,24 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
-import "qrc:/PanchangaCalculator.js" as Panchanga
 import QtCore
 
 // widget.qml(main window for the small desktop widget)
@@ -15,6 +31,22 @@ ApplicationWindow {
     // Initial flags, StayOnTopHint will be managed dynamically
    flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification | Qt.BypassWindowManagerHint
     color: "transparent"
+    background: Rectangle {
+        id: widgetBgRect
+        color: {
+            if (backgroundColorName === "none" && compositorSupportsTransparency) {
+                return "transparent";
+            }
+            var parsed = Qt.color(backgroundColorName === "none" ? "#2c2c2c" : backgroundColorName);
+            if (!compositorSupportsTransparency) {
+                return Qt.rgba(parsed.r, parsed.g, parsed.b, 1.0);
+            }
+            return parsed;
+        }
+        radius: 6
+        border.color: "transparent"
+        border.width: 0
+    }
 
     // Settings Component
     Settings {
@@ -25,6 +57,7 @@ ApplicationWindow {
     // App Settings Properties
     property int fontSize: 12
     property color fontColor: "green"
+    property string backgroundColorName: "none"
     property real latitude: 27.71
     property real longitude: 85.32
     property bool showIcon: true
@@ -44,6 +77,8 @@ ApplicationWindow {
     property string displayedDate: "Loading..."
     property string tooltipDate: "Loading date..."
 
+    property int lastCalculatedDay: -1
+
     Timer {
         interval: 1000
         running: true
@@ -52,15 +87,22 @@ ApplicationWindow {
     }
 
     function updateDate() {
-        const now = new Date();
-        const result = Panchanga.calculate(now, latitude, longitude);
-        const nepaliYear = Panchanga.toDevanagari(result.bsYear);
-        const nepaliDay = Panchanga.toDevanagari(result.bsDay);
-        const nepaliMonthName = Panchanga.solarMonths[result.bsMonthIndex];
+        const now = PanchangaNative.getLocalDate();
+        const currentDay = now.getDate();
+        if (currentDay === lastCalculatedDay) {
+            return;
+        }
+        lastCalculatedDay = currentDay;
+        
+        const result = PanchangaNative.calculate(now, latitude, longitude, 5.75, true);
+        const nepaliYear = PanchangaNative.toDevanagari(result.bsYear);
+        const nepaliDay = PanchangaNative.toDevanagari(result.bsDay);
+        const nepaliMonthName = PanchangaNative.solarMonths[result.bsMonthIndex];
         const nepaliDate = `${nepaliYear} ${nepaliMonthName} ${nepaliDay} गते`;
         const nepaliWeekday = result.weekday;
         displayedDate = `${nepaliDate} ${nepaliWeekday}`;
-        tooltipDate = `${displayedDate}\n${result.paksha} ${result.tithi}`;
+        tooltipDate = `${displayedDate}
+${result.lunarMonth} ${result.paksha} ${result.tithi}`;
     }
 
     // Main UI Button
@@ -230,7 +272,7 @@ ApplicationWindow {
             calendarWindow = calendarComponent.createObject(widgetWindow);
             if (calendarWindow) {
                calendarWindow.closing.connect(() => {
-                    Panchanga.clearCache();
+                    PanchangaNative.clearCache();
                     calendarWindow.destroy();
                     calendarWindow = null;
                 });
@@ -240,7 +282,7 @@ ApplicationWindow {
     }
 
     function updateFontSize(newSize) {
-        var size = parseInt(newSize);
+        var size = parseInt(newSize, 10);
         if (!isNaN(size)) {
             fontSize = size;
             dateText.font.pointSize = size;
@@ -287,7 +329,8 @@ ApplicationWindow {
                 settingsWindow = settingsComponent.createObject(widgetWindow, {
                     "initialFontSize": fontSize,
                     "showIcon": showIcon,
-                    "screenontop": screenontop
+                    "screenontop": screenontop,
+                    "backgroundColorName": backgroundColorName
                 });
 
                 if (settingsWindow) {
@@ -303,16 +346,22 @@ ApplicationWindow {
                     });
                     settingsWindow.fontSizeChanged.connect(function(newSize) {
                         updateFontSize(newSize);
-                        appSettings.setValue("fontSize", parseInt(newSize));
                     });
                     settingsWindow.fontColorChanged.connect(function(newColorName) {
                         fontColor = newColorName;
-                        appSettings.setValue("fontColor", newColorName);
+                    });
+                    settingsWindow.backgroundColorChanged.connect(function(newBgColorName) {
+                        backgroundColorName = newBgColorName;
                     });
                     settingsWindow.exitRequested.connect(function() {
                         Qt.quit();
                     });
                     settingsWindow.closing.connect(() => {
+                        // Save drag-dependent settings once on window close for smooth sliding performance
+                        appSettings.setValue("fontSize", parseInt(fontSize, 10));
+                        appSettings.setValue("fontColor", fontColor.toString());
+                        appSettings.setValue("backgroundColor", backgroundColorName);
+
                         settingsWindow.destroy();
                         settingsWindow = null;
                     });
@@ -382,8 +431,8 @@ ApplicationWindow {
                    var savedY = appSettings.value("widgetPositionY", -1);
 
                    if (savedX !== -1 && savedY !== -1) {
-                       widgetWindow.x = parseInt(savedX);
-                       widgetWindow.y = parseInt(savedY);
+                       widgetWindow.x = parseInt(savedX, 10);
+                       widgetWindow.y = parseInt(savedY, 10);
                    } else if (widgetWindow.screen) {
                        // Center on the primary screen if no position is saved
                        widgetWindow.x = widgetWindow.screen.virtualX + (widgetWindow.screen.virtualWidth - widgetWindow.width) / 2;
@@ -400,16 +449,19 @@ ApplicationWindow {
             const defaultFontColor = "magenta";
             const defaultShowIcon = true;
             const defaultScreenOnTop = true;
+            const defaultBgColor = compositorSupportsTransparency ? "none" : "#2c2c2c";
 
             updateFontSize(defaultFontSize);
             fontColor = defaultFontColor;
             showIcon = defaultShowIcon;
             screenontop = defaultScreenOnTop;
+            backgroundColorName = defaultBgColor;
 
             appSettings.setValue("fontSize", defaultFontSize);
             appSettings.setValue("fontColor", defaultFontColor);
             appSettings.setValue("showIcon", defaultShowIcon);
             appSettings.setValue("screenontop", defaultScreenOnTop);
+            appSettings.setValue("backgroundColor", defaultBgColor);
         }
 
         function loadAndValidateSettings() {
@@ -435,11 +487,20 @@ ApplicationWindow {
                 settingsValid = false;
             }
 
+            const savedBgColor = appSettings.value("backgroundColor");
+            if (settingsValid && (savedBgColor === undefined || typeof savedBgColor.toString() !== 'string' || savedBgColor.toString().length === 0)) {
+                settingsValid = false;
+            }
+            if (settingsValid && !compositorSupportsTransparency && savedBgColor.toString() === "none") {
+                settingsValid = false;
+            }
+
             if (settingsValid) {
                 updateFontSize(appSettings.value("fontSize", 14));
                 fontColor = appSettings.value("fontColor", "magenta");
                 showIcon = appSettings.value("showIcon", true).toString() === "true";
                 screenontop = appSettings.value("screenontop", true).toString() === "true";
+                backgroundColorName = appSettings.value("backgroundColor", compositorSupportsTransparency ? "none" : "#2c2c2c");
             } else {
                 resetAndSaveDefaultSettings();
             }

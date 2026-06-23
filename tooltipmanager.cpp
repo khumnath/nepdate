@@ -9,25 +9,6 @@
 
 TooltipManager::TooltipManager(QObject *parent) : QObject(parent) {}
 
-void TooltipManager::showText(const QPoint &pos, const QString &text)
-{
-    QQuickWindow *window = qobject_cast<QQuickWindow *>(QGuiApplication::focusWindow());
-    if (!window) return;
-    QQuickItem *tooltipItem = new QQuickItem(window->contentItem());
-    tooltipItem->setParentItem(window->contentItem());
-    tooltipItem->setWidth(200);
-    tooltipItem->setHeight(50);
-
-    QQuickItem *textItem = new QQuickItem(tooltipItem);
-    textItem->setParentItem(tooltipItem);
-    textItem->setWidth(tooltipItem->width());
-    textItem->setHeight(tooltipItem->height());
-    textItem->setProperty("text", text);
-    tooltipItem->setPosition(pos);
-    tooltipItem->setParentItem(window->contentItem());
-    tooltipItem->setProperty("transientParent", QVariant::fromValue(window));
-}
-
 void TooltipManager::hide()
 {
     QToolTip::hideText();

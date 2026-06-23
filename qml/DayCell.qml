@@ -1,12 +1,29 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import "qrc:/PanchangaCalculator.js" as Panchanga
 import "qrc:/qml/"
 
 // DayCell.qml
 Rectangle {
     id: dayCell
     radius: 5
+    property bool isAdMode: false
     property int bsDay: 0
     property int adDay: 0
     property string tithi: ""
@@ -25,22 +42,23 @@ Rectangle {
         //holiday background disabled now
         //if (isHoliday) return theme.holidayBg;
         if (isSaturday) return theme.saturdayBg;
-        if (isToday) return theme.todayBg;
+        if (isToday && (!window || !window.isPrintMode)) return theme.todayBg;
         return theme.secondaryBg;
     }
 
     border.color: {
         if (!theme) return "grey";
-        if (isToday) return theme.todayBorder;
+        if (isToday && (!window || !window.isPrintMode)) return theme.todayBorder;
         if (isSaturday) return theme.saturdayBorder;
         if (isHoliday) return theme.holidayBorder;
         return theme.borderColor;
     }
-    border.width: isToday ? 2 : 1
+    border.width: (isToday && (!window || !window.isPrintMode)) ? 2 : 1
 
     Component.onCompleted: {
         if (cellDate) {
-            var dayInfo = Panchanga.calculate(cellDate);
+            var isBikramSambat = !isAdMode;
+            var dayInfo = PanchangaNative.calculate(cellDate, 27.7172, 85.3240, 5.75, isBikramSambat);
             if (dayInfo.events && dayInfo.events.length > 0) {
                 for (var i = 0; i < dayInfo.events.length; i++) {
                     if (dayInfo.events[i].holiday) {
@@ -53,79 +71,69 @@ Rectangle {
     }
 
 
-    // Event Indicator
+    // Event Indicator (Bottom Right)
     Rectangle {
         id: eventIndicator
-        width: 6
-        height: 6
+        width: 8
+        height: 8
         radius: 4
-        color: "orange"
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.margins: 5
+        color: "#22c55e" // Green color in web style
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 6
         visible: hasEvent
-        z: 1
     }
 
+    // Purnima / Amavasya Indicator (Top Left)
+    Rectangle {
+        width: 14
+        height: 14
+        radius: 7
+        color: tithi === "पूर्णिमा" ? "#fbbf24" : (theme && theme.isDark ? "#334155" : "#475569")
+        visible: tithi === "पूर्णिमा" || tithi === "अमावस्या"
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.margins: 6
+    }
+
+    // BS / AD Day (Center)
     Label {
-        text: Panchanga.toDevanagari(bsDay || 0)
+        text: dayCell.isAdMode ? (adDay || 0) : PanchangaNative.toDevanagari(bsDay || 0)
         font.bold: true
-        font.pixelSize: cellMouseArea.containsMouse ? 28 : 25
-        scale: cellMouseArea.containsMouse ? 1.2 : 1.0
-        z: cellMouseArea.containsMouse ? 1 : 0
-        Behavior on scale {
-            NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
-        }
+        font.pixelSize: cellMouseArea.containsMouse ? 28 : 24
+        scale: cellMouseArea.containsMouse ? 1.1 : 1.0
+        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
         color: {
             if (!theme) return "black";
-            if (isToday) return theme.accentText;
             if (isSaturday) return theme.saturdayText;
+            if (tithi === "पूर्णिमा" || tithi === "अमावस्या") return theme.primaryText;
             return theme.primaryText;
         }
         anchors.centerIn: parent
     }
 
+    // Tithi (Bottom Left)
     Label {
         text: tithi || ""
-        font.pixelSize: 11
-        color: theme && (tithi === "पूर्णिमा" || tithi === "अमावस्या") ? theme.purnimaText : theme ? theme.secondaryText : theme.primaryText
+        font.pixelSize: 10
+        color: theme ? ((tithi === "पूर्णिमा" || tithi === "अमावस्या") ? theme.purnimaText : theme.secondaryText) : "black"
         elide: Text.ElideRight
         font.bold: tithi === "पूर्णिमा" || tithi === "अमावस्या"
         anchors.left: parent.left
         anchors.bottom: parent.bottom
-        anchors.leftMargin: 8
-        anchors.bottomMargin: 4
+        anchors.leftMargin: 6
+        anchors.bottomMargin: 6
+        width: parent.width - eventIndicator.width - 14
     }
 
-    Rectangle {
-        width: 12; height: 12; radius: 12; color: theme ? theme.tertiaryBg : "lightgrey"
-        anchors.right: parent.right; anchors.top: parent.top; anchors.margins: 4
-        Label { anchors.centerIn: parent; text: adDay || 0; font.pixelSize: 10; color: theme ? theme.adDayText : "blue" }
-    }
-
-    Item {
-        width: 16
-        height: 16
-        visible: tithi === "पूर्णिमा" || tithi === "अमावस्या"
+    // AD / BS Day (Top Right)
+    Label {
+        text: dayCell.isAdMode ? PanchangaNative.toDevanagari(bsDay || 0) : (adDay || 0)
+        font.pixelSize: 11
+        color: theme ? theme.adDayText : "grey"
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.rightMargin: 4
-        anchors.bottomMargin: 4
-
-
-        Rectangle {
-            anchors.fill: parent
-            radius: width / 2
-            color: tithi === "पूर्णिमा" ? "gold" : "black"
-            border.width: 0.5
-            border.color: {
-                if (dayCell.theme && dayCell.theme.isDark) {
-                    return "white";
-                } else {
-                    return "black";
-                }
-            }
-        }
+        anchors.top: parent.top
+        anchors.margins: 6
     }
 
     MouseArea {

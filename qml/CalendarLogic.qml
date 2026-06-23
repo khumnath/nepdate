@@ -1,13 +1,29 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
-import "qrc:/PanchangaCalculator.js" as Panchanga
 
 // CalendarLogic.qml
-QtObject {
+Item {
     id: calendarLogic
 
     // State Properties
-    property int currentAdYear: new Date().getFullYear()
-    property int currentAdMonth: new Date().getMonth()
+    property int currentAdYear: PanchangaNative.getLocalDate().getFullYear()
+    property int currentAdMonth: PanchangaNative.getLocalDate().getMonth()
     property string prevAdMonthName: ""
     property string nextAdMonthName: ""
 
@@ -20,10 +36,53 @@ QtObject {
     property string prevMonthName: ""
     property string nextMonthName: ""
     property bool isCurrentMonthComputed: false
+    property bool isCurrentMonthUnverified: false
+
+    // Async loader properties
+    property var _asyncModel: []
+    property var _asyncEvents: ({})
+    property int _asyncCurrentDay: 1
+    property int _asyncDaysInMonth: 0
+    property int _asyncYear: 0
+    property int _asyncMonthIndex: 0
+    property int _asyncStartDay: 0
+    property bool isAdRenderMode: false
+
+    function getBsRangeForAd(adYear, adMonthIndex) {
+        var first = new Date(Date.UTC(adYear, adMonthIndex, 1));
+        var last = new Date(Date.UTC(adYear, adMonthIndex + 1, 0));
+        if (adYear >= 0 && adYear < 100) {
+            first.setUTCFullYear(adYear);
+            last.setUTCFullYear(adYear);
+        }
+        var isBikramSambat = !isAdRenderMode;
+        var infoFirst = PanchangaNative.calculate(first, 27.7172, 85.3240, 5.75, isBikramSambat);
+        var infoLast = PanchangaNative.calculate(last, 27.7172, 85.3240, 5.75, isBikramSambat);
+        
+        var firstBsMonth = PanchangaNative.solarMonths[infoFirst.bsMonthIndex];
+        var lastBsMonth = PanchangaNative.solarMonths[infoLast.bsMonthIndex];
+        var firstBsYear = infoFirst.bsYear;
+        var lastBsYear = infoLast.bsYear;
+        
+        if (firstBsYear !== lastBsYear) {
+            return firstBsMonth + " " + toDevanagari(firstBsYear) + " – " + lastBsMonth + " " + toDevanagari(lastBsYear);
+        } else if (firstBsMonth !== lastBsMonth) {
+            return firstBsMonth + " - " + lastBsMonth + " " + toDevanagari(firstBsYear);
+        } else {
+            return firstBsMonth + " " + toDevanagari(firstBsYear);
+        }
+    }
+
+    Timer {
+        id: asyncLoader
+        interval: 1
+        repeat: true
+        onTriggered: calendarLogic.processAsyncDays()
+    }
 
 
     function toDevanagari(num) {
-        return Panchanga.toDevanagari(String(num))
+        return PanchangaNative.toDevanagari(String(num))
     }
 
     function fromDevanagari(devanagariStr) {
@@ -36,17 +95,18 @@ QtObject {
     }
 
     function initializeApp() {
-        var today = new Date();
-        var bsInfo = Panchanga.calculate(today);
+        var today = PanchangaNative.getLocalDate();
+        var isBikramSambat = !isAdRenderMode;
+        var bsInfo = PanchangaNative.calculate(today, 27.7172, 85.3240, 5.75, isBikramSambat);
         renderCalendarByBs(bsInfo.bsYear, bsInfo.bsMonthIndex);
     }
 
     function getGregorianRange(bsYear, monthIndex) {
-        var first = Panchanga.fromBikramSambat(bsYear, monthIndex, 1);
-        var info = Panchanga.getBikramMonthInfo(bsYear, monthIndex);
-        var last = Panchanga.fromBikramSambat(bsYear, monthIndex, info.totalDays);
-        var firstMonth = Panchanga.nepaliGregorianMonths[first.getUTCMonth()];
-        var lastMonth = Panchanga.nepaliGregorianMonths[last.getUTCMonth()];
+        var first = PanchangaNative.fromBikramSambat(bsYear, monthIndex, 1);
+        var info = PanchangaNative.getBikramMonthInfo(bsYear, monthIndex);
+        var last = PanchangaNative.fromBikramSambat(bsYear, monthIndex, info.totalDays);
+        var firstMonth = PanchangaNative.nepaliGregorianMonths[first.getUTCMonth()];
+        var lastMonth = PanchangaNative.nepaliGregorianMonths[last.getUTCMonth()];
         var firstYear = first.getUTCFullYear();
         var lastYear = last.getUTCFullYear();
 
@@ -60,25 +120,28 @@ QtObject {
     }
 
     function renderCalendarByBs(year, monthIndex, preserveAdState = false) {
+        isAdRenderMode = false;
         var newCalendarModel = [];
         var eventsByDay = {}; // Use an object to group events by day
 
         currentBsYear = year;
         currentBsMonthIndex = monthIndex;
-        var info = Panchanga.getBikramMonthInfo(year, monthIndex);
+        var info = PanchangaNative.getBikramMonthInfo(year, monthIndex);
         if (!info) {
             console.error("Failed to get Bikram month info for", year, monthIndex);
             return;
         }
 
         if (!preserveAdState) {
-            var bsMonthStartDate = Panchanga.fromBikramSambat(year, monthIndex, 1);
+            var bsMonthStartDate = PanchangaNative.fromBikramSambat(year, monthIndex, 1);
             var startAdYear = bsMonthStartDate.getUTCFullYear();
             var startAdMonth = bsMonthStartDate.getUTCMonth();
             var nextAdMonth = (startAdMonth + 1) % 12;
             var nextAdYear = (startAdMonth === 11) ? startAdYear + 1 : startAdYear;
-            var firstOfNextAdMonth = new Date(Date.UTC(nextAdYear, nextAdMonth, 1));
-            var bsMonthEndDate = Panchanga.fromBikramSambat(year, monthIndex, info.totalDays);
+            var firstOfNextAdMonth = new Date(0);
+            firstOfNextAdMonth.setUTCFullYear(nextAdYear, nextAdMonth, 1);
+            firstOfNextAdMonth.setUTCHours(0, 0, 0, 0);
+            var bsMonthEndDate = PanchangaNative.fromBikramSambat(year, monthIndex, info.totalDays);
 
             if (firstOfNextAdMonth <= bsMonthEndDate) {
                 currentAdYear = nextAdYear;
@@ -91,12 +154,14 @@ QtObject {
 
         var prevAdMonthIndex = (currentAdMonth - 1 + 12) % 12;
         var nextAdMonthIndex = (currentAdMonth + 1) % 12;
-        prevAdMonthName = Panchanga.nepaliGregorianMonths[prevAdMonthIndex];
-        nextAdMonthName = Panchanga.nepaliGregorianMonths[nextAdMonthIndex];
+        prevAdMonthName = PanchangaNative.nepaliGregorianMonths[prevAdMonthIndex];
+        nextAdMonthName = PanchangaNative.nepaliGregorianMonths[nextAdMonthIndex];
 
         var daysInMonth = info.totalDays;
         var startDay = info.startDayOfWeek;
         var weekdaysNe = ["आइतबार", "सोमबार", "मङ्गलबार", "बुधबार", "बिहीबार", "शुक्रबार", "शनिबार"];
+
+        // Build and render skeleton
         for (var i = 0; i < 7; ++i) {
             newCalendarModel.push({ type: "header", text: weekdaysNe[i] });
         }
@@ -104,76 +169,171 @@ QtObject {
             newCalendarModel.push({ type: "empty" });
         }
         for (var day = 1; day <= daysInMonth; ++day) {
-            var adDate = Panchanga.fromBikramSambat(year, monthIndex, day);
-            var result = Panchanga.calculate(adDate);
-            if (day === 1) {
-                isCurrentMonthComputed = result.isComputed;
-            }
-            var isToday = adDate.toDateString() === new Date().toDateString();
+            var adDate = PanchangaNative.fromBikramSambat(year, monthIndex, day);
+            var isToday = adDate.toDateString() === PanchangaNative.getLocalDate().toDateString();
             var isSaturday = (startDay + day - 1) % 7 === 6;
-            var hasEventForDay = result.events && result.events.length > 0;
-
-            if (hasEventForDay) {
-                var devanagariDay = toDevanagari(day);
-                if (!eventsByDay[devanagariDay]) {
-                    eventsByDay[devanagariDay] = []; // Initialize array if it doesn't exist
-                }
-                for (var j = 0; j < result.events.length; j++) {
-                    eventsByDay[devanagariDay].push(result.events[j].name);
-                }
-            }
-
-            result.monthName = info.monthName;
             newCalendarModel.push({
                 type: "day", bsDay: day, adDay: adDate.getDate(),
-                tithi: result.tithi, isToday: isToday, isSaturday: isSaturday,
-                hasEvent: hasEventForDay,
-                gregorianDate: result.gregorianDate, panchanga: result
+                tithi: "...", isToday: isToday, isSaturday: isSaturday,
+                hasEvent: false, gregorianDate: "", panchanga: null
             });
         }
 
-        // Process the grouped events
-        var newMonthEvents = [];
-        // Sort the days to ensure events are listed in chronological order
-        var sortedDays = Object.keys(eventsByDay).sort(function(a, b) {
-            return parseInt(fromDevanagari(a)) - parseInt(fromDevanagari(b));
-        });
-
-        for (i = 0; i < sortedDays.length; i++) {
-            var bsDay = sortedDays[i];
-            newMonthEvents.push({
-                bsDay: bsDay,
-                eventName: eventsByDay[bsDay].join(", ")
-            });
+        var totalDaySlots = startDay + daysInMonth;
+        var targetSlots = totalDaySlots > 35 ? 42 : 35;
+        for (var p = totalDaySlots; p < targetSlots; ++p) {
+            newCalendarModel.push({ type: "empty" });
         }
 
         calendarModel = newCalendarModel;
-        currentMonthEvents = newMonthEvents;
 
         currentBsLabelStr = toDevanagari(year) + " " + info.monthName;
         currentAdLabelStr = getGregorianRange(year, monthIndex);
-        var prevMonthIndex = monthIndex - 1;
-        var prevYear = year;
-        if (prevMonthIndex < 0) {
-            prevMonthIndex = 11;
-            prevYear--;
+        var prevMonthIndex = (monthIndex - 1 + 12) % 12;
+        var nextMonthIndex = (monthIndex + 1) % 12;
+
+        prevMonthName = PanchangaNative.solarMonths[prevMonthIndex] || "";
+        nextMonthName = PanchangaNative.solarMonths[nextMonthIndex] || "";
+
+        // 2. Start Async Loader
+        _asyncModel = newCalendarModel;
+        _asyncEvents = {};
+        _asyncCurrentDay = 1;
+        _asyncDaysInMonth = daysInMonth;
+        _asyncYear = year;
+        _asyncMonthIndex = monthIndex;
+        _asyncStartDay = startDay;
+        asyncLoader.start();
+    }
+
+    function processAsyncDays() {
+        var daysToProcessPerTick = 5; // process 5 days per frame
+        for (var k = 0; k < daysToProcessPerTick; k++) {
+            if (_asyncCurrentDay > _asyncDaysInMonth) {
+                asyncLoader.stop();
+                finishAsyncLoading();
+                return;
+            }
+
+            var day = _asyncCurrentDay;
+            var adDate;
+            if (isAdRenderMode) {
+                adDate = new Date(Date.UTC(_asyncYear, _asyncMonthIndex, day));
+                if (_asyncYear >= 0 && _asyncYear < 100) adDate.setUTCFullYear(_asyncYear);
+            } else {
+                adDate = PanchangaNative.fromBikramSambat(_asyncYear, _asyncMonthIndex, day);
+            }
+            
+            var result = PanchangaNative.calculate(adDate, 27.7172, 85.3240, 5.75, !isAdRenderMode);
+            if (day === 1) {
+                isCurrentMonthComputed = result.isComputed;
+                isCurrentMonthUnverified = result.isUnverified;
+            }
+            var hasEventForDay = result.events ? (result.events.length > 0) : false;
+
+            if (hasEventForDay) {
+                var displayDayLabel = isAdRenderMode ? day.toString() : toDevanagari(day);
+                if (!_asyncEvents[displayDayLabel]) {
+                    _asyncEvents[displayDayLabel] = [];
+                }
+                for (var j = 0; j < result.events.length; j++) {
+                    _asyncEvents[displayDayLabel].push(result.events[j].name);
+                }
+            }
+
+            var modelIndex = 7 + _asyncStartDay + day - 1;
+            if (isAdRenderMode) {
+                _asyncModel[modelIndex].bsDay = result.bsDay;
+                result.monthName = PanchangaNative.solarMonths[result.bsMonthIndex] || "";
+            } else {
+                result.monthName = currentBsLabelStr.split(" ")[1];
+            }
+            
+            _asyncModel[modelIndex].tithi = result.tithi;
+            _asyncModel[modelIndex].hasEvent = hasEventForDay;
+            _asyncModel[modelIndex].gregorianDate = result.gregorianDate;
+            _asyncModel[modelIndex].panchanga = result;
+
+            _asyncCurrentDay++;
         }
-        prevMonthName = Panchanga.solarMonths[prevMonthIndex] || "";
-        var nextMonthIndex = monthIndex + 1;
-        var nextYear = year;
-        if (nextMonthIndex > 11) {
-            nextMonthIndex = 0;
-            nextYear++;
+    }
+
+    function finishAsyncLoading() {
+        var newMonthEvents = [];
+        var sortedDays = Object.keys(_asyncEvents).sort(function(a, b) {
+            if (isAdRenderMode) {
+                return parseInt(a, 10) - parseInt(b, 10);
+            } else {
+                return parseInt(fromDevanagari(a), 10) - parseInt(fromDevanagari(b), 10);
+            }
+        });
+
+        for (var i = 0; i < sortedDays.length; i++) {
+            var dayLabel = sortedDays[i];
+            newMonthEvents.push({
+                bsDay: dayLabel,
+                eventName: _asyncEvents[dayLabel].join(", ")
+            });
         }
-        nextMonthName = Panchanga.solarMonths[nextMonthIndex] || "";
+
+        calendarModel = _asyncModel;
+        currentMonthEvents = newMonthEvents;
     }
 
     function renderCalendarByAd(year, monthIndex) {
+        isAdRenderMode = true;
+        var newCalendarModel = [];
         currentAdYear = year;
         currentAdMonth = monthIndex;
-        var date = new Date(Date.UTC(year, monthIndex, 1));
-        var bsInfo = Panchanga.calculate(date);
-        renderCalendarByBs(bsInfo.bsYear, bsInfo.bsMonthIndex, true);
+        
+        var firstDate = new Date(Date.UTC(year, monthIndex, 1));
+        if (year >= 0 && year < 100) firstDate.setUTCFullYear(year);
+        
+        var lastDate = new Date(Date.UTC(year, monthIndex + 1, 0));
+        if (year >= 0 && year < 100) lastDate.setUTCFullYear(year);
+        
+        var daysInMonth = lastDate.getUTCDate();
+        var startDay = firstDate.getUTCDay();
+        var weekdaysAd = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        
+        for (var i = 0; i < 7; ++i) {
+            newCalendarModel.push({ type: "header", text: weekdaysAd[i] });
+        }
+        for (i = 0; i < startDay; ++i) {
+            newCalendarModel.push({ type: "empty" });
+        }
+        for (var day = 1; day <= daysInMonth; ++day) {
+            var iterDate = new Date(Date.UTC(year, monthIndex, day));
+            if (year >= 0 && year < 100) iterDate.setUTCFullYear(year);
+            var isToday = iterDate.toDateString() === PanchangaNative.getLocalDate().toDateString();
+            var isSaturday = (startDay + day - 1) % 7 === 6;
+            
+            newCalendarModel.push({
+                type: "day", bsDay: 0, adDay: day,
+                tithi: "...", isToday: isToday, isSaturday: isSaturday,
+                hasEvent: false, gregorianDate: "", panchanga: null
+            });
+        }
+        
+        var totalDaySlots = startDay + daysInMonth;
+        var targetSlots = totalDaySlots > 35 ? 42 : 35;
+        for (var p = totalDaySlots; p < targetSlots; ++p) {
+            newCalendarModel.push({ type: "empty" });
+        }
+        
+        calendarModel = newCalendarModel;
+        
+        currentAdLabelStr = PanchangaNative.nepaliGregorianMonths[monthIndex] + " " + year;
+        currentBsLabelStr = getBsRangeForAd(year, monthIndex);
+        
+        _asyncModel = newCalendarModel;
+        _asyncEvents = {};
+        _asyncCurrentDay = 1;
+        _asyncDaysInMonth = daysInMonth;
+        _asyncYear = year;
+        _asyncMonthIndex = monthIndex;
+        _asyncStartDay = startDay;
+        asyncLoader.start();
     }
 
     function navigateBsMonth(direction) {
@@ -200,5 +360,13 @@ QtObject {
             newAdYear--;
         }
         renderCalendarByAd(newAdYear, newAdMonth);
+    }
+
+    function navigateBsYear(direction) {
+        renderCalendarByBs(currentBsYear + direction, currentBsMonthIndex);
+    }
+
+    function navigateAdYear(direction) {
+        renderCalendarByAd(currentAdYear + direction, currentAdMonth);
     }
 }

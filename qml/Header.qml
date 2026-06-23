@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -22,7 +39,7 @@ Rectangle {
     signal themeToggleClicked()
 
     // Use the passed-in theme object for styling
-    color: theme ? theme.headerBg : "white"
+    color: theme ? theme.secondaryBg : "white"
     border.color: theme && theme.isDark ? "transparent" : (theme ? theme.borderColor : "grey")
 
     ColumnLayout {
@@ -33,7 +50,7 @@ Rectangle {
             text: "नेपाली क्यालेण्डर"
             font.pixelSize: 24
             font.bold: true
-            color: theme ? theme.headerPrimaryText : "black"
+            color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             Layout.alignment: Qt.AlignHCenter
         }
@@ -46,21 +63,21 @@ Rectangle {
                 id: bsLabel
                 text: "<b>बि.सं.</b> " + currentBsLabelStr
                 renderType: Text.NativeRendering
-                color: theme ? theme.headerSecondaryText : "grey"
+                color: theme ? theme.secondaryText : "grey"
                 font.pixelSize: 16
             }
 
             Rectangle {
                 width: 1
                 height: 20
-                color: theme ? theme.headerDivider : "lightgrey"
+                color: theme ? theme.borderColor : "lightgrey"
             }
 
             Label {
                 id: adLabel
                 text: currentAdLabelStr
                 renderType: Text.NativeRendering
-                color: theme ? theme.headerSecondaryText : "grey"
+                color: theme ? theme.secondaryText : "grey"
                 font.pixelSize: 16
             }
         }
@@ -85,7 +102,7 @@ Rectangle {
         contentItem: Text {
             text: parent.text
             font: parent.font
-            color: theme ? theme.headerPrimaryText : "black"
+            color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             scale: parent.hovered ? 1.2 : 1.0
@@ -115,7 +132,7 @@ Rectangle {
         contentItem: Text {
             text: parent.text
             font: parent.font
-            color: theme ? theme.headerPrimaryText : "black"
+            color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             scale: parent.hovered ? 1.2 : 1.0

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -22,33 +39,71 @@ RowLayout {
     visible: !isPrintMode
 
     component NavButton: Button {
-        font.pixelSize: 13
-        topPadding: 12
-        bottomPadding: 12
-        leftPadding: 10
-        rightPadding: 10
+        id: control
+        property string iconName: ""
+        property bool iconOnRight: false
+
+        font.pixelSize: 14
+        font.bold: true
+        topPadding: 10
+        bottomPadding: 10
+        leftPadding: 15
+        rightPadding: 15
+
+        property string dynamicSvgSource: {
+            if (iconName === "") return "";
+            var colorStr = (theme ? theme.primaryText.toString() : "#000000").replace("#", "%23");
+            var pathData = "";
+            if (iconName === "chevron-left") pathData = "m15 18-6-6 6-6";
+            else if (iconName === "chevron-right") pathData = "m9 18 6-6-6-6";
+            else if (iconName === "chevrons-left") pathData = "m11 17-5-5 5-5\"/><path d=\"m18 17-5-5 5-5";
+            else if (iconName === "chevrons-right") pathData = "m13 17 5-5-5-5\"/><path d=\"m6 17 5-5-5-5";
+            
+            return "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"" + colorStr + "\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"" + pathData + "\"/></svg>";
+        }
+
+        contentItem: Row {
+            spacing: 5
+
+            Image {
+                source: control.dynamicSvgSource
+                sourceSize.width: 16
+                sourceSize.height: 16
+                visible: control.iconName !== "" && !control.iconOnRight
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Text {
+                text: control.text || ""
+                font: control.font
+                color: theme ? theme.primaryText : "black"
+                visible: text.trim() !== ""
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Image {
+                source: control.dynamicSvgSource
+                sourceSize.width: 16
+                sourceSize.height: 16
+                visible: control.iconName !== "" && control.iconOnRight
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
 
         background: Rectangle {
-            radius: 12
+            radius: 10
             color: parent.hovered && theme ? theme.tertiaryBg : (theme ? theme.secondaryBg : "white")
-            border.color: theme ? theme.borderColor : "grey"
+            border.color: theme ? theme.borderColor : "lightgrey"
             border.width: 1
-        }
-        contentItem: Text {
-            text: parent.text
-            font: parent.font
-            color: theme ? theme.primaryText : "black"
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
         }
     }
 
     component CustomTabButton: TabButton {
         font.pixelSize: 13
-        topPadding: 12
-        bottomPadding: 12
-        leftPadding: 10
-        rightPadding: 10
+        topPadding: 10
+        bottomPadding: 10
+        leftPadding: 15
+        rightPadding: 15
 
         contentItem: Text {
             text: parent.text
@@ -58,17 +113,30 @@ RowLayout {
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
-            radius: 8
+            radius: 10
             color: (parent.checked || parent.hovered) && theme ? theme.tertiaryBg : "transparent"
-            border.color: parent.checked && theme ? theme.accent : (theme ? theme.borderColor : "grey")
+            border.color: parent.checked && theme ? theme.accent : (theme ? theme.borderColor : "lightgrey")
             border.width: parent.checked ? 2 : 1
+        }
+    }
+
+    NavButton {
+        text: ""
+        iconName: "chevrons-left"
+        onClicked: {
+            if (tabBar.currentIndex === 0) {
+                calendarLogic.navigateBsYear(-1)
+            } else {
+                calendarLogic.navigateAdYear(-1)
+            }
         }
     }
 
     NavButton {
         property string prevBsMonth: (calendarLogic && calendarLogic.prevMonthName) || ""
         property string prevAdMonth: (calendarLogic && calendarLogic.prevAdMonthName) || ""
-        text: "< " + (tabBar.currentIndex === 0 ? prevBsMonth : prevAdMonth)
+        text: (tabBar.currentIndex === 0 ? prevBsMonth : prevAdMonth)
+        iconName: "chevron-left"
 
         onClicked: {
             if (tabBar.currentIndex === 0) {
@@ -77,14 +145,14 @@ RowLayout {
                 calendarLogic.navigateAdMonth(-1)
             }
         }
-        visible: text.trim() !== "< "
+        visible: (text || "").trim() !== ""
     }
 
     Item { Layout.fillWidth: true }
 
     RowLayout {
         Layout.alignment: Qt.AlignHCenter
-        spacing: 0
+        spacing: 5
 
         TabBar {
             id: tabBar
@@ -97,9 +165,11 @@ RowLayout {
         }
 
         NavButton {
-            text: "आज"
+            text: tabBar.currentIndex === 0 ? "आज" : "Today"
             onClicked: navigationBar.todayClicked()
             Layout.leftMargin: 10
+            font.bold: false
+            font.pixelSize: 13
         }
     }
 
@@ -108,7 +178,9 @@ RowLayout {
     NavButton {
         property string nextBsMonth: (calendarLogic && calendarLogic.nextMonthName) || ""
         property string nextAdMonth: (calendarLogic && calendarLogic.nextAdMonthName) || ""
-        text: (tabBar.currentIndex === 0 ? nextBsMonth : nextAdMonth) + " >"
+        text: (tabBar.currentIndex === 0 ? nextBsMonth : nextAdMonth)
+        iconName: "chevron-right"
+        iconOnRight: true
 
         onClicked: {
             if (tabBar.currentIndex === 0) {
@@ -117,6 +189,18 @@ RowLayout {
                 calendarLogic.navigateAdMonth(1)
             }
         }
-        visible: text.trim() !== " >"
+        visible: (text || "").trim() !== ""
+    }
+
+    NavButton {
+        text: ""
+        iconName: "chevrons-right"
+        onClicked: {
+            if (tabBar.currentIndex === 0) {
+                calendarLogic.navigateBsYear(1)
+            } else {
+                calendarLogic.navigateAdYear(1)
+            }
+        }
     }
 }

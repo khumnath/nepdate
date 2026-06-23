@@ -12,6 +12,7 @@ class Printer : public QObject
 public:
     explicit Printer(QObject *parent = nullptr);
     Q_INVOKABLE void print(QQuickWindow* window);
+    Q_INVOKABLE bool isSystemDark() const;
 };
 
 #endif // HELPER_H

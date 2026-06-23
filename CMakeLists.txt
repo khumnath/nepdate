@@ -23,7 +23,7 @@ else()
     message(WARNING "Could not find version file: ${VERSION_FILE}. Defaulting to version ${PROJECT_VERSION_STRING}.")
 endif()
 
-project(bikram-calendar VERSION ${PROJECT_VERSION_STRING} LANGUAGES CXX)
+project(bikram-calendar VERSION ${PROJECT_VERSION_STRING} LANGUAGES C CXX)
 message(STATUS "Configuring bikram-calendar version: ${PROJECT_VERSION_STRING}")
 
 #=============================================================================
@@ -34,6 +34,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Qt6 REQUIRED COMPONENTS
     Core
@@ -55,6 +56,12 @@ set(SOURCES
     autostartmanager.cpp
     tooltipmanager.cpp
     helper.cpp
+    src/astronomy.c
+    src/panchangacalculator.cpp
+    src/bikram.cpp
+    src/bsmonthdata.cpp
+    src/eventsdata.cpp
+    src/constants.cpp
 )
 
 set(HEADERS
@@ -82,6 +89,21 @@ target_link_libraries(bikram-calendar PRIVATE
     Qt6::PrintSupport
 )
 
+enable_testing()
+
+qt_add_executable(run_test
+    tests/test.cpp
+    src/astronomy.c
+    src/panchangacalculator.cpp
+    src/bikram.cpp
+    src/bsmonthdata.cpp
+    src/eventsdata.cpp
+    src/constants.cpp
+)
+target_link_libraries(run_test PRIVATE Qt6::Core)
+
+add_test(NAME PanchangaTest COMMAND run_test)
+
 #=============================================================================
 # QML Folder Installation (for development)
 #=============================================================================
@@ -95,8 +117,8 @@ target_link_libraries(bikram-calendar PRIVATE
 #=============================================================================
 include(GNUInstallDirs)
 
-if(NOT CMAKE_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "..." FORCE)
 endif()
 
 message(STATUS "Install prefix set to: ${CMAKE_INSTALL_PREFIX}")
@@ -105,3 +127,16 @@ message(STATUS "Binary will be installed to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INS
 install(TARGETS bikram-calendar
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+#=============================================================================
+# IDE Support
+#=============================================================================
+# Copy compile_commands.json to the source directory for Clangd/IDEs
+add_custom_target(
+    copy_compile_commands ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_BINARY_DIR}/compile_commands.json
+    ${CMAKE_SOURCE_DIR}/compile_commands.json
+)
+add_executable(test_bs tests/test_bs.cpp src/bikram.cpp src/bsmonthdata.cpp src/astronomy.c src/panchangacalculator.cpp src/eventsdata.cpp src/constants.cpp)
+target_link_libraries(test_bs PRIVATE Qt6::Core)

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2024 khumnath
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
@@ -12,6 +29,7 @@ ColumnLayout {
     property alias calendarModel: repeater.model
     property alias eventListModel: eventLabel.eventModel
     property var theme
+    property bool isAdMode: false
 
     // Signals
     signal dayClicked(var panchanga)
@@ -89,14 +107,17 @@ ColumnLayout {
     Rectangle {
         id: eventFooter
         Layout.fillWidth: true
-        implicitHeight: eventLabel.paintedHeight + 20
+        Layout.maximumWidth: calendarGridRoot.width
+        implicitHeight: eventLabel.contentHeight + 20
         color: theme.secondaryBg
         radius: 6
         visible: eventLabel.eventModel && eventLabel.eventModel.length > 0
 
         Label {
             id: eventLabel
-            anchors.fill: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
             anchors.margins: 10
 
             property var eventModel: [] // Model reference
@@ -106,7 +127,7 @@ ColumnLayout {
                 if (eventModel) {
                     for (var i = 0; i < eventModel.length; i++) {
                         var item = eventModel[i];
-                        str += item.bsDay + " :\u00A0" + item.eventName;
+                        str += item.bsDay + " : " + item.eventName;
                         if (i < eventModel.length - 1) {
                             str += "  •  ";
                         }
@@ -152,14 +173,20 @@ ColumnLayout {
                 color: (cellIndex === 6) ? "#E4080A" : theme.accentText
                 font.bold: true
                 font.pixelSize: 14
-                anchors.centerIn: parent
+                anchors.fill: parent
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                fontSizeMode: Text.Fit
+                minimumPixelSize: 10
             }
         }
     }
 
     Component {
         id: dayComponent
-        DayCell {}
+        DayCell {
+            isAdMode: calendarGridRoot.isAdMode
+        }
     }
 
     Component {

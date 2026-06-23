@@ -20,14 +20,14 @@ A desktop widget and calendar application for Bikram Sambat, built with the mode
 
 * **Date Calculation & Panchanga Details:**
     * The calendar uses a hybrid system for date calculation:
-        * **Pre-computed Data:** For the 90-year period from **2000 Baisakh to 2089 Chaitra**, the calendar uses pre-computed data for high accuracy. A small notification appears in the app when you are viewing dates outside of this primary range.
-        * **Algorithmic Calculation:** For dates outside this range, it dynamically computes them based on traditional Surya Siddanta calculation logic.
+        * **Pre-computed Data:** For the 90-year period from **2000 Baisakh to 2089 Chaitra**, the calendar uses pre-computed official data for high accuracy. A small notification appears in the app when you are viewing dates outside of this primary range.
+        * **Algorithmic Calculation:** For dates outside this range, it dynamically computes them using modern high-precision NASA JPL ephemeris via the Astronomy Engine (MIT License), combined with traditional Vedic rules (Drik-Siddhanta).
     * **Daily Panchanga Information:**
         * The main calendar view displays the *Tithi* for each day.
-        * Clicking on a specific day reveals comprehensive details including the **Tithi, Nakshatra, Yoga, and Karana**. It also shows debug information like the sun and moon's positions.
+        * Clicking on a specific day reveals comprehensive details including the **Tithi, Nakshatra, Yoga, Karana, Bhadra Info, and Special Events**. It also shows debug information like the sun and moon's positions.
 
     > **Disclaimer on Accuracy:**
-    > As the Surya Siddanta is an observational calendar, calculated timings can differ by minutes to hours compared to other sources. While every effort has been made to ensure accuracy, the data may contain mistakes. For official or ceremonial purposes, please always consult a calendar approved by the **Nepal Panchanga Nirnayak Samiti (नेपाल पञ्चाङ्ग निर्णायक समिति)**.
+    > While the core engine uses high-precision astronomical algorithms to determine planetary positions, computational boundaries can occasionally differ by minutes compared to other traditional sources. For official or ceremonial purposes, please always consult a calendar approved by the **Nepal Panchanga Nirnayak Samiti (नेपाल पञ्चाङ्ग निर्णायक समिति)**.
 
 * **Customization & Themes:**
     * The calendar window includes an easy-to-use switch for toggling between **Light and Dark themes**. Your preference is saved and restored on the next launch.
@@ -207,6 +207,42 @@ This is the most straightforward method for building the project.
 
 ---
 
+## 3. Running Tests
+
+We use CTest to rigorously verify the accuracy of the calendar's astronomical and date conversion algorithms. The automated test compares the dynamically computed Panchanga data against a verified JSON baseline (`tests/test-data.json`).
+
+To run the test suite after building:
+
+```shell
+cd build
+make test
+# OR use ctest directly for detailed output
+ctest --output-on-failure
+```
+
+### Changing the Test Date or Baseline
+
+If you need to test the logic against a different date, the test executable accepts command-line arguments. You can pass a specific date, and if you want to officially update the `test-data.json` baseline for future tests, you can pass the `--generate` flag:
+
+```shell
+# Verify logic against the baseline for a specific date (defaults to 2024-06-14)
+./build/run_test 2026-05-27
+
+# Generate new baseline JSON data for a specific date (overwrites tests/test-data.json)
+./build/run_test 2026-05-27 --generate
+```
+
+---
+
+## Dual Licensing & Commercial Use
+
+This project is released under the **GNU General Public License v3.0 (GPLv3)** for open-source use. If you wish to use, modify, or embed the NepDate engine in a proprietary or closed-source application without adhering to the terms of the GPL, a **commercial license** is available. Please contact the repository owner for commercial licensing options.
+
+## Related Projects
+
+The core calculation engine of NepDate is also available in modern Web and Android applications.
+- **Web App Source Code:** The React-based web application is maintained in a separate repository (or branch).
+- **Android App:** Available on the Google Play Store as "NepDate".
 
 ## Contributing
 
@@ -225,6 +261,10 @@ If you would like to contribute code, please follow these steps:
 5.  Open a **Pull Request**.
     
 
+
+## Acknowledgments
+
+* **[Astronomy Engine](https://github.com/cosinekitty/astronomy):** Used for high-precision astronomical calculations. The C library is created by Don Cross and is licensed under the MIT License.
 
 ## License
 

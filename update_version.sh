@@ -10,7 +10,7 @@ if command -v git &> /dev/null && git rev-parse --is-inside-work-tree &> /dev/nu
     echo "Git environment detected. Overwriting version files."
 
     # Full version with Git metadata
-    FULL_VERSION=$(git describe --tags | sed -E 's/-g([0-9a-f]{3,}).*/-g\1/')
+    FULL_VERSION=$(git describe --tags --always | sed -E 's/-g([0-9a-f]{3,}).*/-g\1/')
 
     # Clean semantic version
     CLEAN_VERSION=$(echo "$FULL_VERSION" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
