@@ -95,18 +95,18 @@ Rectangle {
         onClicked: headerRect.printClicked()
 
         background: Rectangle {
-            color: parent.hovered && theme ? theme.tertiaryBg : "transparent"
+            color: printBtn.hovered && theme ? theme.tertiaryBg : "transparent"
             radius: 8
         }
 
         contentItem: Text {
-            text: parent.text
-            font: parent.font
+            text: printBtn.text
+            font: printBtn.font
             color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            scale: parent.hovered ? 1.2 : 1.0
-            z: parent.hovered ? 1 : 0
+            scale: printBtn.hovered ? 1.2 : 1.0
+            z: printBtn.hovered ? 1 : 0
             Behavior on scale {
                 NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
             }
@@ -125,18 +125,18 @@ Rectangle {
         onClicked: headerRect.themeToggleClicked()
 
         background: Rectangle {
-            color: parent.hovered && theme ? theme.tertiaryBg : "transparent"
+            color: themeToggleBtn.hovered && theme ? theme.tertiaryBg : "transparent"
             radius: 8
         }
 
         contentItem: Text {
-            text: parent.text
-            font: parent.font
+            text: themeToggleBtn.text
+            font: themeToggleBtn.font
             color: theme ? theme.primaryText : "black"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            scale: parent.hovered ? 1.2 : 1.0
-            z: parent.hovered ? 1 : 0
+            scale: themeToggleBtn.hovered ? 1.2 : 1.0
+            z: themeToggleBtn.hovered ? 1 : 0
             Behavior on scale {
                 NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
             }

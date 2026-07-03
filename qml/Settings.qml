@@ -275,7 +275,7 @@ ApplicationWindow {
                         radius: 6
                     }
                     contentItem: Text {
-                        text: parent.text
+                        text: generalTabBtn.text
                         color: generalTabBtn.checked ? tabActiveText : (isDarkTheme ? "#bbbbbb" : "#666666")
                         font.pointSize: 10
                         font.bold: true
@@ -301,7 +301,7 @@ ApplicationWindow {
                         radius: 6
                     }
                     contentItem: Text {
-                        text: parent.text
+                        text: appearanceTabBtn.text
                         color: appearanceTabBtn.checked ? tabActiveText : (isDarkTheme ? "#bbbbbb" : "#666666")
                         font.pointSize: 10
                         font.bold: true
@@ -423,7 +423,7 @@ ApplicationWindow {
                                 radius: 6
                             }
                             contentItem: Text {
-                                text: parent.text
+                                text: fontColorTabBtn.text
                                 color: fontColorTabBtn.checked ? tabActiveText : (isDarkTheme ? "#bbbbbb" : "#666666")
                                 font.pointSize: 10
                                 font.bold: true
@@ -448,7 +448,7 @@ ApplicationWindow {
                                 radius: 6
                             }
                             contentItem: Text {
-                                text: parent.text
+                                text: bgColorTabBtn.text
                                 color: bgColorTabBtn.checked ? tabActiveText : (isDarkTheme ? "#bbbbbb" : "#666666")
                                 font.pointSize: 10
                                 font.bold: true
@@ -487,10 +487,10 @@ ApplicationWindow {
                         }
 
                         contentItem: Text {
-                            text: parent.text
+                            text: transparentBgCheck.text
                             font.pointSize: 11
                             color: themeCheckTextColor
-                            leftPadding: parent.indicator.width + parent.spacing
+                            leftPadding: transparentBgCheck.indicator.width + transparentBgCheck.spacing
                             verticalAlignment: Text.AlignVCenter
                         }
 
@@ -967,10 +967,10 @@ ApplicationWindow {
                         }
 
                         contentItem: Text {
-                            text: parent.text
+                            text: iconCheck.text
                             font.pointSize: 11
                             color: themeCheckTextColor
-                            leftPadding: parent.indicator.width + parent.spacing
+                            leftPadding: iconCheck.indicator.width + iconCheck.spacing
                             verticalAlignment: Text.AlignVCenter
                         }
 
@@ -1022,10 +1022,10 @@ ApplicationWindow {
                         }
 
                         contentItem: Text {
-                            text: parent.text
+                            text: screentopCheck.text
                             font.pointSize: 11
                             color: themeCheckTextColor
-                            leftPadding: parent.indicator.width + parent.spacing
+                            leftPadding: screentopCheck.indicator.width + screentopCheck.spacing
                             verticalAlignment: Text.AlignVCenter
                         }
 
@@ -1061,7 +1061,7 @@ ApplicationWindow {
                             radius: 6
                         }
                         contentItem: Text {
-                            text: parent.text
+                            text: copyButton.text
                             color: isDarkTheme ? "#81c784" : "#2e7d32"
                             font.pointSize: 11
                             font.bold: true
@@ -1088,7 +1088,7 @@ ApplicationWindow {
                             radius: 6
                         }
                         contentItem: Text {
-                            text: parent.text
+                            text: autostartButton.text
                             color: isDarkTheme ? "#81c784" : "#2e7d32"
                             font.pointSize: 11
                             font.bold: true
@@ -1122,7 +1122,7 @@ ApplicationWindow {
                         radius: 6
                     }
                     contentItem: Text {
-                        text: parent.text
+                        text: exitButton.text
                         color: "white"
                         font.pointSize: 11
                         font.bold: true
@@ -1144,7 +1144,7 @@ ApplicationWindow {
                         radius: 6
                     }
                     contentItem: Text {
-                        text: parent.text
+                        text: closeButton.text
                         color: isDarkTheme ? "#81c784" : "#2e7d32"
                         font.pointSize: 11
                         font.bold: true

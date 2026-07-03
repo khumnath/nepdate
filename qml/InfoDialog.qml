@@ -187,6 +187,7 @@ Dialog {
         }
 
         Button {
+            id: okBtn
             text: "Ok"
             font.bold: true
             anchors.horizontalCenter: parent.horizontalCenter
@@ -194,14 +195,14 @@ Dialog {
 
             background: Rectangle {
                 color: theme.tertiaryBg
-                border.color: parent.hovered ? theme.accent : "gray"
-                border.width: parent.hovered ? 2 : 1
+                border.color: okBtn.hovered ? theme.accent : "gray"
+                border.width: okBtn.hovered ? 2 : 1
                 radius: 12
             }
 
             contentItem: Text {
-                text: parent.text
-                font: parent.font
+                text: okBtn.text
+                font: okBtn.font
                 color: theme.primaryText
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter

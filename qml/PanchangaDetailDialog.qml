@@ -77,6 +77,7 @@ Dialog {
                     }
 
                     ToolButton {
+                        id: closeBtn
                         text: "✕"
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
@@ -84,8 +85,8 @@ Dialog {
                         font.pixelSize: 20
                         onClicked: panchangaDetailDialogRoot.close()
                         contentItem: Text {
-                            text: parent.text
-                            font: parent.font
+                            text: closeBtn.text
+                            font: closeBtn.font
                             color: theme ? theme.primaryText : "black"
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
@@ -112,14 +113,14 @@ Dialog {
 
                     background: Rectangle {
                         color: theme.tertiaryBg
-                        border.color: parent.hovered ? theme.accent : "gray"
-                        border.width: parent.hovered ? 2 : 1
+                        border.color: showDebugButton.hovered ? theme.accent : "gray"
+                        border.width: showDebugButton.hovered ? 2 : 1
                         radius: 12
                     }
 
                     contentItem: Text {
-                        text: parent.text
-                        font: parent.font
+                        text: showDebugButton.text
+                        font: showDebugButton.font
                         color: theme.isDark ? theme.primaryText : theme.primaryText
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -193,8 +194,8 @@ Dialog {
                         border.width: 1
                     }
                     contentItem: Text {
-                        text: parent.text
-                        font: parent.font
+                        text: hideDebugButton.text
+                        font: hideDebugButton.font
                         color: theme.modalButtonText
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -301,25 +302,35 @@ Dialog {
         }
     }
 
-    function createDetailRow(label, value) {
-        var rowItem = Qt.createQmlObject('import QtQuick.Layouts 1.15; import QtQuick.Controls 2.15; import QtQuick 2.15; RowLayout { spacing: 10; Layout.fillWidth: true }', panchangaDetails);
-        var label1 = Qt.createQmlObject('import QtQuick.Controls 2.15; Label {}', rowItem);
-        label1.text = "<b>" + label + ":</b>";
-        label1.color = theme ? theme.accentText : "blue";
-        label1.font.bold = true;
-        label1.width = 150;
-        label1.font.pixelSize = 14;
-        label1.Layout.alignment = Qt.AlignTop;
+    Component {
+        id: detailRowComponent
+        RowLayout {
+            spacing: 10
+            Layout.fillWidth: true
+            property string labelText: ""
+            property string valueText: ""
+            Label {
+                text: "<b>" + labelText + ":</b>"
+                color: theme ? theme.accentText : "blue"
+                font.bold: true
+                width: 150
+                font.pixelSize: 14
+                Layout.alignment: Qt.AlignTop
+            }
+            Label {
+                text: valueText
+                textFormat: Text.RichText
+                color: theme ? theme.primaryText : "black"
+                wrapMode: Text.WordWrap
+                font.pixelSize: 14
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignTop
+            }
+        }
+    }
 
-        var label2 = Qt.createQmlObject('import QtQuick.Controls 2.15; import QtQuick 2.15; import QtQuick.Layouts 1.15; Label {}', rowItem);
-        label2.text = value;
-        label2.textFormat = Text.RichText;
-        label2.color = theme ? theme.primaryText : "black";
-        label2.wrapMode = Text.WordWrap;
-        label2.font.pixelSize = 14;
-        label2.Layout.fillWidth = true;
-        label2.Layout.alignment = Qt.AlignTop;
-        return rowItem;
+    function createDetailRow(label, value) {
+        return detailRowComponent.createObject(panchangaDetails, { "labelText": label, "valueText": value });
     }
 
     function generateDebugInfo() {
