@@ -340,14 +340,10 @@ Dialog {
             var day = panchangaData.adDay;
 
             if (year !== undefined && monthIndex >= 0 && day !== undefined) {
-                var debugDate = new Date(0);
-                debugDate.setUTCFullYear(year, monthIndex, day);
-                debugDate.setUTCHours(0, 0, 0, 0);
-                var debugInfo = PanchangaNative.generateDebugInfo(debugDate);
-                currentDebugInfo = debugInfo.debug || "Debug information not available";
+                var debugInfo = PanchangaNative.generateDebugInfo(year, monthIndex + 1, day);
+                currentDebugInfo = debugInfo ? (debugInfo.debug || "Debug information not available") : "Failed to call generateDebugInfo";
             } else {
-                currentDebugInfo = "Debug Information:
-  Error: Could not parse date for debug information";
+                currentDebugInfo = "Debug Information:\n  Error: Could not parse date for debug information";
             }
         } catch (e) {
             console.error("Error generating debug info:", e);
