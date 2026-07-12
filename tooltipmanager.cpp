@@ -32,7 +32,7 @@ void TooltipManager::showAboveOrBelow(QQuickItem *item, const QString &text)
     QFontMetrics metrics(QToolTip::font());
     QRect textRect = metrics.boundingRect(QRect(), Qt::AlignJustify, text);
 
-    const qreal itemCenterY = window->y() + item->mapToItem(content, 0, item->height() / 2.0).y();
+    const qreal itemCenterY = window->y() + item->mapToItem(content, QPointF(0, item->height() / 2.0)).y();
     const qreal screenCenterY = screen->geometry().y() + screen->geometry().height() / 2.0;
 
     QPoint screenPos;

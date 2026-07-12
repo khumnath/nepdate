@@ -49,3 +49,6 @@ PKGBUILD/*
 !PKGBUILD/PKGBUILD
 .cache/
 scripts/
+
+# CMake-generated QML compatibility file
+qml/SettingsCompat.qml

@@ -141,7 +141,8 @@ bool isCompositorInProc() {
       QString name = commFile.readAll().trimmed();
       commFile.close();
       if (name == "kwin_x11" || name == "kwin" || name == "picom" ||
-          name == "compton" || name == "mutter" || name == "xfwm4" ||
+          name == "compton" || name == "mutter" || name == "gnome-shell" ||
+          name == "muffin" || name == "cinnamon" || name == "xfwm4" ||
           name == "compiz" || name == "deepin-wm" || name == "deepin-kwin" ||
           name == "dde-kwin") {
         return true;

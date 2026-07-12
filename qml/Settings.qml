@@ -19,8 +19,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
-import QtQuick.Dialogs
-import QtCore
 import com.calendar.printer 1.0
 
 // Settings.qml (setting window redesigned to match test.html)
@@ -100,7 +98,7 @@ ApplicationWindow {
     }
 
     // Settings storage
-    Settings {
+    SettingsCompat {
         id: appSettings
         category: "NepdateDesktopWidget"
     }

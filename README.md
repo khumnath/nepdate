@@ -87,7 +87,8 @@ First, update your package list, then install the essential build tools and Qt 6
     qml6-module-qtquick-controls \
     qml6-module-qtquick-layouts \
     qml6-module-qtquick-window \
-    qml6-module-qtcore
+    qml6-module-qtcore \
+    qml6-module-qt-labs-settings # For Qt < 6.5
    
    ```
 #### Install runtime dependencies
@@ -102,7 +103,9 @@ First, update your package list, then install the essential build tools and Qt 6
     qml6-module-qtquick-controls \
     qml6-module-qtquick-controls2 \
     qml6-module-qtquick-layouts \
-    qml6-module-qtquick-window
+    qml6-module-qtquick-window \
+    qml6-module-qtcore \
+    qml6-module-qt-labs-settings # For Qt < 6.5
    
    ```
 
