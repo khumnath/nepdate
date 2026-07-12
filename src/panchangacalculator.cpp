@@ -818,10 +818,9 @@ QVariantMap PanchangaCalculator::calculate(const QDate &date, double lat,
   return result;
 }
 
-QVariantMap PanchangaCalculator::generateDebugInfo(int year, int month, int day,
+QVariantMap PanchangaCalculator::generateDebugInfo(const QDate &date,
                                                    double lat, double lon,
                                                    double tz) {
-  QDate date(year, month, day);
   QVariantMap res;
 
   QVariantMap sunriseSunset = getSunriseSunset(date, lat, lon, tz);

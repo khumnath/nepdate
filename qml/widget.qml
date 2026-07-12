@@ -55,6 +55,9 @@ ApplicationWindow {
     }
 
     // App Settings Properties
+    property int customX: -1
+    property int customY: -1
+    
     property int fontSize: 12
     property color fontColor: "green"
     property string backgroundColorName: "none"
@@ -180,6 +183,9 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
 
         Item { id: globalMapper; anchors.fill: parent; visible: false }
 
+        property int cumulativeX: 0
+        property int cumulativeY: 0
+
         onPressed: function(mouse) {
             if (mouse.button === Qt.LeftButton) {
                 isPressed = true
@@ -187,12 +193,18 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
                 wasDragged = false
                 pressPos = Qt.point(mouse.x, mouse.y)
 
-                if (platformName !== "wayland") {
+                if (platformName !== "wayland" && platformName !== "wayland-egl") {
                     var globalPos = globalMapper.mapToGlobal(pressPos)
                     dragStartX = globalPos.x
                     dragStartY = globalPos.y
                     windowStartX = widgetWindow.x
                     windowStartY = widgetWindow.y
+                } else {
+                    var waylandGlobal = WaylandHelper.cursorPos()
+                    dragStartX = waylandGlobal.x
+                    dragStartY = waylandGlobal.y
+                    windowStartX = customX
+                    windowStartY = customY
                 }
             }
         }
@@ -208,16 +220,27 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
             if (!dragStarted && distance > dragThreshold) {
                 dragStarted = true
                 wasDragged = true
-
-                if (platformName === "wayland") {
-                    widgetWindow.startSystemMove()
+                
+                if (platformName === "wayland" || platformName === "wayland-egl") {
+                    // LayerShell doesn't support startSystemMove in the same way, we must manually move it.
+                    // DO NOT call startSystemMove()
                 }
             }
 
-            if (dragStarted && platformName !== "wayland") {
-                var globalPos = globalMapper.mapToGlobal(Qt.point(mouse.x, mouse.y))
-                widgetWindow.x = windowStartX + (globalPos.x - dragStartX)
-                widgetWindow.y = windowStartY + (globalPos.y - dragStartY)
+            if (dragStarted) {
+                if (platformName !== "wayland" && platformName !== "wayland-egl") {
+                    var globalPos = globalMapper.mapToGlobal(Qt.point(mouse.x, mouse.y))
+                    widgetWindow.x = windowStartX + (globalPos.x - dragStartX)
+                    widgetWindow.y = windowStartY + (globalPos.y - dragStartY)
+                } else {
+                    var currentWaylandGlobal = WaylandHelper.cursorPos()
+                    var newX = windowStartX + (currentWaylandGlobal.x - dragStartX)
+                    var newY = windowStartY + (currentWaylandGlobal.y - dragStartY)
+                    
+                    customX = newX
+                    customY = newY
+                    WaylandHelper.setPosition(widgetWindow, customX, customY)
+                }
                 resetDragTimer.stop()
             }
         }
@@ -228,8 +251,13 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
                 dragStarted = false
 
                 if (wasDragged) {
-                    appSettings.setValue("widgetPositionX", widgetWindow.x)
-                    appSettings.setValue("widgetPositionY", widgetWindow.y)
+                    if (platformName !== "wayland" && platformName !== "wayland-egl") {
+                        appSettings.setValue("widgetPositionX", widgetWindow.x)
+                        appSettings.setValue("widgetPositionY", widgetWindow.y)
+                    } else {
+                        appSettings.setValue("widgetPositionX", customX)
+                        appSettings.setValue("widgetPositionY", customY)
+                    }
                     resetDragTimer.start()
                 }
             }
@@ -291,6 +319,11 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
 
     // Function to update the window's stay on top flag
         function updateStayOnTopFlag(isOnTop) {
+            if (platformName === "wayland" || platformName === "wayland-egl") {
+                WaylandHelper.setLayer(widgetWindow, isOnTop);
+                return;
+            }
+
             const wasVisible = widgetWindow.visible;
             if (wasVisible) {
                 widgetWindow.visible = false;
@@ -433,10 +466,20 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
                    if (savedX !== -1 && savedY !== -1) {
                        widgetWindow.x = parseInt(savedX, 10);
                        widgetWindow.y = parseInt(savedY, 10);
+                       customX = parseInt(savedX, 10);
+                       customY = parseInt(savedY, 10);
                    } else if (widgetWindow.screen) {
                        // Center on the primary screen if no position is saved
-                       widgetWindow.x = widgetWindow.screen.virtualX + (widgetWindow.screen.virtualWidth - widgetWindow.width) / 2;
-                       widgetWindow.y = widgetWindow.screen.virtualY + (widgetWindow.screen.virtualHeight - widgetWindow.height) / 2;
+                       var centerX = widgetWindow.screen.virtualX + (widgetWindow.screen.virtualWidth - widgetWindow.width) / 2;
+                       var centerY = widgetWindow.screen.virtualY + (widgetWindow.screen.virtualHeight - widgetWindow.height) / 2;
+                       widgetWindow.x = centerX;
+                       widgetWindow.y = centerY;
+                       customX = centerX;
+                       customY = centerY;
+                   }
+                   
+                   if (platformName === "wayland" || platformName === "wayland-egl") {
+                       WaylandHelper.setPosition(widgetWindow, customX, customY);
                    }
                });
            }
@@ -506,6 +549,10 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
             }
 
             updateDate();
+            if (platformName === "wayland" || platformName === "wayland-egl") {
+                WaylandHelper.initLayerShell(widgetWindow);
+            }
+            updateStayOnTopFlag(screenontop);
             positioningTimer.start();
         }
 

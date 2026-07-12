@@ -40,7 +40,7 @@ public:
     Q_INVOKABLE QString toDevanagari(const QString &numStr) const;
     Q_INVOKABLE QString fromDevanagari(const QString &devanagariStr) const;
     
-    Q_INVOKABLE QVariantMap generateDebugInfo(int year, int month, int day, double lat = 27.7172, double lon = 85.3240, double tz = 5.75);
+    Q_INVOKABLE QVariantMap generateDebugInfo(const QDate &date, double lat = 27.7172, double lon = 85.3240, double tz = 5.75);
     Q_INVOKABLE QDate getLocalDate(double tz = 5.75) const;
     Q_INVOKABLE QDateTime getLocalDateTime(double tz = 5.75) const;
     Q_INVOKABLE void clearCache();
