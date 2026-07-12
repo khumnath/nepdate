@@ -83,6 +83,7 @@ First, update your package list, then install the essential build tools and Qt 6
     qt6-tools-dev-tools \
     qt6-shadertools-dev \
     libqt6printsupport6 \
+    liblayershellqtinterface-dev \
     qml6-module-qtquick-controls \
     qml6-module-qtquick-layouts \
     qml6-module-qtquick-window \
@@ -97,6 +98,7 @@ First, update your package list, then install the essential build tools and Qt 6
     libqt6qml6 \
     libqt6quick6 \
     libqt6printsupport6 \
+    liblayershellqtinterface6 \
     qml6-module-qtquick-controls \
     qml6-module-qtquick-controls2 \
     qml6-module-qtquick-layouts \
@@ -114,13 +116,13 @@ Ensure your system is up-to-date. Install the `base-devel` group (if you haven't
 sudo pacman -Syu
 
 # Install build-time dependencies
-sudo pacman -S base-devel qt6-base qt6-declarative qt6-shadertools qt6-tools
+sudo pacman -S base-devel qt6-base qt6-declarative qt6-shadertools qt6-tools layer-shell-qt
 
 ```
 
 #### Install runtime dependencies(for pre-built binaries only)
 ```shell
-sudo pacman -S qt6-base qt6-declarative
+sudo pacman -S qt6-base qt6-declarative layer-shell-qt
 ```
 
 **Note:** If you encounter build errors, double-check that all the listed dependencies have been installed successfully.

@@ -91,6 +91,7 @@ sudo apt install build-essential \
     qt6-tools-dev-tools \
     qt6-shadertools-dev \
     libqt6printsupport6 \
+    liblayershellqtinterface-dev \
     qml6-module-qtquick-controls \
     qml6-module-qtquick-controls2 \
     qml6-module-qtquick-layouts \
@@ -107,6 +108,7 @@ sudo apt install libqt6core6 \
     libqt6qml6 \
     libqt6quick6 \
     libqt6printsupport6 \
+    liblayershellqtinterface6 \
     qml6-module-qtquick-controls \
     qml6-module-qtquick-controls2 \
     qml6-module-qtquick-layouts \
@@ -124,13 +126,13 @@ sudo apt install libqt6core6 \
 sudo pacman -Syu
 
 # आवश्यक प्याकेजहरू स्थापना गर्नुहोस्
-sudo pacman -S base-devel qt6-base qt6-declarative qt6-shadertools qt6-tools
+sudo pacman -S base-devel qt6-base qt6-declarative qt6-shadertools qt6-tools layer-shell-qt
 ```
 
 **रनटाइम डिपेन्डेन्सीहरू स्थापना गर्नुहोस्:**
 
 ```shell
-sudo pacman -S qt6-base qt6-declarative
+sudo pacman -S qt6-base qt6-declarative layer-shell-qt
 ```
 
 -----

@@ -92,13 +92,14 @@ RowLayout {
 
         background: Rectangle {
             radius: 10
-            color: parent.hovered && theme ? theme.tertiaryBg : (theme ? theme.secondaryBg : "white")
+            color: control.hovered && theme ? theme.tertiaryBg : (theme ? theme.secondaryBg : "white")
             border.color: theme ? theme.borderColor : "lightgrey"
             border.width: 1
         }
     }
 
     component CustomTabButton: TabButton {
+        id: tabCtrl
         font.pixelSize: 13
         topPadding: 10
         bottomPadding: 10
@@ -106,17 +107,17 @@ RowLayout {
         rightPadding: 15
 
         contentItem: Text {
-            text: parent.text
-            font: parent.font
-            color: parent.checked && theme ? theme.accentText : (parent.hovered && theme ? theme.primaryText : (theme ? theme.secondaryText : "grey"))
+            text: tabCtrl.text
+            font: tabCtrl.font
+            color: tabCtrl.checked && theme ? theme.accentText : (tabCtrl.hovered && theme ? theme.primaryText : (theme ? theme.secondaryText : "grey"))
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
             radius: 10
-            color: (parent.checked || parent.hovered) && theme ? theme.tertiaryBg : "transparent"
-            border.color: parent.checked && theme ? theme.accent : (theme ? theme.borderColor : "lightgrey")
-            border.width: parent.checked ? 2 : 1
+            color: (tabCtrl.checked || tabCtrl.hovered) && theme ? theme.tertiaryBg : "transparent"
+            border.color: tabCtrl.checked && theme ? theme.accent : (theme ? theme.borderColor : "lightgrey")
+            border.width: tabCtrl.checked ? 2 : 1
         }
     }
 

@@ -276,7 +276,9 @@ Item {
             });
         }
 
-        calendarModel = _asyncModel;
+        var temp = _asyncModel;
+        calendarModel = [];
+        calendarModel = temp;
         currentMonthEvents = newMonthEvents;
     }
 

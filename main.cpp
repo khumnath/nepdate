@@ -2,6 +2,7 @@
 #include "helper.h"
 #include "tooltipmanager.h"
 #include "src/panchangacalculator.h"
+#include "src/waylandhelper.h"
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QDir>
@@ -218,6 +219,9 @@ int main(int argc, char *argv[]) {
 
   PanchangaCalculator panchangaCalculator;
   engine.rootContext()->setContextProperty("PanchangaNative", &panchangaCalculator);
+
+  WaylandHelper waylandHelper;
+  engine.rootContext()->setContextProperty("WaylandHelper", &waylandHelper);
 
   const QUrl url(QStringLiteral("qrc:/qml/widget.qml"));
   QObject::connect(

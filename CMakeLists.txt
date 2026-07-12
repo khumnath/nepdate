@@ -62,12 +62,14 @@ set(SOURCES
     src/bsmonthdata.cpp
     src/eventsdata.cpp
     src/constants.cpp
+    src/waylandhelper.cpp
 )
 
 set(HEADERS
     autostartmanager.h
     tooltipmanager.h
     helper.h
+    src/waylandhelper.h
 )
 
 set(RESOURCES
@@ -80,6 +82,8 @@ qt_add_executable(bikram-calendar
     ${RESOURCES}
 )
 
+find_package(LayerShellQt QUIET)
+
 target_link_libraries(bikram-calendar PRIVATE
     Qt6::Core
     Qt6::Gui
@@ -88,6 +92,14 @@ target_link_libraries(bikram-calendar PRIVATE
     Qt6::Qml
     Qt6::PrintSupport
 )
+
+if(LayerShellQt_FOUND)
+    message(STATUS "LayerShellQt found. Enabling Wayland panel overlay support.")
+    target_link_libraries(bikram-calendar PRIVATE LayerShellQt::Interface)
+    target_compile_definitions(bikram-calendar PRIVATE HAS_LAYERSHELL_QT)
+else()
+    message(STATUS "LayerShellQt not found. Wayland panel overlay support will be disabled.")
+endif()
 
 enable_testing()
 

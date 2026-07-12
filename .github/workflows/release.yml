@@ -23,6 +23,9 @@ jobs:
         with:
           version: '6.8.3'
 
+      - name: Install LayerShellQt
+        run: sudo apt-get update && sudo apt-get install -y liblayershellqtinterface-dev
+
       - name: Build Project with CMake
         run: |
           mkdir build
