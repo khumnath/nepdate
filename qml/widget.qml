@@ -19,7 +19,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
-import QtCore
 
 // widget.qml(main window for the small desktop widget)
 ApplicationWindow {
@@ -28,8 +27,7 @@ ApplicationWindow {
     visible: false
     width: dateButton.implicitWidth + 20
     height: dateButton.implicitHeight + 10
-    // Initial flags, StayOnTopHint will be managed dynamically
-   flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification | Qt.BypassWindowManagerHint
+    flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Tool
     color: "transparent"
     background: Rectangle {
         id: widgetBgRect
@@ -49,7 +47,7 @@ ApplicationWindow {
     }
 
     // Settings Component
-    Settings {
+    SettingsCompat {
         id: appSettings
         category: "NepdateDesktopWidget"
     }
@@ -332,10 +330,10 @@ ${result.lunarMonth} ${result.paksha} ${result.tithi}`;
             Qt.callLater(function() {
                 if (isOnTop) {
                     // Add the flags
-                    widgetWindow.flags |= (Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint| Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Notification | Qt.Tool);
+                    widgetWindow.flags |= (Qt.WindowStaysOnTopHint | Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.Tool);
                 } else {
                     // Remove the flags
-                    widgetWindow.flags &= ~(Qt.WindowStaysOnTopHint | Qt.BypassWindowManagerHint | Qt.Tool);
+                    widgetWindow.flags &= ~Qt.WindowStaysOnTopHint;
                 }
 
                 // Make window visible again if it was visible before the flag change.

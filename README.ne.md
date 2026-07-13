@@ -96,7 +96,8 @@ sudo apt install build-essential \
     qml6-module-qtquick-controls2 \
     qml6-module-qtquick-layouts \
     qml6-module-qtquick-window \
-    qml6-module-qtcore
+    qml6-module-qtcore \
+    qml6-module-qt-labs-settings # For Qt < 6.5
 ````
 
 **रनटाइम डिपेन्डेन्सीहरू स्थापना गर्नुहोस्:**
@@ -112,7 +113,9 @@ sudo apt install libqt6core6 \
     qml6-module-qtquick-controls \
     qml6-module-qtquick-controls2 \
     qml6-module-qtquick-layouts \
-    qml6-module-qtquick-window
+    qml6-module-qtquick-window \
+    qml6-module-qtcore \
+    qml6-module-qt-labs-settings # For Qt < 6.5
 ```
 
 #### For Arch Linux

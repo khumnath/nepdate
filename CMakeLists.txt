@@ -45,8 +45,29 @@ find_package(Qt6 REQUIRED COMPONENTS
     PrintSupport
 )
 
-qt_policy(SET QTP0001 NEW)
-qt_policy(SET QTP0004 NEW)
+if(Qt6_VERSION VERSION_GREATER_EQUAL "6.5")
+    qt_policy(SET QTP0001 NEW)
+endif()
+if(Qt6_VERSION VERSION_GREATER_EQUAL "6.8")
+    qt_policy(SET QTP0004 NEW)
+endif()
+
+#=============================================================================
+# QML Settings Import Compatibility
+# Qt >= 6.5 graduated Settings to QtCore; older versions use Qt.labs.settings.
+#=============================================================================
+if(Qt6_VERSION VERSION_GREATER_EQUAL "6.5")
+    set(SETTINGS_QML_IMPORT "import QtCore")
+    message(STATUS "Qt ${Qt6_VERSION} detected: QML Settings will use 'import QtCore'")
+else()
+    set(SETTINGS_QML_IMPORT "import Qt.labs.settings 1.0")
+    message(STATUS "Qt ${Qt6_VERSION} detected: QML Settings will use 'import Qt.labs.settings 1.0'")
+endif()
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/qml/SettingsCompat.qml.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/qml/SettingsCompat.qml"
+    @ONLY
+)
 
 #=============================================================================
 # Source Files

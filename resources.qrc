@@ -3,6 +3,7 @@
         <file>qml/main.qml</file>
         <file>qml/widget.qml</file>
         <file>qml/Settings.qml</file>
+        <file>qml/SettingsCompat.qml</file>
         <file>resources/flag.png</file>
         <file>resources/version.conf</file>
         <file>qml/CalendarGrid.qml</file>

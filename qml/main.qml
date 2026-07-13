@@ -19,7 +19,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls.Material 2.15
-import QtCore as Core
 import com.calendar.printer 1.0
 import "qrc:/qml/"
 
@@ -75,13 +74,13 @@ ApplicationWindow {
         }
     }
 
-    Core.Settings {
+    SettingsCompat {
         id: settings
         category: "Appearance"
         property alias isDarkMode: theme.isDark
     }
 
-    Core.Settings {
+    SettingsCompat {
         id: windowSettings
         category: "WindowGeometry"
         property alias x: window.x
